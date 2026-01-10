@@ -1,0 +1,272 @@
+{
+  "total": 8,
+  "businesses": [
+    {
+      "id": "squares-and-circles-barrie",
+      "alias": "squares-and-circles-barrie",
+      "name": "Squares & Circles Craft Bakery",
+      "image_url": "https://example.com/photos/squares-circles-1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/squares-and-circles-barrie",
+      "review_count": 89,
+      "categories": [
+        {"alias": "bakeries", "title": "Bakeries"},
+        {"alias": "coffee", "title": "Coffee & Tea"}
+      ],
+      "rating": 4.5,
+      "coordinates": {
+        "latitude": 44.3894,
+        "longitude": -79.6903
+      },
+      "location": {
+        "address1": "123 Dunlop Street East",
+        "address2": "",
+        "address3": "",
+        "city": "Barrie",
+        "zip_code": "L4M 1A6",
+        "country": "CA",
+        "state": "ON"
+      },
+      "phone": "+17055551234",
+      "display_phone": "(705) 555-1234",
+      "photos": [
+        "https://example.com/photos/squares-circles-1.jpg",
+        "https://example.com/photos/squares-circles-2.jpg"
+      ]
+    },
+    {
+      "id": "flying-monkeys-craft-brewery-barrie",
+      "alias": "flying-monkeys-craft-brewery-barrie",
+      "name": "Flying Monkeys Craft Brewery",
+      "image_url": "https://example.com/photos/flying-monkeys-1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/flying-monkeys-craft-brewery-barrie",
+      "review_count": 245,
+      "categories": [
+        {"alias": "breweries", "title": "Breweries"},
+        {"alias": "pubs", "title": "Pubs"}
+      ],
+      "rating": 4.0,
+      "coordinates": {
+        "latitude": 44.3891,
+        "longitude": -79.6880
+      },
+      "location": {
+        "address1": "107 Dunlop Street East",
+        "address2": "",
+        "address3": "",
+        "city": "Barrie",
+        "zip_code": "L4M 1A6",
+        "country": "CA",
+        "state": "ON"
+      },
+      "phone": "+17055552345",
+      "display_phone": "(705) 555-2345",
+      "photos": [
+        "https://example.com/photos/flying-monkeys-1.jpg"
+      ]
+    },
+    {
+      "id": "tjs-barrie",
+      "alias": "tjs-barrie",
+      "name": "TJ's Restaurant & Sports Bar",
+      "image_url": "https://example.com/photos/tjs-1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/tjs-barrie",
+      "review_count": 156,
+      "categories": [
+        {"alias": "sportsbars", "title": "Sports Bars"},
+        {"alias": "burgers", "title": "Burgers"}
+      ],
+      "rating": 3.5,
+      "coordinates": {
+        "latitude": 44.3912,
+        "longitude": -79.6925
+      },
+      "location": {
+        "address1": "45 Maple Avenue",
+        "address2": "",
+        "address3": "",
+        "city": "Barrie",
+        "zip_code": "L4N 1R8",
+        "country": "CA",
+        "state": "ON"
+      },
+      "phone": "+17055553456",
+      "display_phone": "(705) 555-3456",
+      "photos": [
+        "https://example.com/photos/tjs-1.jpg",
+        "https://example.com/photos/tjs-2.jpg",
+        "https://example.com/photos/tjs-3.jpg"
+      ]
+    },
+    {
+      "id": "lakeside-sushi-barrie",
+      "alias": "lakeside-sushi-barrie",
+      "name": "Lakeside Sushi",
+      "image_url": "https://example.com/photos/lakeside-sushi-1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/lakeside-sushi-barrie",
+      "review_count": 203,
+      "categories": [
+        {"alias": "sushi", "title": "Sushi Bars"},
+        {"alias": "japanese", "title": "Japanese"}
+      ],
+      "rating": 4.5,
+      "coordinates": {
+        "latitude": 44.3875,
+        "longitude": -79.6850
+      },
+      "location": {
+        "address1": "88 Lakeshore Drive",
+        "address2": "Unit 5",
+        "address3": "",
+        "city": "Barrie",
+        "zip_code": "L4N 2G4",
+        "country": "CA",
+        "state": "ON"
+      },
+      "phone": "+17055554567",
+      "display_phone": "(705) 555-4567",
+      "photos": [
+        "https://example.com/photos/lakeside-sushi-1.jpg",
+        "https://example.com/photos/lakeside-sushi-2.jpg"
+      ]
+    },
+    {
+      "id": "rustic-harvest-barrie",
+      "alias": "rustic-harvest-barrie",
+      "name": "Rustic Harvest Kitchen",
+      "image_url": "https://example.com/photos/rustic-harvest-1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/rustic-harvest-barrie",
+      "review_count": 178,
+      "categories": [
+        {"alias": "breakfast_brunch", "title": "Breakfast & Brunch"},
+        {"alias": "newcanadian", "title": "Canadian (New)"}
+      ],
+      "rating": 4.0,
+      "coordinates": {
+        "latitude": 44.3905,
+        "longitude": -79.6915
+      },
+      "location": {
+        "address1": "220 Bradford Street",
+        "address2": "",
+        "address3": "",
+        "city": "Barrie",
+        "zip_code": "L4N 1X5",
+        "country": "CA",
+        "state": "ON"
+      },
+      "phone": "+17055555678",
+      "display_phone": "(705) 555-5678",
+      "photos": [
+        "https://example.com/photos/rustic-harvest-1.jpg"
+      ]
+    },
+    {
+      "id": "pho-saigon-barrie",
+      "alias": "pho-saigon-barrie",
+      "name": "Pho Saigon",
+      "image_url": "https://example.com/photos/pho-saigon-1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/pho-saigon-barrie",
+      "review_count": 134,
+      "categories": [
+        {"alias": "vietnamese", "title": "Vietnamese"},
+        {"alias": "soup", "title": "Soup"}
+      ],
+      "rating": 4.0,
+      "coordinates": {
+        "latitude": 44.3920,
+        "longitude": -79.6940
+      },
+      "location": {
+        "address1": "15 Collier Street",
+        "address2": "",
+        "address3": "",
+        "city": "Barrie",
+        "zip_code": "L4M 1G5",
+        "country": "CA",
+        "state": "ON"
+      },
+      "phone": "+17055556789",
+      "display_phone": "(705) 555-6789",
+      "photos": [
+        "https://example.com/photos/pho-saigon-1.jpg"
+      ]
+    },
+    {
+      "id": "bella-notte-barrie",
+      "alias": "bella-notte-barrie",
+      "name": "Bella Notte Ristorante",
+      "image_url": "https://example.com/photos/bella-notte-1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/bella-notte-barrie",
+      "review_count": 267,
+      "categories": [
+        {"alias": "italian", "title": "Italian"},
+        {"alias": "wine_bars", "title": "Wine Bars"}
+      ],
+      "rating": 4.5,
+      "coordinates": {
+        "latitude": 44.3888,
+        "longitude": -79.6895
+      },
+      "location": {
+        "address1": "92 Dunlop Street West",
+        "address2": "",
+        "address3": "",
+        "city": "Barrie",
+        "zip_code": "L4N 1A8",
+        "country": "CA",
+        "state": "ON"
+      },
+      "phone": "+17055557890",
+      "display_phone": "(705) 555-7890",
+      "photos": [
+        "https://example.com/photos/bella-notte-1.jpg",
+        "https://example.com/photos/bella-notte-2.jpg"
+      ]
+    },
+    {
+      "id": "north-coffee-co-barrie",
+      "alias": "north-coffee-co-barrie",
+      "name": "North Coffee Co.",
+      "image_url": "https://example.com/photos/north-coffee-1.jpg",
+      "is_closed": false,
+      "url": "https://www.yelp.com/biz/north-coffee-co-barrie",
+      "review_count": 98,
+      "categories": [
+        {"alias": "coffee", "title": "Coffee & Tea"},
+        {"alias": "cafes", "title": "Cafes"}
+      ],
+      "rating": 4.5,
+      "coordinates": {
+        "latitude": 44.3902,
+        "longitude": -79.6908
+      },
+      "location": {
+        "address1": "55 Owen Street",
+        "address2": "",
+        "address3": "",
+        "city": "Barrie",
+        "zip_code": "L4M 3H2",
+        "country": "CA",
+        "state": "ON"
+      },
+      "phone": "+17055558901",
+      "display_phone": "(705) 555-8901",
+      "photos": [
+        "https://example.com/photos/north-coffee-1.jpg"
+      ]
+    }
+  ],
+  "region": {
+    "center": {
+      "latitude": 44.3894,
+      "longitude": -79.6903
+    }
+  }
+}

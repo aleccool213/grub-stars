@@ -1,0 +1,76 @@
+{
+  "squares-and-circles-barrie": {
+    "reviews": [
+      {
+        "id": "review-1",
+        "rating": 5,
+        "text": "Best croissants in Barrie! The pastries here are incredible and the coffee is always perfect. Love this place!",
+        "url": "https://www.yelp.com/biz/squares-and-circles-barrie?hrid=review-1",
+        "time_created": "2024-12-15 10:30:00",
+        "user": {"name": "Sarah M."}
+      },
+      {
+        "id": "review-2",
+        "rating": 4,
+        "text": "Great bakery with friendly staff. The sourdough bread is excellent. Would come back for sure.",
+        "url": "https://www.yelp.com/biz/squares-and-circles-barrie?hrid=review-2",
+        "time_created": "2024-12-10 14:00:00",
+        "user": {"name": "Mike T."}
+      },
+      {
+        "id": "review-3",
+        "rating": 5,
+        "text": "A hidden gem downtown. Everything is made fresh daily. The cinnamon buns are to die for!",
+        "url": "https://www.yelp.com/biz/squares-and-circles-barrie?hrid=review-3",
+        "time_created": "2024-12-05 09:15:00",
+        "user": {"name": "Jennifer L."}
+      }
+    ],
+    "total": 3,
+    "possible_languages": ["en"]
+  },
+  "flying-monkeys-craft-brewery-barrie": {
+    "reviews": [
+      {
+        "id": "review-4",
+        "rating": 4,
+        "text": "Great local brewery with a fantastic taproom. The Smashbomb is my go-to IPA.",
+        "url": "https://www.yelp.com/biz/flying-monkeys-craft-brewery-barrie?hrid=review-4",
+        "time_created": "2024-12-18 18:30:00",
+        "user": {"name": "Chris B."}
+      },
+      {
+        "id": "review-5",
+        "rating": 4,
+        "text": "Good beer selection and cool atmosphere. Gets busy on weekends but worth the wait.",
+        "url": "https://www.yelp.com/biz/flying-monkeys-craft-brewery-barrie?hrid=review-5",
+        "time_created": "2024-12-12 20:00:00",
+        "user": {"name": "Amanda R."}
+      }
+    ],
+    "total": 2,
+    "possible_languages": ["en"]
+  },
+  "bella-notte-barrie": {
+    "reviews": [
+      {
+        "id": "review-6",
+        "rating": 5,
+        "text": "Authentic Italian food in a beautiful setting. The homemade pasta is incredible!",
+        "url": "https://www.yelp.com/biz/bella-notte-barrie?hrid=review-6",
+        "time_created": "2024-12-20 19:00:00",
+        "user": {"name": "David P."}
+      },
+      {
+        "id": "review-7",
+        "rating": 4,
+        "text": "Great wine selection and romantic atmosphere. Perfect for date night.",
+        "url": "https://www.yelp.com/biz/bella-notte-barrie?hrid=review-7",
+        "time_created": "2024-12-14 20:30:00",
+        "user": {"name": "Lisa K."}
+      }
+    ],
+    "total": 2,
+    "possible_languages": ["en"]
+  }
+}

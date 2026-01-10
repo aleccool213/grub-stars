@@ -1,0 +1,152 @@
+{
+  "status": "OK",
+  "results": [
+    {
+      "place_id": "ChIJsquares-circles-barrie",
+      "name": "Squares and Circles Bakery",
+      "formatted_address": "123 Dunlop St E, Barrie, ON L4M 1A6, Canada",
+      "geometry": {
+        "location": {
+          "lat": 44.3895,
+          "lng": -79.6902
+        }
+      },
+      "rating": 4.6,
+      "user_ratings_total": 156,
+      "types": ["bakery", "cafe", "food", "point_of_interest", "establishment"],
+      "photos": [
+        {"photo_reference": "google-photo-squares-1"},
+        {"photo_reference": "google-photo-squares-2"}
+      ],
+      "opening_hours": {"open_now": true}
+    },
+    {
+      "place_id": "ChIJflying-monkeys-barrie",
+      "name": "Flying Monkeys Brewery",
+      "formatted_address": "107 Dunlop St E, Barrie, ON L4M 1A6, Canada",
+      "geometry": {
+        "location": {
+          "lat": 44.3892,
+          "lng": -79.6879
+        }
+      },
+      "rating": 4.2,
+      "user_ratings_total": 412,
+      "types": ["brewery", "bar", "restaurant", "food", "point_of_interest", "establishment"],
+      "photos": [
+        {"photo_reference": "google-photo-monkeys-1"}
+      ],
+      "opening_hours": {"open_now": true}
+    },
+    {
+      "place_id": "ChIJtjs-sports-barrie",
+      "name": "TJ's Sports Bar & Grill",
+      "formatted_address": "45 Maple Ave, Barrie, ON L4N 1R8, Canada",
+      "geometry": {
+        "location": {
+          "lat": 44.3913,
+          "lng": -79.6924
+        }
+      },
+      "rating": 3.4,
+      "user_ratings_total": 289,
+      "types": ["bar", "restaurant", "food", "point_of_interest", "establishment"],
+      "photos": [
+        {"photo_reference": "google-photo-tjs-1"},
+        {"photo_reference": "google-photo-tjs-2"}
+      ],
+      "opening_hours": {"open_now": true}
+    },
+    {
+      "place_id": "ChIJlakeside-sushi-barrie",
+      "name": "Lakeside Sushi Restaurant",
+      "formatted_address": "88 Lakeshore Dr Unit 5, Barrie, ON L4N 2G4, Canada",
+      "geometry": {
+        "location": {
+          "lat": 44.3876,
+          "lng": -79.6849
+        }
+      },
+      "rating": 4.4,
+      "user_ratings_total": 378,
+      "types": ["restaurant", "sushi", "japanese_restaurant", "food", "point_of_interest", "establishment"],
+      "photos": [
+        {"photo_reference": "google-photo-lakeside-1"}
+      ],
+      "opening_hours": {"open_now": true}
+    },
+    {
+      "place_id": "ChIJrustic-harvest-barrie",
+      "name": "Rustic Harvest",
+      "formatted_address": "220 Bradford St, Barrie, ON L4N 1X5, Canada",
+      "geometry": {
+        "location": {
+          "lat": 44.3906,
+          "lng": -79.6914
+        }
+      },
+      "rating": 4.1,
+      "user_ratings_total": 234,
+      "types": ["restaurant", "brunch_restaurant", "cafe", "food", "point_of_interest", "establishment"],
+      "photos": [
+        {"photo_reference": "google-photo-rustic-1"}
+      ],
+      "opening_hours": {"open_now": true}
+    },
+    {
+      "place_id": "ChIJpho-saigon-barrie",
+      "name": "Pho Saigon Vietnamese Restaurant",
+      "formatted_address": "15 Collier St, Barrie, ON L4M 1G5, Canada",
+      "geometry": {
+        "location": {
+          "lat": 44.3921,
+          "lng": -79.6939
+        }
+      },
+      "rating": 4.0,
+      "user_ratings_total": 198,
+      "types": ["restaurant", "vietnamese_restaurant", "food", "point_of_interest", "establishment"],
+      "photos": [
+        {"photo_reference": "google-photo-pho-1"}
+      ],
+      "opening_hours": {"open_now": true}
+    },
+    {
+      "place_id": "ChIJbella-notte-barrie",
+      "name": "Bella Notte Italian Restaurant",
+      "formatted_address": "92 Dunlop St W, Barrie, ON L4N 1A8, Canada",
+      "geometry": {
+        "location": {
+          "lat": 44.3889,
+          "lng": -79.6894
+        }
+      },
+      "rating": 4.5,
+      "user_ratings_total": 445,
+      "types": ["restaurant", "italian_restaurant", "bar", "food", "point_of_interest", "establishment"],
+      "photos": [
+        {"photo_reference": "google-photo-bella-1"},
+        {"photo_reference": "google-photo-bella-2"}
+      ],
+      "opening_hours": {"open_now": true}
+    },
+    {
+      "place_id": "ChIJnorth-coffee-barrie",
+      "name": "North Coffee Company",
+      "formatted_address": "55 Owen St, Barrie, ON L4M 3H2, Canada",
+      "geometry": {
+        "location": {
+          "lat": 44.3903,
+          "lng": -79.6907
+        }
+      },
+      "rating": 4.7,
+      "user_ratings_total": 167,
+      "types": ["cafe", "coffee_shop", "food", "point_of_interest", "establishment"],
+      "photos": [
+        {"photo_reference": "google-photo-north-1"}
+      ],
+      "opening_hours": {"open_now": true}
+    }
+  ]
+}

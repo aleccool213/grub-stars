@@ -1,0 +1,100 @@
+{
+  "ChIJsquares-circles-barrie": {
+    "result": {
+      "reviews": [
+        {
+          "rating": 5,
+          "text": "Absolutely the best bakery in Barrie! The croissants are perfectly flaky and buttery. I come here every Saturday morning.",
+          "time": 1704067200,
+          "author_name": "Sarah M.",
+          "author_url": "https://www.google.com/maps/contrib/123456"
+        },
+        {
+          "rating": 5,
+          "text": "Amazing coffee and pastries. The staff is super friendly and the atmosphere is cozy. Highly recommend the almond croissant!",
+          "time": 1703462400,
+          "author_name": "Mike T.",
+          "author_url": "https://www.google.com/maps/contrib/234567"
+        },
+        {
+          "rating": 4,
+          "text": "Great bakery with fresh items daily. Only wish they had more seating during busy hours.",
+          "time": 1702857600,
+          "author_name": "Jennifer L.",
+          "author_url": "https://www.google.com/maps/contrib/345678"
+        }
+      ]
+    },
+    "status": "OK"
+  },
+  "ChIJflying-monkeys-barrie": {
+    "result": {
+      "reviews": [
+        {
+          "rating": 5,
+          "text": "Best craft brewery in the area! Great selection of beers and the atmosphere is fantastic. Love the weekend live music.",
+          "time": 1704153600,
+          "author_name": "Dave K.",
+          "author_url": "https://www.google.com/maps/contrib/456789"
+        },
+        {
+          "rating": 4,
+          "text": "Good beer selection, but can get crowded on weekends. The Smashbomb Atomic IPA is incredible.",
+          "time": 1703548800,
+          "author_name": "Chris P.",
+          "author_url": "https://www.google.com/maps/contrib/567890"
+        }
+      ]
+    },
+    "status": "OK"
+  },
+  "ChIJlakeside-sushi-barrie": {
+    "result": {
+      "reviews": [
+        {
+          "rating": 5,
+          "text": "Fresh sushi and excellent service. The dragon roll is my favorite. Definitely the best Japanese restaurant in Barrie.",
+          "time": 1704240000,
+          "author_name": "Amanda R.",
+          "author_url": "https://www.google.com/maps/contrib/678901"
+        },
+        {
+          "rating": 4,
+          "text": "Great sushi at reasonable prices. The lunch specials are a steal. Can get busy during dinner time.",
+          "time": 1703635200,
+          "author_name": "Tom H.",
+          "author_url": "https://www.google.com/maps/contrib/789012"
+        },
+        {
+          "rating": 5,
+          "text": "Amazing omakase experience! The chef really knows what he's doing. Worth every penny.",
+          "time": 1703030400,
+          "author_name": "Lisa W.",
+          "author_url": "https://www.google.com/maps/contrib/890123"
+        }
+      ]
+    },
+    "status": "OK"
+  },
+  "ChIJbella-notte-barrie": {
+    "result": {
+      "reviews": [
+        {
+          "rating": 5,
+          "text": "Authentic Italian cuisine in a beautiful setting. The homemade pasta is to die for. Perfect for date night!",
+          "time": 1704326400,
+          "author_name": "Maria G.",
+          "author_url": "https://www.google.com/maps/contrib/901234"
+        },
+        {
+          "rating": 5,
+          "text": "Best Italian food outside of Italy! The wine list is excellent and the tiramisu is heavenly.",
+          "time": 1703721600,
+          "author_name": "Robert B.",
+          "author_url": "https://www.google.com/maps/contrib/012345"
+        }
+      ]
+    },
+    "status": "OK"
+  }
+}
