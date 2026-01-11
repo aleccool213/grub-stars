@@ -1,0 +1,132 @@
+{
+  "data": [
+    {
+      "location_id": "123456",
+      "name": "Squares & Circles Craft Bakery",
+      "address_obj": {
+        "street1": "123 Dunlop Street East",
+        "city": "Barrie",
+        "state": "ON",
+        "postalcode": "L4M 1A6",
+        "country": "Canada",
+        "latitude": "44.3894",
+        "longitude": "-79.6903"
+      },
+      "rating": "4.5",
+      "num_reviews": "92",
+      "web_url": "https://www.tripadvisor.com/Restaurant_Review-g154979-d123456-Reviews-Squares_Circles_Craft_Bakery-Barrie_Ontario.html"
+    },
+    {
+      "location_id": "234567",
+      "name": "Flying Monkeys Craft Brewery",
+      "address_obj": {
+        "street1": "107 Dunlop Street East",
+        "city": "Barrie",
+        "state": "ON",
+        "postalcode": "L4M 1A6",
+        "country": "Canada",
+        "latitude": "44.3892",
+        "longitude": "-79.6879"
+      },
+      "rating": "4.0",
+      "num_reviews": "251",
+      "web_url": "https://www.tripadvisor.com/Attraction_Review-g154979-d234567-Reviews-Flying_Monkeys_Craft_Brewery-Barrie_Ontario.html"
+    },
+    {
+      "location_id": "345678",
+      "name": "TJ's Sports Bar & Grill",
+      "address_obj": {
+        "street1": "45 Maple Avenue",
+        "city": "Barrie",
+        "state": "ON",
+        "postalcode": "L4N 1R8",
+        "country": "Canada",
+        "latitude": "44.3913",
+        "longitude": "-79.6924"
+      },
+      "rating": "3.5",
+      "num_reviews": "78",
+      "web_url": "https://www.tripadvisor.com/Restaurant_Review-g154979-d345678-Reviews-TJs_Sports_Bar_Grill-Barrie_Ontario.html"
+    },
+    {
+      "location_id": "456789",
+      "name": "Ichiban Sushi",
+      "address_obj": {
+        "street1": "567 Bayfield Street",
+        "city": "Barrie",
+        "state": "ON",
+        "postalcode": "L4M 4Z8",
+        "country": "Canada",
+        "latitude": "44.3875",
+        "longitude": "-79.6951"
+      },
+      "rating": "4.5",
+      "num_reviews": "134",
+      "web_url": "https://www.tripadvisor.com/Restaurant_Review-g154979-d456789-Reviews-Ichiban_Sushi-Barrie_Ontario.html"
+    },
+    {
+      "location_id": "567890",
+      "name": "Dolce Bakery & Cafe",
+      "address_obj": {
+        "street1": "89 Dunlop Street West",
+        "city": "Barrie",
+        "state": "ON",
+        "postalcode": "L4N 1B2",
+        "country": "Canada",
+        "latitude": "44.3901",
+        "longitude": "-79.6985"
+      },
+      "rating": "4.0",
+      "num_reviews": "67",
+      "web_url": "https://www.tripadvisor.com/Restaurant_Review-g154979-d567890-Reviews-Dolce_Bakery_Cafe-Barrie_Ontario.html"
+    },
+    {
+      "location_id": "678901",
+      "name": "Pho Fusion",
+      "address_obj": {
+        "street1": "234 Blake Street",
+        "city": "Barrie",
+        "state": "ON",
+        "postalcode": "L4M 1K3",
+        "country": "Canada",
+        "latitude": "44.3856",
+        "longitude": "-79.6918"
+      },
+      "rating": "4.5",
+      "num_reviews": "189",
+      "web_url": "https://www.tripadvisor.com/Restaurant_Review-g154979-d678901-Reviews-Pho_Fusion-Barrie_Ontario.html"
+    },
+    {
+      "location_id": "789012",
+      "name": "La Dolce Vita Italian",
+      "address_obj": {
+        "street1": "456 Dunlop Street East",
+        "city": "Barrie",
+        "state": "ON",
+        "postalcode": "L4M 1A8",
+        "country": "Canada",
+        "latitude": "44.3888",
+        "longitude": "-79.6865"
+      },
+      "rating": "4.5",
+      "num_reviews": "212",
+      "web_url": "https://www.tripadvisor.com/Restaurant_Review-g154979-d789012-Reviews-La_Dolce_Vita_Italian-Barrie_Ontario.html"
+    },
+    {
+      "location_id": "890123",
+      "name": "Barrie Waterfront Coffee Co",
+      "address_obj": {
+        "street1": "78 Lakeshore Drive",
+        "city": "Barrie",
+        "state": "ON",
+        "postalcode": "L4M 4Y6",
+        "country": "Canada",
+        "latitude": "44.3869",
+        "longitude": "-79.6832"
+      },
+      "rating": "4.0",
+      "num_reviews": "98",
+      "web_url": "https://www.tripadvisor.com/Restaurant_Review-g154979-d890123-Reviews-Barrie_Waterfront_Coffee_Co-Barrie_Ontario.html"
+    }
+  ]
+}

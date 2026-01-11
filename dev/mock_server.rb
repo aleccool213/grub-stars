@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # Mock API Server for local development and testing
-# Supports both Yelp and Google Places APIs
+# Supports Yelp, Google Places, and TripAdvisor APIs
 #
 # Usage:
 #   bundle exec ruby dev/mock_server.rb
@@ -12,6 +12,8 @@
 #   YELP_API_BASE_URL=http://localhost:4567
 #   GOOGLE_API_KEY=mock_api_key
 #   GOOGLE_API_BASE_URL=http://localhost:4567
+#   TRIPADVISOR_API_KEY=mock_api_key
+#   TRIPADVISOR_API_BASE_URL=http://localhost:4567/api/v1
 
 require "sinatra"
 require "json"
@@ -32,6 +34,12 @@ YELP_REVIEWS = load_fixture("yelp_reviews")
 GOOGLE_BUSINESSES = load_fixture("google_businesses")
 GOOGLE_DETAILS = load_fixture("google_details")
 GOOGLE_REVIEWS = load_fixture("google_reviews")
+
+# TripAdvisor fixtures
+TRIPADVISOR_LOCATIONS = load_fixture("tripadvisor_locations")
+TRIPADVISOR_DETAILS = load_fixture("tripadvisor_details")
+TRIPADVISOR_REVIEWS = load_fixture("tripadvisor_reviews")
+TRIPADVISOR_PHOTOS = load_fixture("tripadvisor_photos")
 
 # Build lookup hashes
 YELP_BUSINESS_BY_ID = YELP_BUSINESSES["businesses"].each_with_object({}) do |biz, hash|
@@ -209,13 +217,132 @@ get "/photo" do
 end
 
 # ============================================
+# TripAdvisor API Endpoints
+# ============================================
+
+# GET /api/v1/location/search - Search for locations (TripAdvisor)
+get "/api/v1/location/search" do
+  content_type :json
+
+  search_query = params["searchQuery"]
+  key = params["key"]
+  language = params["language"]
+
+  unless key
+    halt 401, { message: "API key is required" }.to_json
+  end
+
+  unless search_query
+    halt 400, { message: "searchQuery is required" }.to_json
+  end
+
+  # Return all locations for now (could filter by query)
+  locations = TRIPADVISOR_LOCATIONS["data"]
+
+  # Simple filtering by query
+  query_lower = search_query.downcase
+  if query_lower.include?("bakery") || query_lower.include?("bakeries")
+    locations = locations.select do |loc|
+      loc.dig("subcategory")&.any? { |sc| sc["name"]&.downcase&.include?("bakery") } ||
+      loc["name"]&.downcase&.include?("bakery")
+    end
+  elsif query_lower.include?("brewery") || query_lower.include?("beer")
+    locations = locations.select do |loc|
+      loc.dig("subcategory")&.any? { |sc| sc["name"]&.downcase&.include?("brewery") } ||
+      loc["name"]&.downcase&.include?("brewery")
+    end
+  elsif query_lower.include?("sushi") || query_lower.include?("japanese")
+    locations = locations.select do |loc|
+      loc.dig("subcategory")&.any? { |sc| sc["name"]&.downcase&.include?("japanese") || sc["name"]&.downcase&.include?("sushi") } ||
+      loc["name"]&.downcase&.include?("sushi")
+    end
+  elsif query_lower.include?("coffee") || query_lower.include?("cafe")
+    locations = locations.select do |loc|
+      loc.dig("subcategory")&.any? { |sc| sc["name"]&.downcase&.include?("cafe") || sc["name"]&.downcase&.include?("coffee") } ||
+      loc["name"]&.downcase&.include?("coffee")
+    end
+  elsif query_lower.include?("italian")
+    locations = locations.select do |loc|
+      loc.dig("subcategory")&.any? { |sc| sc["name"]&.downcase&.include?("italian") } ||
+      loc["name"]&.downcase&.include?("italian")
+    end
+  elsif query_lower.include?("vietnamese") || query_lower.include?("pho")
+    locations = locations.select do |loc|
+      loc.dig("subcategory")&.any? { |sc| sc["name"]&.downcase&.include?("vietnamese") } ||
+      loc["name"]&.downcase&.include?("pho")
+    end
+  end
+
+  { data: locations }.to_json
+end
+
+# GET /api/v1/location/:id - Get location details (TripAdvisor)
+get "/api/v1/location/:id" do
+  content_type :json
+
+  location_id = params["id"]
+  key = params["key"]
+
+  unless key
+    halt 401, { message: "API key is required" }.to_json
+  end
+
+  details = TRIPADVISOR_DETAILS[location_id]
+  unless details
+    halt 404, { message: "Location #{location_id} not found" }.to_json
+  end
+
+  details.to_json
+end
+
+# GET /api/v1/location/:id/reviews - Get location reviews (TripAdvisor)
+get "/api/v1/location/:id/reviews" do
+  content_type :json
+
+  location_id = params["id"]
+  key = params["key"]
+
+  unless key
+    halt 401, { message: "API key is required" }.to_json
+  end
+
+  reviews = TRIPADVISOR_REVIEWS[location_id]
+  unless reviews
+    # Return empty reviews if location doesn't have any
+    return { data: [] }.to_json
+  end
+
+  reviews.to_json
+end
+
+# GET /api/v1/location/:id/photos - Get location photos (TripAdvisor)
+get "/api/v1/location/:id/photos" do
+  content_type :json
+
+  location_id = params["id"]
+  key = params["key"]
+
+  unless key
+    halt 401, { message: "API key is required" }.to_json
+  end
+
+  photos = TRIPADVISOR_PHOTOS[location_id]
+  unless photos
+    # Return empty photos if location doesn't have any
+    return { data: [] }.to_json
+  end
+
+  photos.to_json
+end
+
+# ============================================
 # Startup Message
 # ============================================
 
 puts ""
-puts "=" * 60
-puts "  Mock API Server (Yelp + Google Places)"
-puts "=" * 60
+puts "=" * 70
+puts "  Mock API Server (Yelp + Google Places + TripAdvisor)"
+puts "=" * 70
 puts ""
 puts "  Yelp Data:"
 puts "    - #{YELP_BUSINESSES['businesses'].length} businesses"
@@ -224,6 +351,11 @@ puts ""
 puts "  Google Data:"
 puts "    - #{GOOGLE_BUSINESSES['results'].length} places"
 puts "    - #{GOOGLE_REVIEWS.keys.length} places with reviews"
+puts ""
+puts "  TripAdvisor Data:"
+puts "    - #{TRIPADVISOR_LOCATIONS['data'].length} locations"
+puts "    - #{TRIPADVISOR_REVIEWS.keys.length} locations with reviews"
+puts "    - #{TRIPADVISOR_PHOTOS.keys.length} locations with photos"
 puts ""
 puts "  Yelp Endpoints:"
 puts "    GET /businesses/search?location=..."
@@ -235,11 +367,19 @@ puts "    GET /textsearch/json?query=...&key=..."
 puts "    GET /details/json?placeid=...&key=..."
 puts "    GET /photo?photoreference=...&key=..."
 puts ""
+puts "  TripAdvisor Endpoints:"
+puts "    GET /api/v1/location/search?searchQuery=...&key=..."
+puts "    GET /api/v1/location/:id?key=..."
+puts "    GET /api/v1/location/:id/reviews?key=..."
+puts "    GET /api/v1/location/:id/photos?key=..."
+puts ""
 puts "  Configure your .env:"
 puts "    YELP_API_KEY=mock_api_key"
 puts "    YELP_API_BASE_URL=http://localhost:4567"
 puts "    GOOGLE_API_KEY=mock_api_key"
 puts "    GOOGLE_API_BASE_URL=http://localhost:4567"
+puts "    TRIPADVISOR_API_KEY=mock_api_key"
+puts "    TRIPADVISOR_API_BASE_URL=http://localhost:4567/api/v1"
 puts ""
-puts "=" * 60
+puts "=" * 70
 puts ""

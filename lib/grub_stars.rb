@@ -9,6 +9,7 @@ require_relative "infrastructure/database"
 require_relative "infrastructure/adapters/base"
 require_relative "infrastructure/adapters/yelp"
 require_relative "infrastructure/adapters/google"
+require_relative "infrastructure/adapters/tripadvisor"
 
 # Domain Layer
 require_relative "domain/models/restaurant"

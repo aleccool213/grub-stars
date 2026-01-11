@@ -1,0 +1,194 @@
+{
+  "123456": {
+    "data": [
+      {
+        "id": "ta-review-123-001",
+        "rating": 5,
+        "text": "Absolutely amazing bakery! The croissants are the best I've ever had, and the coffee is perfect. Highly recommend visiting early in the morning when everything is fresh out of the oven.",
+        "published_date": "2024-01-20",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d123456-r001",
+        "user": {
+          "username": "FoodieBarrie"
+        }
+      },
+      {
+        "id": "ta-review-123-002",
+        "rating": 4,
+        "text": "Great selection of baked goods and friendly staff. The prices are reasonable and the atmosphere is cozy. Would definitely return!",
+        "published_date": "2024-01-15",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d123456-r002",
+        "user": {
+          "username": "TravellerON"
+        }
+      },
+      {
+        "id": "ta-review-123-003",
+        "rating": 5,
+        "text": "Best bakery in Barrie! Their sourdough bread is incredible.",
+        "published_date": "2024-01-10",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d123456-r003",
+        "user": {
+          "username": "LocalExplorer"
+        }
+      }
+    ]
+  },
+  "234567": {
+    "data": [
+      {
+        "id": "ta-review-234-001",
+        "rating": 4,
+        "text": "Great brewery with excellent craft beers. The tour was informative and fun. The tasting room has a nice atmosphere and knowledgeable staff.",
+        "published_date": "2024-01-18",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d234567-r001",
+        "user": {
+          "username": "BeerLover123"
+        }
+      },
+      {
+        "id": "ta-review-234-002",
+        "rating": 4,
+        "text": "Love their IPAs! The brewery tour is worth it if you're interested in craft beer.",
+        "published_date": "2024-01-12",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d234567-r002",
+        "user": {
+          "username": "CraftBeerFan"
+        }
+      }
+    ]
+  },
+  "345678": {
+    "data": [
+      {
+        "id": "ta-review-345-001",
+        "rating": 3,
+        "text": "Decent sports bar with lots of TVs. Food is okay, nothing special. Good place to watch the game.",
+        "published_date": "2024-01-16",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d345678-r001",
+        "user": {
+          "username": "SportsGuy"
+        }
+      },
+      {
+        "id": "ta-review-345-002",
+        "rating": 4,
+        "text": "Great atmosphere during game nights. Wings are pretty good!",
+        "published_date": "2024-01-08",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d345678-r002",
+        "user": {
+          "username": "HockeyFan89"
+        }
+      }
+    ]
+  },
+  "456789": {
+    "data": [
+      {
+        "id": "ta-review-456-001",
+        "rating": 5,
+        "text": "The freshest sushi in Barrie! The chef is incredibly skilled and the presentation is beautiful. A must-visit for sushi lovers.",
+        "published_date": "2024-01-22",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d456789-r001",
+        "user": {
+          "username": "SushiAddict"
+        }
+      },
+      {
+        "id": "ta-review-456-002",
+        "rating": 5,
+        "text": "Authentic Japanese cuisine with excellent service. The sashimi melts in your mouth.",
+        "published_date": "2024-01-14",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d456789-r002",
+        "user": {
+          "username": "JapaneseFoodFan"
+        }
+      },
+      {
+        "id": "ta-review-456-003",
+        "rating": 4,
+        "text": "Great sushi, fresh ingredients. Slightly pricey but worth it.",
+        "published_date": "2024-01-05",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d456789-r003",
+        "user": {
+          "username": "DiningCritic"
+        }
+      }
+    ]
+  },
+  "567890": {
+    "data": [
+      {
+        "id": "ta-review-567-001",
+        "rating": 4,
+        "text": "Lovely little bakery with great Italian pastries. The tiramisu is to die for!",
+        "published_date": "2024-01-19",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d567890-r001",
+        "user": {
+          "username": "DesertLover"
+        }
+      }
+    ]
+  },
+  "678901": {
+    "data": [
+      {
+        "id": "ta-review-678-001",
+        "rating": 5,
+        "text": "Best pho in Ontario! The broth is rich and flavorful, and the portions are generous. Family-run business with authentic Vietnamese flavors.",
+        "published_date": "2024-01-21",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d678901-r001",
+        "user": {
+          "username": "PhoEnthusiast"
+        }
+      },
+      {
+        "id": "ta-review-678-002",
+        "rating": 4,
+        "text": "Delicious Vietnamese food at reasonable prices. The spring rolls are fantastic!",
+        "published_date": "2024-01-11",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d678901-r002",
+        "user": {
+          "username": "AsianFoodLover"
+        }
+      }
+    ]
+  },
+  "789012": {
+    "data": [
+      {
+        "id": "ta-review-789-001",
+        "rating": 5,
+        "text": "Outstanding Italian restaurant! The pasta is handmade and the sauces are perfection. Feels like dining in Italy.",
+        "published_date": "2024-01-23",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d789012-r001",
+        "user": {
+          "username": "ItalianFoodie"
+        }
+      },
+      {
+        "id": "ta-review-789-002",
+        "rating": 4,
+        "text": "Great authentic Italian cuisine. The wine selection is excellent too.",
+        "published_date": "2024-01-13",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d789012-r002",
+        "user": {
+          "username": "WineAndDine"
+        }
+      }
+    ]
+  },
+  "890123": {
+    "data": [
+      {
+        "id": "ta-review-890-001",
+        "rating": 4,
+        "text": "Perfect spot for morning coffee with a view of the waterfront. The baristas are skilled and friendly.",
+        "published_date": "2024-01-17",
+        "url": "https://www.tripadvisor.com/ShowUserReviews-d890123-r001",
+        "user": {
+          "username": "CoffeeLover"
+        }
+      }
+    ]
+  }
+}
