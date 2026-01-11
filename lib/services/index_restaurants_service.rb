@@ -66,9 +66,10 @@ module Services
     # Index a single restaurant from adapter business data
     # @param business_data [Hash] Normalized business data from adapter
     # @param source [String] Source adapter name (e.g., "yelp", "google")
+    # @param location [String, nil] Optional location name to tag the restaurant
     # @return [Symbol] Result: :created, :updated, or :merged
-    def index_restaurant(business_data:, source:)
-      store_business(business_data, source)
+    def index_restaurant(business_data:, source:, location: nil)
+      store_business(business_data, source, location)
     end
 
     private
