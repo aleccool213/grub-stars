@@ -43,34 +43,118 @@ grst info --name "restaurant name"    # Show detailed restaurant info
 
 ## Code Structure
 
+The codebase follows a **layered architecture** with clear separation of concerns:
+
 ```
 lib/
-├── grub_stars.rb      # Main entry, requires all modules
-├── cli.rb             # Thor CLI commands
-├── database.rb        # Sequel schema and connection
-├── indexer.rb         # Multi-adapter indexing with matcher
-├── matcher.rb         # Restaurant deduplication
-├── search.rb          # Local database search
-└── adapters/
-    ├── base.rb        # Abstract adapter interface
-    ├── yelp.rb        # Yelp Fusion API adapter
-    └── google.rb      # Google Places API adapter
+├── grub_stars.rb                    # Main entry, requires all layers
+├── cli.rb                           # Presentation layer (Thor CLI)
+├── config.rb                        # Configuration management
+├── logger.rb                        # Logging utility
+├── domain/                          # Domain layer (pure business logic)
+│   ├── models/
+│   │   ├── restaurant.rb
+│   │   ├── rating.rb
+│   │   ├── review.rb
+│   │   ├── media.rb
+│   │   ├── category.rb
+│   │   └── external_id.rb
+│   └── matcher.rb                   # Restaurant deduplication logic
+├── infrastructure/                  # Infrastructure layer
+│   ├── database.rb                  # Sequel schema and connection
+│   ├── adapters/                    # External API integrations
+│   │   ├── base.rb
+│   │   ├── yelp.rb
+│   │   └── google.rb
+│   └── repositories/                # Data access layer
+│       ├── restaurant_repository.rb
+│       ├── rating_repository.rb
+│       ├── review_repository.rb
+│       ├── media_repository.rb
+│       ├── category_repository.rb
+│       └── external_id_repository.rb
+└── services/                        # Service layer (use cases)
+    ├── index_restaurants_service.rb
+    ├── search_restaurants_service.rb
+    ├── restaurant_details_service.rb
+    └── list_categories_service.rb
 
 tests/
 ├── test_helper.rb
-├── integration/       # CLI and indexer tests
-└── unit/              # Adapter tests (mocked HTTP)
+├── integration/                     # Full-stack integration tests
+│   ├── cli_test.rb
+│   └── index_test.rb
+└── unit/                           # Unit tests (with mocks)
+    ├── adapters/                   # Adapter tests (mocked HTTP)
+    ├── domain/                     # Domain model & matcher tests
+    ├── repositories/               # Repository tests
+    └── services/                   # Service tests
 
 dev/
-├── mock_server.rb     # Sinatra mock API server
-└── fixtures/          # Mock data for Yelp and Google
+├── mock_server.rb                  # Sinatra mock API server
+└── fixtures/                       # Mock data for Yelp and Google
 ```
 
 ## Architecture
 
-### Adapters
+### Layered Architecture Overview
 
-All adapters inherit from `Adapters::Base` and implement:
+```
+┌─────────────────────────────────────────────────────┐
+│              Presentation Layer                     │
+│              (lib/cli.rb)                           │
+│  - User I/O and formatting only                     │
+└────────────────────┬────────────────────────────────┘
+                     │ calls
+┌────────────────────▼────────────────────────────────┐
+│              Service Layer                          │
+│              (lib/services/)                        │
+│  - Orchestrates business operations                 │
+│  - Uses repositories and domain logic               │
+└──────┬─────────────────────────────────┬───────────┘
+       │ uses                            │ uses
+┌──────▼────────────────┐    ┌───────────▼────────────┐
+│   Domain Layer        │    │  Infrastructure Layer  │
+│   (lib/domain/)       │    │  (lib/infrastructure/) │
+│  - Pure business      │    │  - Repositories        │
+│    logic & models     │    │  - Database            │
+│  - Zero dependencies  │    │  - Adapters            │
+└───────────────────────┘    └────────────────────────┘
+```
+
+**Key Principle:** Dependencies flow inward toward the domain layer. The domain has zero external dependencies.
+
+### 1. Domain Layer (`lib/domain/`)
+
+**Pure business logic with zero infrastructure dependencies.**
+
+**Models (Plain Old Ruby Objects):**
+- `Restaurant`, `Rating`, `Review`, `Media`, `Category`, `ExternalId`
+- Include business methods like `distance_to()`, `photos()`, `videos()`
+- No database coupling - just pure Ruby objects
+
+**Business Logic:**
+- `Matcher` - Restaurant deduplication algorithm
+  - Pure function: takes candidates as parameter, no database access
+  - Uses confidence scoring: name similarity (~30 points), address match, GPS proximity, phone number
+  - Threshold: score >50 = same restaurant, merge data
+
+### 2. Infrastructure Layer (`lib/infrastructure/`)
+
+**External dependencies and data access.**
+
+**Repositories (Data Access Layer):**
+- Encapsulate all database operations using the Repository pattern
+- Convert database rows (Sequel datasets) to domain models
+- Provide methods: `find_by_id()`, `search_by_name()`, `find_candidates_for_matching()`, `save()`, etc.
+- All SQL/Sequel logic contained here - services never touch the database directly
+
+**Database:**
+- SQLite schema definition and connection management (`lib/infrastructure/database.rb`)
+- Tables: restaurants, ratings, reviews, media, categories, restaurant_categories, external_ids
+
+**Adapters:**
+All adapters inherit from `Infrastructure::Adapters::Base` and implement:
 - `search_businesses(location:, categories:, limit:, offset:)` - Search by location
 - `get_business(id)` - Get detailed business info
 - `get_reviews(id)` - Get review excerpts
@@ -88,33 +172,57 @@ Adapters normalize responses to a common format with fields: `external_id`, `nam
 - **Instagram** - photos, videos only
 - **TikTok** - videos only
 
-### Indexer
-1. Queries first adapter (e.g., Yelp) for all restaurants in specified geographic area (5km x 5km)
-2. Stores restaurant data (name, address, GPS coordinates, category tags) in SQLite
-3. For subsequent adapters, runs the **Matcher** to merge duplicate restaurants
+### 3. Service Layer (`lib/services/`)
 
-### Matcher (Restaurant Deduplication)
-Critical component that merges same restaurant from different sources:
-- Uses confidence scoring system: name similarity (~30 points), address match, GPS proximity, phone number
-- Threshold: score >50 = same restaurant, merge data
-- Prevents duplicate entries when restaurant appears across multiple adapters
+**Application use cases that orchestrate business operations.**
 
-### Database Schema
-SQLite database storing:
-- Restaurant core data (id, name, address, coordinates, categories)
-- Adapter-specific data (ratings, review snippets with URLs, photo/video URLs)
-- Relationships between restaurants and their data sources
+Services use dependency injection for testability and accept repositories/domain logic as constructor parameters.
 
-## Implementation Stages
+- `IndexRestaurantsService` - Multi-adapter indexing with deduplication
+  - Queries adapters for restaurants in specified geographic area
+  - Uses Matcher for deduplication across sources
+  - Uses repositories for persistence
+  - Replaces old `Indexer` class
 
-1. **API Research**: Verify data access from each adapter, document available features
-2. **CLI Layer**: Basic command structure with no business logic
-3. **Database**: Design schema and initialize SQLite on boot
-4. **Adapters**: Build API integrations (look for existing Ruby gems/SDKs)
-5. **Indexer**: Single-adapter indexing (error if multiple configured initially)
-6. **Matcher**: Multi-adapter support with deduplication
-7. **Search Command**: Query local DB by category or name
-8. **Info Command**: Display formatted restaurant details from all sources
+- `SearchRestaurantsService` - Search by name or category
+  - Delegates to RestaurantRepository
+  - Returns domain models
+  - Replaces search methods from old `Search` class
+
+- `RestaurantDetailsService` - Get detailed restaurant info
+  - Loads restaurant with all associations (ratings, reviews, media, categories)
+  - Returns fully-populated domain model
+  - Replaces info methods from old `Search` class
+
+- `ListCategoriesService` - List available categories
+
+### 4. Presentation Layer (`lib/cli.rb`)
+
+**Thor CLI commands for user interaction.**
+
+- Handles user I/O and output formatting only
+- Calls services to perform business operations
+- **No business logic or database access**
+- Commands: `index`, `search`, `info`, `categories`
+
+## Implementation Status
+
+✅ **Completed:**
+1. **API Research**: Verified data access from Yelp and Google Maps
+2. **CLI Layer**: Thor-based commands with service-based architecture
+3. **Database**: SQLite schema with full relationship modeling
+4. **Adapters**: Yelp and Google Maps adapters implemented
+5. **Domain Models**: Pure Ruby models (Restaurant, Rating, Review, Media, Category, ExternalId)
+6. **Repositories**: Full data access layer with repository pattern
+7. **Services**: All core services implemented (Index, Search, Details, Categories)
+8. **Matcher**: Pure deduplication logic with confidence scoring
+9. **Layered Architecture**: Complete refactoring to clean architecture
+10. **Test Coverage**: Comprehensive unit and integration tests
+
+🚧 **Planned:**
+- TripAdvisor adapter
+- Instagram adapter (photos/videos only)
+- TikTok adapter (videos only)
 
 ## Key Design Considerations
 
