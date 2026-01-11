@@ -1,0 +1,7 @@
+# Bundler
+.bundle/
+/vendor/bundle
+
+# Binstubs (except grst)
+/bin/*
+!/bin/grst
