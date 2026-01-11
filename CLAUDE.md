@@ -65,7 +65,8 @@ lib/
 │   ├── adapters/                    # External API integrations
 │   │   ├── base.rb
 │   │   ├── yelp.rb
-│   │   └── google.rb
+│   │   ├── google.rb
+│   │   └── tripadvisor.rb
 │   └── repositories/                # Data access layer
 │       ├── restaurant_repository.rb
 │       ├── rating_repository.rb
@@ -166,9 +167,9 @@ Adapters normalize responses to a common format with fields: `external_id`, `nam
 **Implemented:**
 - **Yelp** (`YELP_API_KEY`) - ratings, reviews (enhanced plan), photos
 - **Google Maps** (`GOOGLE_API_KEY`) - ratings, reviews (up to 5), photos
+- **TripAdvisor** (`TRIPADVISOR_API_KEY`) - ratings, reviews, photos
 
 **Planned:**
-- **Trip Advisor** - ratings, reviews, photos, videos
 - **Instagram** - photos, videos only
 - **TikTok** - videos only
 
@@ -208,10 +209,10 @@ Services use dependency injection for testability and accept repositories/domain
 ## Implementation Status
 
 ✅ **Completed:**
-1. **API Research**: Verified data access from Yelp and Google Maps
+1. **API Research**: Verified data access from Yelp, Google Maps, and TripAdvisor
 2. **CLI Layer**: Thor-based commands with service-based architecture
 3. **Database**: SQLite schema with full relationship modeling
-4. **Adapters**: Yelp and Google Maps adapters implemented
+4. **Adapters**: Yelp, Google Maps, and TripAdvisor adapters implemented
 5. **Domain Models**: Pure Ruby models (Restaurant, Rating, Review, Media, Category, ExternalId)
 6. **Repositories**: Full data access layer with repository pattern
 7. **Services**: All core services implemented (Index, Search, Details, Categories)
@@ -220,7 +221,6 @@ Services use dependency injection for testability and accept repositories/domain
 10. **Test Coverage**: Comprehensive unit and integration tests
 
 🚧 **Planned:**
-- TripAdvisor adapter
 - Instagram adapter (photos/videos only)
 - TikTok adapter (videos only)
 
