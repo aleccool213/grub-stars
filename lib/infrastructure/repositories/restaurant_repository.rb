@@ -57,8 +57,15 @@ module Infrastructure
             )
           )
 
-        # Add location filter if provided
-        dataset = dataset.where(location: location) if location
+        # Add fuzzy location filter if provided
+        if location
+          dataset = dataset.where(
+            Sequel.|(
+              Sequel.ilike(:location, "%#{location}%"),
+              Sequel.lit("similarity(location, ?) >= ?", location, FUZZY_THRESHOLD)
+            )
+          )
+        end
 
         dataset
           .order(Sequel.desc(:match_score), :name)
@@ -82,8 +89,15 @@ module Infrastructure
             )
           )
 
-        # Add location filter if provided
-        dataset = dataset.where(Sequel[:restaurants][:location] => location) if location
+        # Add fuzzy location filter if provided
+        if location
+          dataset = dataset.where(
+            Sequel.|(
+              Sequel.ilike(Sequel[:restaurants][:location], "%#{location}%"),
+              Sequel.lit("similarity(restaurants.location, ?) >= ?", location, FUZZY_THRESHOLD)
+            )
+          )
+        end
 
         dataset
           .distinct

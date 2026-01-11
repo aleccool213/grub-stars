@@ -256,6 +256,45 @@ class RestaurantRepositoryTest < Minitest::Test
     assert_equal 2, results.length
   end
 
+  def test_search_by_name_with_fuzzy_location_match
+    @db[:restaurants].insert(
+      name: "Pizza Place",
+      location: "Barrie, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Should match with variations of location name
+    results = @repo.search_by_name("Pizza", location: "barrie on")
+    assert_equal 1, results.length
+    assert_equal "Pizza Place", results.first.name
+
+    # Should match with partial location
+    results = @repo.search_by_name("Pizza", location: "Barrie")
+    assert_equal 1, results.length
+  end
+
+  def test_search_by_category_with_fuzzy_location_match
+    pizza_id = @db[:categories].insert(name: "pizza")
+
+    restaurant_id = @db[:restaurants].insert(
+      name: "Pizza Hut",
+      location: "Toronto, Ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    @db[:restaurant_categories].insert(restaurant_id: restaurant_id, category_id: pizza_id)
+
+    # Should match with variations
+    results = @repo.search_by_category("pizza", location: "toronto on")
+    assert_equal 1, results.length
+
+    # Should match with partial
+    results = @repo.search_by_category("pizza", location: "Toronto")
+    assert_equal 1, results.length
+  end
+
   private
 
   def create_test_db

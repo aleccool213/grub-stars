@@ -45,6 +45,8 @@ grst search --location "Barrie, ON"                              # Search all re
 grst info --name "restaurant name"                               # Show detailed restaurant info
 ```
 
+**Note:** Location searches use fuzzy matching, so you can search with variations like "barrie on", "Barrie", or "toronto ontario" - you don't need to type the exact location name stored in the database.
+
 ## Code Structure
 
 The codebase follows a **layered architecture** with clear separation of concerns:
