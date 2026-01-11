@@ -2,14 +2,38 @@
 
 require "fileutils"
 require_relative "config"
-require_relative "database"
-require_relative "adapters/base"
-require_relative "adapters/yelp"
-require_relative "adapters/google"
 require_relative "logger"
-require_relative "matcher"
-require_relative "indexer"
-require_relative "search"
+
+# Infrastructure Layer
+require_relative "infrastructure/database"
+require_relative "infrastructure/adapters/base"
+require_relative "infrastructure/adapters/yelp"
+require_relative "infrastructure/adapters/google"
+
+# Domain Layer
+require_relative "domain/models/restaurant"
+require_relative "domain/models/rating"
+require_relative "domain/models/review"
+require_relative "domain/models/media"
+require_relative "domain/models/category"
+require_relative "domain/models/external_id"
+require_relative "domain/matcher"
+
+# Infrastructure - Repositories
+require_relative "infrastructure/repositories/restaurant_repository"
+require_relative "infrastructure/repositories/rating_repository"
+require_relative "infrastructure/repositories/review_repository"
+require_relative "infrastructure/repositories/media_repository"
+require_relative "infrastructure/repositories/category_repository"
+require_relative "infrastructure/repositories/external_id_repository"
+
+# Service Layer
+require_relative "services/index_restaurants_service"
+require_relative "services/search_restaurants_service"
+require_relative "services/restaurant_details_service"
+require_relative "services/list_categories_service"
+
+# Presentation Layer
 require_relative "cli"
 
 module GrubStars

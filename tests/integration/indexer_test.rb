@@ -19,9 +19,9 @@ class IndexerTest < GrubStars::IntegrationTest
     stub_yelp_business("bakery-barrie")
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
-    indexer = GrubStars::Indexer.new(db: @db, adapters: [yelp])
+    service = create_service(adapters: [yelp])
 
-    stats = indexer.index(location: "barrie, ontario")
+    stats = service.index(location: "barrie, ontario")
 
     assert_equal 1, stats[:total]
     assert_equal 1, stats[:created]
@@ -36,9 +36,9 @@ class IndexerTest < GrubStars::IntegrationTest
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     google = GrubStars::Adapters::Google.new(api_key: "test_key")
-    indexer = GrubStars::Indexer.new(db: @db, adapters: [yelp, google])
+    service = create_service(adapters: [yelp, google])
 
-    stats = indexer.index(location: "barrie, ontario")
+    stats = service.index(location: "barrie, ontario")
 
     # Yelp creates 1, Google merges 1 (same restaurant)
     assert_equal 2, stats[:total]
@@ -72,9 +72,9 @@ class IndexerTest < GrubStars::IntegrationTest
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     google = GrubStars::Adapters::Google.new(api_key: "test_key")
-    indexer = GrubStars::Indexer.new(db: @db, adapters: [yelp, google])
+    service = create_service(adapters: [yelp, google])
 
-    stats = indexer.index(location: "barrie, ontario")
+    stats = service.index(location: "barrie, ontario")
 
     # 2 from Yelp created, 1 from Google creates new (different business)
     assert_equal 3, stats[:total]
@@ -86,16 +86,34 @@ class IndexerTest < GrubStars::IntegrationTest
   def test_index_raises_error_without_configured_adapters
     yelp = GrubStars::Adapters::Yelp.new(api_key: nil)
     google = GrubStars::Adapters::Google.new(api_key: nil)
-    indexer = GrubStars::Indexer.new(db: @db, adapters: [yelp, google])
+    service = create_service(adapters: [yelp, google])
 
-    error = assert_raises(GrubStars::Indexer::NoAdaptersConfiguredError) do
-      indexer.index(location: "barrie")
+    error = assert_raises(Services::IndexRestaurantsService::NoAdaptersConfiguredError) do
+      service.index(location: "barrie")
     end
 
     assert_match(/No adapters configured/, error.message)
   end
 
   private
+
+  def create_service(adapters:)
+    # Create repositories with test database
+    restaurant_repo = Infrastructure::Repositories::RestaurantRepository.new(@db)
+    rating_repo = Infrastructure::Repositories::RatingRepository.new(@db)
+    media_repo = Infrastructure::Repositories::MediaRepository.new(@db)
+    category_repo = Infrastructure::Repositories::CategoryRepository.new(@db)
+    external_id_repo = Infrastructure::Repositories::ExternalIdRepository.new(@db)
+
+    Services::IndexRestaurantsService.new(
+      restaurant_repo: restaurant_repo,
+      rating_repo: rating_repo,
+      media_repo: media_repo,
+      category_repo: category_repo,
+      external_id_repo: external_id_repo,
+      adapters: adapters
+    )
+  end
 
   def stub_yelp_search
     stub_request(:get, /api\.yelp\.com.*businesses\/search/)

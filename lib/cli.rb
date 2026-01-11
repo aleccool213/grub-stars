@@ -4,6 +4,10 @@ require "thor"
 require "pastel"
 require "tty-spinner"
 require "tty-prompt"
+require_relative "services/index_restaurants_service"
+require_relative "services/search_restaurants_service"
+require_relative "services/restaurant_details_service"
+require_relative "services/list_categories_service"
 
 module GrubStars
   class CLI < Thor
@@ -45,10 +49,10 @@ module GrubStars
     option :list_categories, type: :boolean, desc: "List all available categories"
     def search
       p = self.class.pastel
-      searcher = Search.new(db: GrubStars.db)
 
       if options[:list_categories]
-        categories = searcher.all_categories
+        list_categories_service = Services::ListCategoriesService.new
+        categories = list_categories_service.all_category_names
         if categories.empty?
           puts p.yellow("📭 No categories found. Run 'grst index' first.")
         else
@@ -59,10 +63,12 @@ module GrubStars
         return
       end
 
+      search_service = Services::SearchRestaurantsService.new
+
       results = if options[:name]
-                  searcher.by_name(options[:name])
+                  search_service.search_by_name(options[:name])
                 elsif options[:category]
-                  searcher.by_category(options[:category])
+                  search_service.search_by_category(options[:category])
                 else
                   puts p.red("Please provide --name or --category (or --list-categories)")
                   exit 1
@@ -81,13 +87,13 @@ module GrubStars
       puts p.dim("   Database: #{Config.db_path}")
       puts
 
-      indexer = Indexer.new(db: GrubStars.db)
-      stats = indexer.index(location: options[:city])
+      index_service = Services::IndexRestaurantsService.new
+      stats = index_service.index(location: options[:city])
 
       puts
       puts p.green("✅ Done! #{p.bold(stats[:total])} restaurants processed")
       puts "   #{p.green(stats[:created])} new | #{p.yellow(stats[:updated])} updated | #{p.cyan(stats[:merged])} merged"
-    rescue Indexer::NoAdaptersConfiguredError => e
+    rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
       puts p.red("❌ Error: #{e.message}")
       exit 1
     rescue Adapters::Base::APIError => e
@@ -100,12 +106,12 @@ module GrubStars
     option :id, type: :string, desc: "Restaurant ID"
     def info
       p = self.class.pastel
-      searcher = Search.new(db: GrubStars.db)
+      details_service = Services::RestaurantDetailsService.new
 
       restaurant = if options[:id]
-                     searcher.get_by_id(options[:id].to_i)
+                     details_service.get_by_id(options[:id].to_i)
                    elsif options[:name]
-                     searcher.get_by_name(options[:name])
+                     details_service.get_by_name(options[:name])
                    else
                      puts p.red("Please provide --name or --id")
                      exit 1
@@ -137,21 +143,28 @@ module GrubStars
 
       if results.length == 1
         # Single result - show detailed info directly
-        show_restaurant_details(results.first)
+        # Load full details
+        details_service = Services::RestaurantDetailsService.new
+        restaurant = details_service.get_by_id(results.first.id)
+        show_restaurant_details(restaurant)
       else
         # Multiple results - let user pick
         puts p.bold("🍽️  Found #{p.green(results.length)} matches for '#{search_term}':")
         puts
 
         choices = results.map.with_index do |r, idx|
-          rating = r[:ratings]&.first
-          rating_str = rating ? " (#{rating[:score]}/5)" : ""
-          { name: "#{r[:name]}#{rating_str}", value: idx }
+          rating = r.ratings.first
+          rating_str = rating ? " (#{rating.score}/5)" : ""
+          { name: "#{r.name}#{rating_str}", value: idx }
         end
 
         selected = prompt.select("Which restaurant?", choices, per_page: 10)
         puts
-        show_restaurant_details(results[selected])
+
+        # Load full details for selected restaurant
+        details_service = Services::RestaurantDetailsService.new
+        restaurant = details_service.get_by_id(results[selected].id)
+        show_restaurant_details(restaurant)
       end
     end
 
@@ -159,101 +172,104 @@ module GrubStars
       p = self.class.pastel
 
       puts p.bold("━" * 50)
-      puts p.bold.cyan(restaurant[:name])
+      puts p.bold.cyan(restaurant.name)
       puts p.bold("━" * 50)
       puts
 
       # Basic info
-      puts "🆔 #{p.bold("ID")}: #{restaurant[:id]}"
+      puts "🆔 #{p.bold("ID")}: #{restaurant.id}"
       puts
 
-      if restaurant[:address]
+      if restaurant.address
         puts "📍 #{p.bold("Address")}"
-        puts "   #{restaurant[:address]}"
+        puts "   #{restaurant.address}"
         puts
       end
 
-      if restaurant[:phone]
+      if restaurant.phone
         puts "📞 #{p.bold("Phone")}"
-        puts "   #{restaurant[:phone]}"
+        puts "   #{restaurant.phone}"
         puts
       end
 
       # Categories
-      if restaurant[:categories] && !restaurant[:categories].empty?
+      if restaurant.categories && !restaurant.categories.empty?
         puts "🏷️  #{p.bold("Categories")}"
-        puts "   #{restaurant[:categories].join(", ")}"
+        puts "   #{restaurant.category_names.join(", ")}"
         puts
       end
 
       # Ratings
-      if restaurant[:ratings] && !restaurant[:ratings].empty?
+      if restaurant.ratings && !restaurant.ratings.empty?
         puts "⭐ #{p.bold("Ratings")}"
-        restaurant[:ratings].each do |r|
-          score = r[:score]
+        restaurant.ratings.each do |r|
+          score = r.score
           color = score >= 4.0 ? :green : (score >= 3.0 ? :yellow : :red)
-          review_count = r[:review_count] ? " (#{r[:review_count]} reviews)" : ""
-          puts "   #{p.cyan(r[:source])}: #{p.send(color, "#{score}/5")}#{p.dim(review_count)}"
+          review_count = r.review_count ? " (#{r.review_count} reviews)" : ""
+          puts "   #{p.cyan(r.source)}: #{p.send(color, "#{score}/5")}#{p.dim(review_count)}"
         end
         puts
       end
 
       # Reviews
-      if restaurant[:reviews] && !restaurant[:reviews].empty?
+      if restaurant.reviews && !restaurant.reviews.empty?
         puts "💬 #{p.bold("Review Snippets")}"
-        grouped_reviews = restaurant[:reviews].group_by { |r| r[:source] }
+        grouped_reviews = restaurant.reviews.group_by(&:source)
         grouped_reviews.each do |source, reviews|
           puts "   #{p.cyan(source)}:"
           reviews.each do |review|
-            snippet = review[:snippet] || "(no snippet)"
+            snippet = review.snippet || "(no snippet)"
             # Truncate long snippets
             snippet = "#{snippet[0..100]}..." if snippet.length > 100
             puts "   • #{p.dim(snippet)}"
-            puts "     #{p.blue(review[:url])}" if review[:url]
+            puts "     #{p.blue(review.url)}" if review.url
           end
         end
         puts
       end
 
       # Photos
-      if restaurant[:photos] && !restaurant[:photos].empty?
+      photos = restaurant.photos
+      if photos && !photos.empty?
         puts "📸 #{p.bold("Photos")}"
-        grouped_photos = restaurant[:photos].group_by { |m| m[:source] }
-        grouped_photos.each do |source, photos|
-          puts "   #{p.cyan(source)}: #{photos.length} photo#{'s' if photos.length != 1}"
-          photos.first(3).each do |photo|
-            puts "   • #{p.blue(photo[:url])}"
+        grouped_photos = photos.group_by(&:source)
+        grouped_photos.each do |source, photo_list|
+          puts "   #{p.cyan(source)}: #{photo_list.length} photo#{'s' if photo_list.length != 1}"
+          photo_list.first(3).each do |photo|
+            puts "   • #{p.blue(photo.url)}"
           end
-          puts "   #{p.dim("... and #{photos.length - 3} more")}" if photos.length > 3
+          puts "   #{p.dim("... and #{photo_list.length - 3} more")}" if photo_list.length > 3
         end
         puts
       end
 
       # Videos
-      if restaurant[:videos] && !restaurant[:videos].empty?
+      videos = restaurant.videos
+      if videos && !videos.empty?
         puts "🎬 #{p.bold("Videos")}"
-        grouped_videos = restaurant[:videos].group_by { |m| m[:source] }
-        grouped_videos.each do |source, videos|
-          puts "   #{p.cyan(source)}: #{videos.length} video#{'s' if videos.length != 1}"
-          videos.first(3).each do |video|
-            puts "   • #{p.blue(video[:url])}"
+        grouped_videos = videos.group_by(&:source)
+        grouped_videos.each do |source, video_list|
+          puts "   #{p.cyan(source)}: #{video_list.length} video#{'s' if video_list.length != 1}"
+          video_list.first(3).each do |video|
+            puts "   • #{p.blue(video.url)}"
           end
-          puts "   #{p.dim("... and #{videos.length - 3} more")}" if videos.length > 3
+          puts "   #{p.dim("... and #{video_list.length - 3} more")}" if video_list.length > 3
         end
         puts
       end
 
       # Sources
-      if restaurant[:sources] && !restaurant[:sources].empty?
+      sources = restaurant.sources
+      if sources && !sources.empty?
         puts "🔗 #{p.bold("Data Sources")}"
-        puts "   #{restaurant[:sources].join(", ")}"
+        puts "   #{sources.join(", ")}"
         puts
       end
 
       # Coordinates
-      if restaurant[:latitude] && restaurant[:longitude]
+      if restaurant.latitude && restaurant.longitude
         puts "🗺️  #{p.bold("Coordinates")}"
-        puts "   #{restaurant[:latitude]}, #{restaurant[:longitude]}"
+        puts "   #{restaurant.latitude}, #{restaurant.longitude}"
       end
     end
 

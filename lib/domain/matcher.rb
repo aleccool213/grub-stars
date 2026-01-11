@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-module GrubStars
+module Domain
+  # Restaurant deduplication matcher - pure business logic with no database dependencies
   class Matcher
     # Scoring weights (total: 100 points possible)
     NAME_WEIGHT = 35
@@ -14,21 +15,18 @@ module GrubStars
     # Maximum distance in meters to consider for GPS matching
     MAX_GPS_DISTANCE = 200
 
-    def initialize(db:)
-      @db = db
-    end
-
-    # Find the best matching restaurant in the database for the given business data
-    # Returns { restaurant: <row>, score: <int> } or nil if no match found
-    def find_match(business)
-      candidates = find_candidates(business)
+    # Find the best matching restaurant from a list of candidates
+    # @param business_data [Hash] Business data to match (with keys: name, address, latitude, longitude, phone)
+    # @param candidates [Array<Domain::Models::Restaurant>] Candidate restaurants to match against
+    # @return [Hash, nil] { restaurant: <Restaurant>, score: <Integer> } or nil if no match found
+    def find_match(business_data, candidates)
       return nil if candidates.empty?
 
       best_match = nil
       best_score = 0
 
       candidates.each do |candidate|
-        score = calculate_score(business, candidate)
+        score = calculate_score(business_data, candidate)
         if score > best_score
           best_score = score
           best_match = candidate
@@ -40,35 +38,22 @@ module GrubStars
       { restaurant: best_match, score: best_score }
     end
 
-    # Calculate match score between business data and an existing restaurant
-    def calculate_score(business, restaurant)
+    # Calculate match score between business data and a restaurant
+    # @param business_data [Hash] Business data with keys: name, address, latitude, longitude, phone
+    # @param restaurant [Domain::Models::Restaurant] Restaurant to compare against
+    # @return [Integer] Score (0-100)
+    def calculate_score(business_data, restaurant)
       score = 0
 
-      score += name_score(business[:name], restaurant[:name])
-      score += address_score(business[:address], restaurant[:address])
-      score += gps_score(business, restaurant)
-      score += phone_score(business[:phone], restaurant[:phone])
+      score += name_score(business_data[:name], restaurant.name)
+      score += address_score(business_data[:address], restaurant.address)
+      score += gps_score(business_data, restaurant)
+      score += phone_score(business_data[:phone], restaurant.phone)
 
       score
     end
 
     private
-
-    # Find candidate restaurants that could potentially match
-    # Uses GPS proximity as initial filter for efficiency
-    def find_candidates(business)
-      return @db[:restaurants].all if business[:latitude].nil? || business[:longitude].nil?
-
-      # Search within ~0.01 degrees (~1km) bounding box for efficiency
-      delta = 0.01
-      lat = business[:latitude]
-      lon = business[:longitude]
-
-      @db[:restaurants].where(
-        latitude: (lat - delta)..(lat + delta),
-        longitude: (lon - delta)..(lon + delta)
-      ).all
-    end
 
     # Score based on name similarity (0-35 points)
     def name_score(name1, name2)
@@ -87,13 +72,15 @@ module GrubStars
     end
 
     # Score based on GPS proximity (0-25 points)
-    def gps_score(business, restaurant)
-      return 0 if business[:latitude].nil? || business[:longitude].nil?
-      return 0 if restaurant[:latitude].nil? || restaurant[:longitude].nil?
+    # @param business_data [Hash] Business data with latitude and longitude
+    # @param restaurant [Domain::Models::Restaurant] Restaurant with latitude and longitude
+    def gps_score(business_data, restaurant)
+      return 0 if business_data[:latitude].nil? || business_data[:longitude].nil?
+      return 0 if restaurant.latitude.nil? || restaurant.longitude.nil?
 
       distance = haversine_distance(
-        business[:latitude], business[:longitude],
-        restaurant[:latitude], restaurant[:longitude]
+        business_data[:latitude], business_data[:longitude],
+        restaurant.latitude, restaurant.longitude
       )
 
       return 0 if distance > MAX_GPS_DISTANCE
@@ -118,8 +105,8 @@ module GrubStars
     # Normalize restaurant name for comparison
     def normalize_name(name)
       name.downcase
-          .gsub(/[^a-z0-9\s]/, "") # Remove punctuation
-          .gsub(/\s+/, " ")        # Normalize whitespace
+          .gsub(/[^a-z0-9\s]/, " ") # Replace punctuation with space
+          .gsub(/\s+/, " ")         # Normalize whitespace
           .strip
     end
 
