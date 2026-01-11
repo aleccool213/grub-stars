@@ -10,19 +10,22 @@ GEM
       bigdecimal
       rexml
     dotenv (2.8.1)
-    faraday (2.8.1)
-      base64
-      faraday-net_http (>= 2.0, < 3.1)
-      ruby2_keywords (>= 0.0.4)
-    faraday-net_http (3.0.2)
+    faraday (2.14.0)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-net_http (3.4.2)
+      net-http (~> 0.5)
     hashdiff (1.2.1)
     json (2.18.0)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
-    mini_portile2 (2.8.9)
-    minitest (5.26.1)
+    logger (1.7.0)
+    minitest (5.27.0)
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
+    net-http (0.9.1)
+      uri (>= 0.11.1)
     parallel (1.27.0)
     parser (3.3.10.0)
       ast (~> 2.4.1)
@@ -30,7 +33,7 @@ GEM
     pastel (0.8.0)
       tty-color (~> 0.5)
     prism (1.7.0)
-    public_suffix (5.1.1)
+    public_suffix (7.0.2)
     racc (1.8.1)
     rack (2.2.21)
     rack-protection (3.2.0)
@@ -59,17 +62,21 @@ GEM
       prism (~> 1.7)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
-    sequel (5.99.0)
+    sequel (5.100.0)
       bigdecimal
     sinatra (3.2.0)
       mustermann (~> 3.0)
       rack (~> 2.2, >= 2.2.4)
       rack-protection (= 3.2.0)
       tilt (~> 2.0)
-    sqlite3 (1.7.3)
-      mini_portile2 (~> 2.8.0)
-    thor (1.4.0)
-    tilt (2.6.1)
+    sqlite3 (1.7.3-aarch64-linux)
+    sqlite3 (1.7.3-arm-linux)
+    sqlite3 (1.7.3-arm64-darwin)
+    sqlite3 (1.7.3-x86-linux)
+    sqlite3 (1.7.3-x86_64-darwin)
+    sqlite3 (1.7.3-x86_64-linux)
+    thor (1.5.0)
+    tilt (2.7.0)
     tty-color (0.6.0)
     tty-cursor (0.7.1)
     tty-prompt (0.23.1)
@@ -85,6 +92,7 @@ GEM
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
     unicode-emoji (4.2.0)
+    uri (1.1.1)
     webmock (3.26.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -93,7 +101,11 @@ GEM
     wisper (2.0.1)
 
 PLATFORMS
-  arm64-darwin-23
+  aarch64-linux
+  arm-linux
+  arm64-darwin
+  x86-linux
+  x86_64-darwin
   x86_64-linux
 
 DEPENDENCIES
@@ -114,4 +126,4 @@ DEPENDENCIES
   webrick (~> 1.8)
 
 BUNDLED WITH
-   2.3.3
+   2.5.23
