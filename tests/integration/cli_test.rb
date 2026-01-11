@@ -123,7 +123,66 @@ class CLITest < GrubStars::IntegrationTest
     assert_match(/info/, output)
   end
 
+  def test_search_with_location_filter
+    seed_restaurants_with_locations
+    output = capture_stdout { GrubStars::CLI.start(["search", "--category", "bakery", "--location", "Barrie, ON"]) }
+    assert(output.include?("Barrie Bakery"), output)
+    refute(output.include?("Toronto Bakery"), output)
+  end
+
+  def test_search_with_name_and_location_filter
+    seed_restaurants_with_locations
+    output = capture_stdout { GrubStars::CLI.start(["search", "--name", "Bakery", "--location", "Toronto, ON"]) }
+    assert(output.include?("Toronto Bakery"), output)
+    refute(output.include?("Barrie Bakery"), output)
+  end
+
+  def test_search_without_location_filter_returns_all
+    seed_restaurants_with_locations
+    output = capture_stdout { GrubStars::CLI.start(["search", "--category", "bakery"]) }
+    assert(output.include?("Found 2 matches"), output)
+  end
+
+  def test_info_displays_location
+    seed_restaurants_with_locations
+    output = capture_stdout { GrubStars::CLI.start(["info", "--name", "Barrie Bakery"]) }
+    assert(output.include?("Barrie, ON"), output)
+  end
+
   private
+
+  def seed_restaurants_with_locations
+    # Force GrubStars to use our test database
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    # Create Barrie bakery
+    barrie_id = db[:restaurants].insert(
+      name: "Barrie Bakery",
+      address: "123 Main St",
+      location: "Barrie, ON",
+      latitude: 44.389,
+      longitude: -79.690,
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Create Toronto bakery
+    toronto_id = db[:restaurants].insert(
+      name: "Toronto Bakery",
+      address: "456 Queen St",
+      location: "Toronto, ON",
+      latitude: 43.653,
+      longitude: -79.383,
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Add bakery category
+    category_id = db[:categories].insert(name: "bakery")
+    db[:restaurant_categories].insert(restaurant_id: barrie_id, category_id: category_id)
+    db[:restaurant_categories].insert(restaurant_id: toronto_id, category_id: category_id)
+  end
 
   def seed_restaurant
     # Force GrubStars to use our test database

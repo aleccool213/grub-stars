@@ -157,6 +157,105 @@ class RestaurantRepositoryTest < Minitest::Test
     refute_includes names, "Far Away"
   end
 
+  def test_search_by_name_with_location_filter
+    @db[:restaurants].insert(
+      name: "Tim Hortons",
+      location: "Barrie, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    @db[:restaurants].insert(
+      name: "Tim Hortons",
+      location: "Toronto, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    results = @repo.search_by_name("Tim Hortons", location: "Barrie, ON")
+
+    assert_equal 1, results.length
+    assert_equal "Barrie, ON", results.first.location
+  end
+
+  def test_search_by_name_without_location_filter
+    @db[:restaurants].insert(
+      name: "Starbucks",
+      location: "Barrie, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    @db[:restaurants].insert(
+      name: "Starbucks",
+      location: "Toronto, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    results = @repo.search_by_name("Starbucks")
+
+    assert_equal 2, results.length
+  end
+
+  def test_search_by_category_with_location_filter
+    # Create categories
+    bakery_id = @db[:categories].insert(name: "bakery")
+
+    # Create restaurants
+    barrie_restaurant_id = @db[:restaurants].insert(
+      name: "Barrie Bakery",
+      location: "Barrie, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    toronto_restaurant_id = @db[:restaurants].insert(
+      name: "Toronto Bakery",
+      location: "Toronto, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Link categories
+    @db[:restaurant_categories].insert(restaurant_id: barrie_restaurant_id, category_id: bakery_id)
+    @db[:restaurant_categories].insert(restaurant_id: toronto_restaurant_id, category_id: bakery_id)
+
+    results = @repo.search_by_category("bakery", location: "Barrie, ON")
+
+    assert_equal 1, results.length
+    assert_equal "Barrie Bakery", results.first.name
+    assert_equal "Barrie, ON", results.first.location
+  end
+
+  def test_search_by_category_without_location_filter
+    # Create categories
+    cafe_id = @db[:categories].insert(name: "cafe")
+
+    # Create restaurants
+    barrie_restaurant_id = @db[:restaurants].insert(
+      name: "Barrie Cafe",
+      location: "Barrie, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    toronto_restaurant_id = @db[:restaurants].insert(
+      name: "Toronto Cafe",
+      location: "Toronto, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Link categories
+    @db[:restaurant_categories].insert(restaurant_id: barrie_restaurant_id, category_id: cafe_id)
+    @db[:restaurant_categories].insert(restaurant_id: toronto_restaurant_id, category_id: cafe_id)
+
+    results = @repo.search_by_category("cafe")
+
+    assert_equal 2, results.length
+  end
+
   private
 
   def create_test_db

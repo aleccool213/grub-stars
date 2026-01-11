@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**grub stars** (`grst`) is a command-line application that aggregates restaurant information (reviews, photos, videos, ratings) from multiple sources into a local SQLite database. Users index a geographic area once, then perform fast local searches without hitting multiple APIs repeatedly.
+**grub stars** (`grst`) is a command-line application that aggregates restaurant information (reviews, photos, videos, ratings) from multiple sources into a local SQLite database. Users index a geographic area once, then perform fast local searches by name, category, or location without hitting multiple APIs repeatedly. Each restaurant is tagged with the location name used during indexing (e.g., "Barrie, ON"), enabling users to filter searches by previously indexed locations.
 
 ## Tech Stack
 
@@ -36,10 +36,13 @@ Environment variables: `YELP_API_KEY`, `GOOGLE_API_KEY`, `TRIPADVISOR_API_KEY`, 
 ## CLI Commands
 
 ```bash
-grst index --city "barrie, ontario"                    # Index all restaurants in area
-grst index --city "barrie, ontario" --category bakery  # Index only bakeries in area
-grst search --category bakery                          # Search locally by category/name
-grst info --name "restaurant name"                     # Show detailed restaurant info
+grst index --city "barrie, ontario"                              # Index all restaurants in area
+grst index --city "barrie, ontario" --category bakery            # Index only bakeries in area
+grst search --category bakery                                    # Search locally by category
+grst search --category bakery --location "Barrie, ON"            # Search by category in specific location
+grst search --name "Pizza" --location "Toronto, ON"              # Search by name in specific location
+grst search --location "Barrie, ON"                              # Search all restaurants in a location (use with --name or --category)
+grst info --name "restaurant name"                               # Show detailed restaurant info
 ```
 
 ## Code Structure

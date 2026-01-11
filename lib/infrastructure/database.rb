@@ -114,6 +114,7 @@ module GrubStars
         Float :latitude
         Float :longitude
         String :phone
+        String :location  # e.g., "Barrie, ON" - the location name used during indexing
         DateTime :created_at
         DateTime :updated_at
       end

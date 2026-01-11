@@ -4,7 +4,7 @@ module Domain
   module Models
     # Restaurant domain model - pure Ruby object with no database dependencies
     class Restaurant
-      attr_accessor :id, :name, :address, :latitude, :longitude, :phone,
+      attr_accessor :id, :name, :address, :latitude, :longitude, :phone, :location,
                     :created_at, :updated_at
 
       # Associated collections (loaded separately by repositories)
@@ -17,6 +17,7 @@ module Domain
         @latitude = attributes[:latitude]
         @longitude = attributes[:longitude]
         @phone = attributes[:phone]
+        @location = attributes[:location]
         @created_at = attributes[:created_at]
         @updated_at = attributes[:updated_at]
 
@@ -95,7 +96,8 @@ module Domain
           address: address,
           latitude: latitude,
           longitude: longitude,
-          phone: phone
+          phone: phone,
+          location: location
         }
       end
     end
