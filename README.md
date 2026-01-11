@@ -63,7 +63,8 @@ bundle install
 
 **Index an area:**
 ```bash
-./bin/grst index --city "barrie, ontario"
+./bin/grst index --city "barrie, ontario"                    # Index all restaurants
+./bin/grst index --city "barrie, ontario" --category bakery  # Index only bakeries
 ```
 
 **Search for restaurants:**
@@ -178,6 +179,10 @@ When you run `grst index --city "barrie, ontario"`, grub-stars:
 2. Uses a **matcher** with confidence scoring to identify duplicate restaurants across sources
 3. Stores everything in a local SQLite database
 
+You can optionally filter by category during indexing:
+- `grst index --city "barrie, ontario" --category bakery` - only indexes bakeries
+- This allows for targeted data collection and multiple indexing passes with different categories
+
 ### 2. Deduplication
 The matcher prevents duplicates by scoring similarity:
 - Name similarity: ~30 points
@@ -193,7 +198,7 @@ All searches happen locally against SQLite, so they're instant. No API calls req
 ## Design Principles
 
 - **Local-first**: Fast queries without repeated API calls
-- **Selective indexing**: Index only areas you care about
+- **Selective indexing**: Index only areas you care about, optionally filtered by category
 - **Flexible refresh**: Re-index anytime to get fresh data
 - **Bring Your Own Key**: You control your API usage and costs
 - **Lightweight**: Store media URLs, not files

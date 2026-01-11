@@ -95,6 +95,33 @@ class IndexerTest < GrubStars::IntegrationTest
     assert_match(/No adapters configured/, error.message)
   end
 
+  def test_index_with_category_filter
+    # Stub request that includes category parameter
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .with(query: hash_including(categories: "bakery"))
+      .to_return(
+        status: 200,
+        body: {
+          total: 1,
+          businesses: [yelp_business_data("bakery-barrie", "Test Bakery", 44.3894, -79.6903)]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
+    service = create_service(adapters: [yelp])
+
+    stats = service.index(location: "barrie, ontario", categories: "bakery")
+
+    assert_equal 1, stats[:total]
+    assert_equal 1, stats[:created]
+
+    # Verify the request was made with category parameter
+    assert_requested :get, /api\.yelp\.com.*businesses\/search/,
+                     query: hash_including(categories: "bakery"),
+                     times: 1
+  end
+
   private
 
   def create_service(adapters:)

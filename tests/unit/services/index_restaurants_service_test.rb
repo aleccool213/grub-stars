@@ -155,6 +155,35 @@ class IndexRestaurantsServiceTest < Minitest::Test
     assert_equal 1, @db[:restaurants].count
   end
 
+  def test_passes_categories_to_adapter
+    # Create a mock adapter that captures the categories parameter
+    captured_categories = nil
+    mock_adapter = Minitest::Mock.new
+    mock_adapter.expect(:configured?, true)
+    mock_adapter.expect(:source_name, "mock")
+    mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:|
+      captured_categories = categories
+      # Don't yield any businesses
+      0
+    end
+
+    service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [mock_adapter],
+      logger: GrubStars::Logger.new
+    )
+
+    service.index(location: "Test City", categories: "bakery")
+
+    assert_equal "bakery", captured_categories
+    mock_adapter.verify
+  end
+
   private
 
   def create_test_db
