@@ -75,18 +75,21 @@ class DomainMatcherTest < Minitest::Test
   def test_find_match_returns_best_match_from_multiple_candidates
     business_data = {
       name: "Starbucks",
+      address: "123 Main St",
       latitude: 44.5,
       longitude: -79.5
     }
 
     good_match = Domain::Models::Restaurant.new(
       name: "Starbucks Coffee",
+      address: "123 Main Street",
       latitude: 44.5,
       longitude: -79.5
     )
 
     bad_match = Domain::Models::Restaurant.new(
       name: "Tim Hortons",
+      address: "456 Other St",
       latitude: 44.6,
       longitude: -79.6
     )

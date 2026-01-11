@@ -105,8 +105,8 @@ module Domain
     # Normalize restaurant name for comparison
     def normalize_name(name)
       name.downcase
-          .gsub(/[^a-z0-9\s]/, "") # Remove punctuation
-          .gsub(/\s+/, " ")        # Normalize whitespace
+          .gsub(/[^a-z0-9\s]/, " ") # Replace punctuation with space
+          .gsub(/\s+/, " ")         # Normalize whitespace
           .strip
     end
 
