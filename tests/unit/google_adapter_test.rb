@@ -57,6 +57,70 @@ class GoogleAdapterTest < Minitest::Test
     assert true
   end
 
+  def test_search_by_name
+    stub_request(:get, /maps\.googleapis\.com\/maps\/api\/place\/textsearch/)
+      .with(query: hash_including(query: "Joe's Pizza"))
+      .to_return(
+        status: 200,
+        body: {
+          results: [
+            {
+              place_id: "ChIJjoes123",
+              name: "Joe's Pizza",
+              formatted_address: "456 Queen St, Toronto, ON",
+              geometry: {
+                location: { lat: 43.6532, lng: -79.3832 }
+              },
+              rating: 4.0,
+              user_ratings_total: 85,
+              types: %w[restaurant pizza point_of_interest establishment],
+              photos: [{ photo_reference: "photo456" }]
+            }
+          ],
+          status: "OK"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    results = @adapter.search_by_name(name: "Joe's Pizza")
+
+    assert_equal 1, results.length
+    biz = results.first
+    assert_equal "google:ChIJjoes123", biz[:external_id]
+    assert_equal "Joe's Pizza", biz[:name]
+    assert_equal 4.0, biz[:rating]
+    assert_includes biz[:categories], "restaurant"
+  end
+
+  def test_search_by_name_with_location
+    stub_request(:get, /maps\.googleapis\.com\/maps\/api\/place\/textsearch/)
+      .with(query: hash_including(query: "Joe's Pizza in Toronto, ON"))
+      .to_return(
+        status: 200,
+        body: { results: [], status: "OK" }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    @adapter.search_by_name(name: "Joe's Pizza", location: "Toronto, ON")
+    # Stub matching proves the query was correct
+    assert true
+  end
+
+  def test_search_by_name_respects_limit
+    stub_request(:get, /maps\.googleapis\.com\/maps\/api\/place\/textsearch/)
+      .to_return(
+        status: 200,
+        body: {
+          results: Array.new(20) { |i| { place_id: "place#{i}", name: "Restaurant #{i}" } },
+          status: "OK"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    results = @adapter.search_by_name(name: "Pizza", limit: 5)
+    assert_equal 5, results.length
+  end
+
   def test_get_business
     stub_place_details_request("ChIJtest123")
 
