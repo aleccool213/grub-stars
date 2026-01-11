@@ -1,0 +1,165 @@
+# frozen_string_literal: true
+
+require_relative "../../test_helper"
+
+class IndexRestaurantsServiceTest < Minitest::Test
+  def setup
+    @db = create_test_db
+    @restaurant_repo = Infrastructure::Repositories::RestaurantRepository.new(@db)
+    @rating_repo = Infrastructure::Repositories::RatingRepository.new(@db)
+    @media_repo = Infrastructure::Repositories::MediaRepository.new(@db)
+    @category_repo = Infrastructure::Repositories::CategoryRepository.new(@db)
+    @external_id_repo = Infrastructure::Repositories::ExternalIdRepository.new(@db)
+    @matcher = Domain::Matcher.new
+
+    @service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [],
+      logger: GrubStars::Logger.new
+    )
+  end
+
+  def teardown
+    @db.disconnect
+  end
+
+  def test_raises_error_when_no_adapters_configured
+    error = assert_raises(Services::IndexRestaurantsService::NoAdaptersConfiguredError) do
+      @service.index(location: "Test City")
+    end
+
+    assert_match(/No adapters configured/, error.message)
+  end
+
+  def test_creates_new_restaurant
+    business_data = {
+      external_id: "test-123",
+      name: "New Restaurant",
+      address: "123 Main St",
+      latitude: 44.5,
+      longitude: -79.5,
+      phone: "555-1234",
+      rating: 4.5,
+      review_count: 100,
+      categories: ["Restaurant", "Italian"],
+      photos: ["photo1.jpg", "photo2.jpg"]
+    }
+
+    result = @service.send(:store_business, business_data, "test")
+
+    assert_equal :created, result
+
+    # Verify restaurant was created
+    restaurant = @restaurant_repo.find_by_external_id("test", "test-123")
+    assert restaurant
+    assert_equal "New Restaurant", restaurant.name
+    assert_equal "123 Main St", restaurant.address
+
+    # Verify rating was stored
+    ratings = @rating_repo.find_by_restaurant_id(restaurant.id)
+    assert_equal 1, ratings.length
+    assert_equal 4.5, ratings.first.score
+
+    # Verify categories were stored
+    categories = @category_repo.find_by_restaurant_id(restaurant.id)
+    category_names = categories.map(&:name)
+    assert_includes category_names, "Restaurant"
+    assert_includes category_names, "Italian"
+
+    # Verify photos were stored
+    photos = @media_repo.find_photos(restaurant.id)
+    assert_equal 2, photos.length
+  end
+
+  def test_updates_existing_restaurant_by_external_id
+    # Create existing restaurant
+    restaurant = Domain::Models::Restaurant.new(
+      name: "Old Name",
+      address: "Old Address"
+    )
+    @restaurant_repo.create(restaurant)
+
+    # Add external ID
+    ext_id = Domain::Models::ExternalId.new(
+      restaurant_id: restaurant.id,
+      source: "test",
+      external_id: "test-123"
+    )
+    @external_id_repo.save(ext_id)
+
+    # Update with new data
+    business_data = {
+      external_id: "test-123",
+      name: "New Name",
+      address: "New Address",
+      rating: 4.0,
+      categories: ["Updated"]
+    }
+
+    result = @service.send(:store_business, business_data, "test")
+
+    assert_equal :updated, result
+
+    # Verify restaurant was updated
+    updated = @restaurant_repo.find_by_id(restaurant.id)
+    assert_equal "New Name", updated.name
+    assert_equal "New Address", updated.address
+  end
+
+  def test_merges_restaurant_when_match_found
+    # Create existing restaurant (from yelp)
+    existing = Domain::Models::Restaurant.new(
+      name: "Flying Monkeys Brewery",
+      address: "107 Dunlop St E",
+      latitude: 44.389356,
+      longitude: -79.690331,
+      phone: "7057078020"
+    )
+    @restaurant_repo.create(existing)
+
+    # Add yelp external ID
+    @external_id_repo.save(Domain::Models::ExternalId.new(
+      restaurant_id: existing.id,
+      source: "yelp",
+      external_id: "yelp-123"
+    ))
+
+    # Index from google with very similar data
+    business_data = {
+      external_id: "google-456",
+      name: "Flying Monkeys Brewery",
+      address: "107 Dunlop Street East",
+      latitude: 44.389360,
+      longitude: -79.690335,
+      phone: "7057078020",
+      rating: 4.5,
+      categories: ["Brewery"]
+    }
+
+    result = @service.send(:store_business, business_data, "google")
+
+    assert_equal :merged, result
+
+    # Verify google external ID was added
+    ext_ids = @external_id_repo.find_by_restaurant_id(existing.id)
+    sources = ext_ids.map(&:source)
+    assert_includes sources, "yelp"
+    assert_includes sources, "google"
+
+    # Verify only one restaurant exists
+    assert_equal 1, @db[:restaurants].count
+  end
+
+  private
+
+  def create_test_db
+    db = Sequel.sqlite
+    GrubStars::Database.create_schema(db)
+    db
+  end
+end
