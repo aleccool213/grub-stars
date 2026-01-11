@@ -55,6 +55,75 @@ class TripAdvisorAdapterTest < Minitest::Test
     assert true
   end
 
+  def test_search_by_name
+    stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/search")
+      .with(query: hash_including(searchQuery: "Joe's Pizza"))
+      .to_return(
+        status: 200,
+        body: {
+          data: [
+            {
+              location_id: "789012",
+              name: "Joe's Pizza",
+              address_obj: {
+                street1: "456 Queen St",
+                city: "Toronto",
+                state: "ON",
+                postalcode: "M5V 2A1",
+                country: "Canada",
+                latitude: "43.6532",
+                longitude: "-79.3832"
+              },
+              rating: "4.0",
+              num_reviews: "85",
+              web_url: "https://tripadvisor.com/Restaurant_Review-joes-pizza"
+            }
+          ]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    results = @adapter.search_by_name(name: "Joe's Pizza")
+
+    assert_equal 1, results.length
+    biz = results.first
+    assert_equal "tripadvisor:789012", biz[:external_id]
+    assert_equal "Joe's Pizza", biz[:name]
+    assert_equal 4.0, biz[:rating]
+    assert_equal 85, biz[:review_count]
+  end
+
+  def test_search_by_name_with_location
+    stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/search")
+      .with(query: hash_including(searchQuery: "Joe's Pizza in Toronto, ON"))
+      .to_return(
+        status: 200,
+        body: { data: [] }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    @adapter.search_by_name(name: "Joe's Pizza", location: "Toronto, ON")
+    # Stub matching proves the query was correct
+    assert true
+  end
+
+  def test_search_by_name_respects_limit
+    stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/search")
+      .with(query: hash_including(searchQuery: "Pizza"))
+      .to_return(
+        status: 200,
+        body: {
+          data: Array.new(15) do |i|
+            { location_id: (700000 + i).to_s, name: "Restaurant #{i}" }
+          end
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    results = @adapter.search_by_name(name: "Pizza", limit: 5)
+    assert_equal 5, results.length
+  end
+
   def test_search_businesses_with_offset_and_limit
     stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/search")
       .with(query: hash_including(key: "test_tripadvisor_api_key"))

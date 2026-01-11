@@ -158,12 +158,25 @@ dev/
 **Adapters:**
 All adapters inherit from `Infrastructure::Adapters::Base` and implement:
 - `search_businesses(location:, categories:, limit:, offset:)` - Search by location
+- `search_by_name(name:, location:, limit:)` - Search by restaurant name with optional location
 - `get_business(id)` - Get detailed business info
 - `get_reviews(id)` - Get review excerpts
 - `source_name` - Adapter identifier (e.g., "yelp")
 - `configured?` - Check if API key is set
 
 Adapters normalize responses to a common format with fields: `external_id`, `name`, `address`, `latitude`, `longitude`, `rating`, `review_count`, `categories`, `photos`.
+
+**Fallback Search:**
+When a local search returns no results, the CLI offers a fallback to search external APIs directly:
+1. User searches for a restaurant that's not in the local database
+2. CLI prompts: "Would you like to search for this restaurant using an external API?"
+3. User selects which adapter to use (Yelp, Google, TripAdvisor)
+4. Adapter performs live API search using `search_by_name()`
+5. Results are displayed to user
+6. User can select a restaurant to index it into the local database
+7. Selected restaurant is indexed using `index_restaurant()` for future local queries
+
+This provides a seamless experience where unindexed restaurants can be discovered and added on-demand.
 
 **Category Filtering:**
 All adapters support optional category filtering during indexing:
@@ -187,7 +200,8 @@ All adapters support optional category filtering during indexing:
 Services use dependency injection for testability and accept repositories/domain logic as constructor parameters.
 
 - `IndexRestaurantsService` - Multi-adapter indexing with deduplication
-  - Queries adapters for restaurants in specified geographic area
+  - `index(location:, categories:)` - Queries adapters for restaurants in specified geographic area
+  - `index_restaurant(business_data:, source:)` - Indexes a single restaurant from adapter data
   - Supports optional category filtering (e.g., only index bakeries)
   - Uses Matcher for deduplication across sources
   - Uses repositories for persistence
@@ -227,6 +241,7 @@ Services use dependency injection for testability and accept repositories/domain
 8. **Matcher**: Pure deduplication logic with confidence scoring
 9. **Layered Architecture**: Complete refactoring to clean architecture
 10. **Test Coverage**: Comprehensive unit and integration tests
+11. **Fallback Search**: When local search fails, fallback to live API search with on-demand indexing
 
 🚧 **Planned:**
 - Instagram adapter (photos/videos only)

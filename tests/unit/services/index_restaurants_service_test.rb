@@ -184,6 +184,112 @@ class IndexRestaurantsServiceTest < Minitest::Test
     mock_adapter.verify
   end
 
+  def test_index_restaurant_creates_single_restaurant
+    business_data = {
+      external_id: "yelp-789",
+      name: "Single Restaurant",
+      address: "789 King St",
+      latitude: 43.6,
+      longitude: -79.4,
+      rating: 4.2,
+      review_count: 50,
+      categories: ["Pizza"],
+      photos: ["photo.jpg"]
+    }
+
+    result = @service.index_restaurant(business_data: business_data, source: "yelp")
+
+    assert_equal :created, result
+
+    # Verify restaurant was created
+    restaurant = @restaurant_repo.find_by_external_id("yelp", "yelp-789")
+    assert restaurant
+    assert_equal "Single Restaurant", restaurant.name
+    assert_equal "789 King St", restaurant.address
+
+    # Verify rating was stored
+    ratings = @rating_repo.find_by_restaurant_id(restaurant.id)
+    assert_equal 1, ratings.length
+    assert_equal 4.2, ratings.first.score
+  end
+
+  def test_index_restaurant_updates_existing_restaurant
+    # Create existing restaurant
+    restaurant = Domain::Models::Restaurant.new(
+      name: "Old Restaurant Name",
+      address: "Old Address"
+    )
+    @restaurant_repo.create(restaurant)
+
+    # Add external ID
+    @external_id_repo.save(Domain::Models::ExternalId.new(
+      restaurant_id: restaurant.id,
+      source: "yelp",
+      external_id: "yelp-789"
+    ))
+
+    # Update with new data via index_restaurant
+    business_data = {
+      external_id: "yelp-789",
+      name: "Updated Restaurant Name",
+      address: "Updated Address",
+      rating: 4.8,
+      categories: ["Updated"]
+    }
+
+    result = @service.index_restaurant(business_data: business_data, source: "yelp")
+
+    assert_equal :updated, result
+
+    # Verify restaurant was updated
+    updated = @restaurant_repo.find_by_id(restaurant.id)
+    assert_equal "Updated Restaurant Name", updated.name
+    assert_equal "Updated Address", updated.address
+  end
+
+  def test_index_restaurant_merges_matching_restaurant
+    # Create existing restaurant from yelp
+    existing = Domain::Models::Restaurant.new(
+      name: "Pizza Palace",
+      address: "100 Main St",
+      latitude: 44.5,
+      longitude: -79.5,
+      phone: "5551234567"
+    )
+    @restaurant_repo.create(existing)
+
+    @external_id_repo.save(Domain::Models::ExternalId.new(
+      restaurant_id: existing.id,
+      source: "yelp",
+      external_id: "yelp-100"
+    ))
+
+    # Index similar restaurant from google
+    business_data = {
+      external_id: "google-200",
+      name: "Pizza Palace",
+      address: "100 Main Street",
+      latitude: 44.500002,
+      longitude: -79.500003,
+      phone: "5551234567",
+      rating: 4.3,
+      categories: ["Pizza"]
+    }
+
+    result = @service.index_restaurant(business_data: business_data, source: "google")
+
+    assert_equal :merged, result
+
+    # Verify external IDs were merged
+    ext_ids = @external_id_repo.find_by_restaurant_id(existing.id)
+    sources = ext_ids.map(&:source)
+    assert_includes sources, "yelp"
+    assert_includes sources, "google"
+
+    # Verify only one restaurant exists
+    assert_equal 1, @db[:restaurants].count
+  end
+
   private
 
   def create_test_db
