@@ -90,6 +90,89 @@ class YelpAdapterTest < Minitest::Test
                      query: hash_including(categories: "bakeries")
   end
 
+  def test_search_by_name
+    stub_request(:get, "https://api.yelp.com/v3/businesses/search")
+      .with(
+        query: { term: "Joe's Pizza", limit: 10 },
+        headers: { "Authorization" => "Bearer test_api_key" }
+      )
+      .to_return(
+        status: 200,
+        body: {
+          total: 2,
+          businesses: [
+            {
+              id: "joes-pizza-123",
+              name: "Joe's Pizza",
+              alias: "joes-pizza",
+              phone: "+14165551111",
+              display_phone: "(416) 555-1111",
+              rating: 4.0,
+              review_count: 85,
+              coordinates: { latitude: 43.6532, longitude: -79.3832 },
+              location: {
+                address1: "456 Queen St",
+                city: "Toronto",
+                state: "ON",
+                zip_code: "M5V 2A1",
+                country: "CA"
+              },
+              categories: [
+                { alias: "pizza", title: "Pizza" }
+              ],
+              photos: ["https://example.com/joes.jpg"],
+              url: "https://yelp.com/biz/joes-pizza",
+              is_closed: false
+            }
+          ]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    results = @adapter.search_by_name(name: "Joe's Pizza")
+
+    assert_equal 1, results.length
+    biz = results.first
+    assert_equal "yelp:joes-pizza-123", biz[:external_id]
+    assert_equal "Joe's Pizza", biz[:name]
+    assert_equal 4.0, biz[:rating]
+    assert_includes biz[:categories], "pizza"
+  end
+
+  def test_search_by_name_with_location
+    stub_request(:get, "https://api.yelp.com/v3/businesses/search")
+      .with(
+        query: { term: "Joe's Pizza", location: "Toronto, ON", limit: 10 },
+        headers: { "Authorization" => "Bearer test_api_key" }
+      )
+      .to_return(
+        status: 200,
+        body: { total: 0, businesses: [] }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    @adapter.search_by_name(name: "Joe's Pizza", location: "Toronto, ON")
+    assert_requested :get, "https://api.yelp.com/v3/businesses/search",
+                     query: hash_including(term: "Joe's Pizza", location: "Toronto, ON")
+  end
+
+  def test_search_by_name_respects_limit
+    stub_request(:get, "https://api.yelp.com/v3/businesses/search")
+      .with(
+        query: { term: "Pizza", limit: 5 },
+        headers: { "Authorization" => "Bearer test_api_key" }
+      )
+      .to_return(
+        status: 200,
+        body: { total: 0, businesses: [] }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    @adapter.search_by_name(name: "Pizza", limit: 5)
+    assert_requested :get, "https://api.yelp.com/v3/businesses/search",
+                     query: { term: "Pizza", limit: 5 }
+  end
+
   def test_get_business
     stub_request(:get, "https://api.yelp.com/v3/businesses/abc123")
       .with(headers: { "Authorization" => "Bearer test_api_key" })

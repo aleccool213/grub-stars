@@ -8,6 +8,9 @@ require_relative "services/index_restaurants_service"
 require_relative "services/search_restaurants_service"
 require_relative "services/restaurant_details_service"
 require_relative "services/list_categories_service"
+require_relative "infrastructure/adapters/yelp"
+require_relative "infrastructure/adapters/google"
+require_relative "infrastructure/adapters/tripadvisor"
 
 module GrubStars
   class CLI < Thor
@@ -148,7 +151,13 @@ module GrubStars
       prompt = self.class.prompt
 
       if results.empty?
-        puts p.yellow("🔍 No restaurants found matching '#{search_term}'#{location_filter}")
+        puts p.yellow("🔍 No restaurants found matching '#{search_term}'#{location_filter} in local database")
+        puts
+
+        # Offer fallback search (only in interactive mode)
+        if $stdin.tty? && prompt.yes?("Would you like to search for '#{search_term}' using an external API?")
+          handle_fallback_search(search_term)
+        end
         return
       end
 
@@ -287,6 +296,146 @@ module GrubStars
       if restaurant.latitude && restaurant.longitude
         puts "🗺️  #{p.bold("Coordinates")}"
         puts "   #{restaurant.latitude}, #{restaurant.longitude}"
+      end
+    end
+
+    def handle_fallback_search(search_term)
+      p = self.class.pastel
+      prompt = self.class.prompt
+
+      # Get configured adapters
+      adapters = [
+        GrubStars::Adapters::Yelp.new,
+        GrubStars::Adapters::Google.new,
+        GrubStars::Adapters::TripAdvisor.new
+      ].select(&:configured?)
+
+      if adapters.empty?
+        puts p.red("No external adapters configured. Set API keys in .env file.")
+        return
+      end
+
+      # Let user choose adapter
+      adapter_choices = adapters.map do |adapter|
+        { name: adapter.source_name.capitalize, value: adapter }
+      end
+
+      puts
+      selected_adapter = prompt.select("Which service would you like to search?", adapter_choices)
+      puts
+      puts p.dim("Searching #{selected_adapter.source_name} for '#{search_term}'...")
+
+      # Search using adapter
+      begin
+        results = selected_adapter.search_by_name(name: search_term)
+
+        if results.empty?
+          puts p.yellow("No results found on #{selected_adapter.source_name}")
+          return
+        end
+
+        puts p.green("✓ Found #{results.length} result#{'s' unless results.length == 1}")
+        puts
+
+        # Display and let user select
+        handle_api_search_results(results, selected_adapter)
+      rescue GrubStars::Adapters::Base::APIError => e
+        puts p.red("API Error: #{e.message}")
+      rescue GrubStars::Adapters::Base::ConfigurationError => e
+        puts p.red("Configuration Error: #{e.message}")
+      end
+    end
+
+    def handle_api_search_results(results, adapter)
+      p = self.class.pastel
+      prompt = self.class.prompt
+
+      # Build choices
+      choices = results.map.with_index do |biz, idx|
+        name = biz[:name]
+        rating = biz[:rating]
+        rating_str = rating ? " (#{rating}/5)" : ""
+        address = biz[:address] ? " - #{biz[:address][0..50]}..." : ""
+        { name: "#{name}#{rating_str}#{p.dim(address)}", value: idx }
+      end
+      choices << { name: p.dim("Cancel"), value: :cancel }
+
+      selected_idx = prompt.select("Select a restaurant to view and optionally index:", choices, per_page: 10)
+
+      return if selected_idx == :cancel
+
+      selected_business = results[selected_idx]
+      display_api_business(selected_business, adapter)
+
+      # Ask if they want to index
+      puts
+      if prompt.yes?("Would you like to index this restaurant for future local searches?")
+        index_single_restaurant(selected_business, adapter)
+      end
+    end
+
+    def display_api_business(business, adapter)
+      p = self.class.pastel
+
+      puts
+      puts p.bold("━" * 50)
+      puts p.bold.cyan(business[:name])
+      puts p.bold("━" * 50)
+      puts
+
+      puts "🔗 #{p.bold("Source")}: #{adapter.source_name}"
+      puts
+
+      if business[:address]
+        puts "📍 #{p.bold("Address")}"
+        puts "   #{business[:address]}"
+        puts
+      end
+
+      if business[:phone]
+        puts "📞 #{p.bold("Phone")}"
+        puts "   #{business[:phone]}"
+        puts
+      end
+
+      if business[:rating]
+        score = business[:rating]
+        color = score >= 4.0 ? :green : (score >= 3.0 ? :yellow : :red)
+        review_count = business[:review_count] ? " (#{business[:review_count]} reviews)" : ""
+        puts "⭐ #{p.bold("Rating")}"
+        puts "   #{p.send(color, "#{score}/5")}#{p.dim(review_count)}"
+        puts
+      end
+
+      if business[:categories] && !business[:categories].empty?
+        puts "🏷️  #{p.bold("Categories")}"
+        puts "   #{business[:categories].join(", ")}"
+        puts
+      end
+
+      if business[:latitude] && business[:longitude]
+        puts "🗺️  #{p.bold("Coordinates")}"
+        puts "   #{business[:latitude]}, #{business[:longitude]}"
+        puts
+      end
+    end
+
+    def index_single_restaurant(business_data, adapter)
+      p = self.class.pastel
+
+      puts
+      puts p.dim("Indexing restaurant...")
+
+      index_service = Services::IndexRestaurantsService.new
+      result = index_service.index_restaurant(business_data: business_data, source: adapter.source_name)
+
+      case result
+      when :created
+        puts p.green("✅ Restaurant added to local database")
+      when :updated
+        puts p.yellow("✅ Restaurant updated in local database")
+      when :merged
+        puts p.cyan("✅ Restaurant merged with existing entry in local database")
       end
     end
 

@@ -45,6 +45,29 @@ module GrubStars
         locations.map { |loc| normalize_location(loc) }
       end
 
+      # Search for businesses by name
+      # Returns array of business hashes with normalized fields
+      def search_by_name(name:, location: nil, limit: 10)
+        ensure_configured!
+
+        query = location ? "#{name} in #{location}" : name
+        params = {
+          searchQuery: query,
+          key: @api_key,
+          language: "en"
+        }
+
+        response = connection.get("location/search", params)
+        handle_response(response)
+
+        data = JSON.parse(response.body)
+        locations = data["data"] || []
+
+        # Apply limit
+        locations = locations.take(limit)
+        locations.map { |loc| normalize_location(loc) }
+      end
+
       # Get detailed business information
       # Returns normalized business hash with additional details
       def get_business(id)

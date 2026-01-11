@@ -41,6 +41,24 @@ module GrubStars
         data["businesses"].map { |biz| normalize_business(biz) }
       end
 
+      # Search for businesses by name
+      # Returns array of business hashes with normalized fields
+      def search_by_name(name:, location: nil, limit: 10)
+        ensure_configured!
+
+        params = {
+          term: name,
+          limit: [limit, 50].min  # API max is 50
+        }
+        params[:location] = location if location
+
+        response = connection.get("businesses/search", params)
+        handle_response(response)
+
+        data = JSON.parse(response.body)
+        data["businesses"].map { |biz| normalize_business(biz) }
+      end
+
       # Get detailed business information
       # Returns normalized business hash with additional details
       def get_business(id)

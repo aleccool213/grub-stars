@@ -19,6 +19,10 @@ module GrubStars
         raise NotImplementedError, "#{self.class}#search_businesses not implemented"
       end
 
+      def search_by_name(name:, location: nil, limit: 10)
+        raise NotImplementedError, "#{self.class}#search_by_name not implemented"
+      end
+
       def get_business(id)
         raise NotImplementedError, "#{self.class}#get_business not implemented"
       end
