@@ -1,0 +1,26 @@
+#!/bin/bash
+# Claude Code Stop Hook - Run tests before stopping
+
+echo "🧪 Running tests before stopping..."
+echo ""
+
+# Try to run tests with bundle exec
+if command -v bundle &> /dev/null; then
+  bundle exec rake test 2>&1
+  test_exit_code=$?
+else
+  echo "⚠️  Bundler not available, skipping tests"
+  exit 0
+fi
+
+if [ $test_exit_code -eq 0 ]; then
+  echo ""
+  echo "✅ All tests passed!"
+else
+  echo ""
+  echo "❌ Some tests failed (exit code: $test_exit_code)"
+  echo "   Review the output above for details."
+fi
+
+# Always exit 0 so the stop hook doesn't block the session from stopping
+exit 0
