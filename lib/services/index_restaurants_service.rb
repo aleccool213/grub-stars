@@ -61,7 +61,11 @@ module Services
     private
 
     def default_adapters
-      [GrubStars::Adapters::Yelp.new, GrubStars::Adapters::Google.new]
+      [
+        GrubStars::Adapters::Yelp.new,
+        GrubStars::Adapters::Google.new,
+        GrubStars::Adapters::TripAdvisor.new
+      ]
     end
 
     def index_with_adapter(adapter, location)
