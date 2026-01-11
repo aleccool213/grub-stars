@@ -54,6 +54,7 @@ bundle install
    ```
    YELP_API_KEY=your_yelp_key_here
    GOOGLE_API_KEY=your_google_key_here
+   TRIPADVISOR_API_KEY=your_tripadvisor_key_here
    ```
 
    Configure at least one adapter to get started.
@@ -115,9 +116,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design documentation.
 ### Implemented
 - ✅ **Yelp** - Ratings, reviews, photos
 - ✅ **Google Maps** - Ratings, reviews (up to 5), photos
+- ✅ **TripAdvisor** - Ratings, reviews, photos
 
 ### Planned
-- 🚧 **TripAdvisor** - Ratings, reviews, photos, videos
 - 🚧 **Instagram** - Photos and videos only
 - 🚧 **TikTok** - Videos only
 
