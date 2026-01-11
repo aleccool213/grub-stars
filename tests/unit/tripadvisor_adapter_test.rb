@@ -57,6 +57,7 @@ class TripAdvisorAdapterTest < Minitest::Test
 
   def test_search_businesses_with_offset_and_limit
     stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/search")
+      .with(query: hash_including(key: "test_tripadvisor_api_key"))
       .to_return(
         status: 200,
         body: {
@@ -139,6 +140,7 @@ class TripAdvisorAdapterTest < Minitest::Test
 
   def test_get_photos_returns_empty_array_on_error
     stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/123456/photos")
+      .with(query: hash_including(key: "test_tripadvisor_api_key"))
       .to_return(status: 404, body: { message: "Not found" }.to_json)
 
     photos = @adapter.get_photos("123456")
@@ -246,6 +248,7 @@ class TripAdvisorAdapterTest < Minitest::Test
     end
 
     stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/search")
+      .with(query: hash_including(key: "test_tripadvisor_api_key"))
       .to_return(
         status: 200,
         body: { data: locations }.to_json,
@@ -255,6 +258,7 @@ class TripAdvisorAdapterTest < Minitest::Test
 
   def stub_location_details_request(location_id)
     stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/#{location_id}")
+      .with(query: hash_including(key: "test_tripadvisor_api_key"))
       .to_return(
         status: 200,
         body: {
@@ -285,6 +289,7 @@ class TripAdvisorAdapterTest < Minitest::Test
 
   def stub_location_reviews_request(location_id)
     stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/#{location_id}/reviews")
+      .with(query: hash_including(key: "test_tripadvisor_api_key"))
       .to_return(
         status: 200,
         body: {
@@ -313,6 +318,7 @@ class TripAdvisorAdapterTest < Minitest::Test
 
   def stub_location_photos_request(location_id)
     stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/#{location_id}/photos")
+      .with(query: hash_including(key: "test_tripadvisor_api_key"))
       .to_return(
         status: 200,
         body: {
