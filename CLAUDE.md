@@ -36,9 +36,10 @@ Environment variables: `YELP_API_KEY`, `GOOGLE_API_KEY`, `TRIPADVISOR_API_KEY`, 
 ## CLI Commands
 
 ```bash
-grst index --city "barrie, ontario"   # Index all restaurants in area
-grst search --category bakery         # Search locally by category/name
-grst info --name "restaurant name"    # Show detailed restaurant info
+grst index --city "barrie, ontario"                    # Index all restaurants in area
+grst index --city "barrie, ontario" --category bakery  # Index only bakeries in area
+grst search --category bakery                          # Search locally by category/name
+grst info --name "restaurant name"                     # Show detailed restaurant info
 ```
 
 ## Code Structure
@@ -164,6 +165,12 @@ All adapters inherit from `Infrastructure::Adapters::Base` and implement:
 
 Adapters normalize responses to a common format with fields: `external_id`, `name`, `address`, `latitude`, `longitude`, `rating`, `review_count`, `categories`, `photos`.
 
+**Category Filtering:**
+All adapters support optional category filtering during indexing:
+- Users can index a location with a category filter (e.g., only bakeries)
+- This allows multiple indexing passes with different categories for targeted data collection
+- Example: `grst index --city "barrie, ontario" --category bakery`
+
 **Implemented:**
 - **Yelp** (`YELP_API_KEY`) - ratings, reviews (enhanced plan), photos
 - **Google Maps** (`GOOGLE_API_KEY`) - ratings, reviews (up to 5), photos
@@ -181,6 +188,7 @@ Services use dependency injection for testability and accept repositories/domain
 
 - `IndexRestaurantsService` - Multi-adapter indexing with deduplication
   - Queries adapters for restaurants in specified geographic area
+  - Supports optional category filtering (e.g., only index bakeries)
   - Uses Matcher for deduplication across sources
   - Uses repositories for persistence
   - Replaces old `Indexer` class

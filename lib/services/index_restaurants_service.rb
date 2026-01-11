@@ -36,8 +36,9 @@ module Services
 
     # Index restaurants from all configured adapters
     # @param location [String] Location to index (e.g., "barrie, ontario")
+    # @param categories [String, nil] Optional category filter (e.g., "bakery")
     # @return [Hash] Statistics: { total:, created:, updated:, merged: }
-    def index(location:)
+    def index(location:, categories: nil)
       configured_adapters = @adapters.select(&:configured?)
 
       if configured_adapters.empty?
@@ -47,7 +48,7 @@ module Services
       stats = { total: 0, created: 0, updated: 0, merged: 0 }
 
       configured_adapters.each do |adapter|
-        adapter_stats = index_with_adapter(adapter, location)
+        adapter_stats = index_with_adapter(adapter, location, categories)
         stats[:total] += adapter_stats[:total]
         stats[:created] += adapter_stats[:created]
         stats[:updated] += adapter_stats[:updated]
@@ -68,11 +69,11 @@ module Services
       ]
     end
 
-    def index_with_adapter(adapter, location)
+    def index_with_adapter(adapter, location, categories = nil)
       stats = { total: 0, created: 0, updated: 0, merged: 0 }
       source = adapter.source_name
 
-      adapter.search_all_businesses(location: location) do |biz, progress|
+      adapter.search_all_businesses(location: location, categories: categories) do |biz, progress|
         @logger.progress(
           name: biz[:name],
           current: progress[:current],
