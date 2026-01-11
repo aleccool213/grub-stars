@@ -148,8 +148,8 @@ module GrubStars
         puts p.yellow("🔍 No restaurants found matching '#{search_term}' in local database")
         puts
 
-        # Offer fallback search
-        if prompt.yes?("Would you like to search for '#{search_term}' using an external API?")
+        # Offer fallback search (only in interactive mode)
+        if $stdin.tty? && prompt.yes?("Would you like to search for '#{search_term}' using an external API?")
           handle_fallback_search(search_term)
         end
         return

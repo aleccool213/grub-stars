@@ -158,7 +158,10 @@ class YelpAdapterTest < Minitest::Test
 
   def test_search_by_name_respects_limit
     stub_request(:get, "https://api.yelp.com/v3/businesses/search")
-      .with(query: hash_including(limit: 5))
+      .with(
+        query: { term: "Pizza", limit: 5 },
+        headers: { "Authorization" => "Bearer test_api_key" }
+      )
       .to_return(
         status: 200,
         body: { total: 0, businesses: [] }.to_json,
@@ -167,7 +170,7 @@ class YelpAdapterTest < Minitest::Test
 
     @adapter.search_by_name(name: "Pizza", limit: 5)
     assert_requested :get, "https://api.yelp.com/v3/businesses/search",
-                     query: hash_including(limit: 5)
+                     query: { term: "Pizza", limit: 5 }
   end
 
   def test_get_business

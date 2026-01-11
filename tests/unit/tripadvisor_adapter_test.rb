@@ -109,6 +109,7 @@ class TripAdvisorAdapterTest < Minitest::Test
 
   def test_search_by_name_respects_limit
     stub_request(:get, "https://api.content.tripadvisor.com/api/v1/location/search")
+      .with(query: hash_including(searchQuery: "Pizza"))
       .to_return(
         status: 200,
         body: {
