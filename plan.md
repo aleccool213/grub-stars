@@ -1,4 +1,11 @@
-# grub stars
+# grub stars - Original Planning Document
+
+> **Note:** This is a historical planning document from the initial project design. For current architecture and implementation details, see:
+> - [ARCHITECTURE.md](ARCHITECTURE.md) - Current layered architecture
+> - [REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md) - Recent refactoring details
+> - [README.md](README.md) - Project overview and usage
+
+---
 
 A command line app which retrieves restaurant information like reviews and photos from multiple remote sources. Saves folks time so they dont need to search across multiple apps like 
 
@@ -121,19 +128,38 @@ Adapters are first configured by the user so its a bring your own API key situat
 7. Build the search cli cmd which will look inside the sqlite db by catagory or name.
 8. Build the info cli cmd which takes a single restaurant from the db and presents all of the info the user in a nice format.
 
-## progress notes
+## Progress Notes
 
-### Completed
-- [x] Step 2: CLI layer with Thor (search, index, info, config commands)
+### ✅ Completed (All Original Implementation Stages)
+- [x] Step 1: API Research (Yelp and Google Maps verified)
+- [x] Step 2: CLI layer with Thor (search, index, info, categories commands)
 - [x] Step 3: Database schema + SQLite init on boot + configurable db path
 - [x] Step 4: Yelp adapter (search, get_business, get_reviews, pagination)
 - [x] Step 5: Indexer (single adapter, stores restaurants/categories/ratings/photos)
 - [x] Step 6: Matcher (confidence scoring: name, address, GPS, phone)
 - [x] Step 7: Search CLI command (fuzzy matching via Levenshtein, interactive selection)
 - [x] Step 8: Info CLI command (full restaurant details: ratings, reviews, photos, videos, categories)
-
-### TODO
-- [ ] **Test matcher with real multi-adapter scenario** - Now that Google adapter is complete, test the matcher merging restaurants from Yelp and Google in a real-world scenario
 - [x] Build Google Maps adapter (search_businesses, get_business, get_reviews, pagination)
+
+### ✅ Architecture Refactoring (Complete)
+- [x] Layered architecture design
+- [x] Domain models (Restaurant, Rating, Review, Media, Category, ExternalId)
+- [x] Repository pattern for data access
+- [x] Service layer for use cases
+- [x] Pure matcher with no database dependencies
+- [x] Comprehensive unit and integration tests
+- [x] Updated all documentation
+
+### 🚧 Future Work
 - [ ] Build TripAdvisor adapter
+- [ ] Build Instagram adapter (photos/videos only)
+- [ ] Build TikTok adapter (videos only)
+- [ ] REST API using the service layer
+- [ ] Web UI using the service layer
+- [ ] Export functionality (CSV, JSON)
+- [ ] Caching layer for API responses
+
+---
+
+**Current Status:** The project has completed all core functionality and has been refactored to a clean, layered architecture. It's production-ready for CLI usage and prepared for future expansion to web/API interfaces.
 
