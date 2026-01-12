@@ -156,16 +156,27 @@ class IndexRestaurantsServiceTest < Minitest::Test
   end
 
   def test_passes_categories_to_adapter
-    # Create a mock adapter that captures the categories parameter
-    captured_categories = nil
-    mock_adapter = Minitest::Mock.new
-    mock_adapter.expect(:configured?, true)
-    mock_adapter.expect(:source_name, "mock")
-    mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:|
-      captured_categories = categories
-      # Don't yield any businesses
-      0
-    end
+    # Create a stub adapter that captures the categories parameter
+    stub_adapter = Struct.new(:captured_categories) do
+      def configured?
+        true
+      end
+
+      def source_name
+        "stub"
+      end
+
+      def search_businesses(location:, categories: nil, limit: 50, offset: 0)
+        # Return empty array for location validation
+        []
+      end
+
+      def search_all_businesses(location:, categories:)
+        self.captured_categories = categories
+        # Don't yield any businesses
+        0
+      end
+    end.new
 
     service = Services::IndexRestaurantsService.new(
       restaurant_repo: @restaurant_repo,
@@ -174,14 +185,13 @@ class IndexRestaurantsServiceTest < Minitest::Test
       category_repo: @category_repo,
       external_id_repo: @external_id_repo,
       matcher: @matcher,
-      adapters: [mock_adapter],
+      adapters: [stub_adapter],
       logger: GrubStars::Logger.new
     )
 
     service.index(location: "Test City", categories: "bakery")
 
-    assert_equal "bakery", captured_categories
-    mock_adapter.verify
+    assert_equal "bakery", stub_adapter.captured_categories
   end
 
   def test_index_restaurant_creates_single_restaurant
