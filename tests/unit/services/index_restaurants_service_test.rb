@@ -50,7 +50,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
       photos: ["photo1.jpg", "photo2.jpg"]
     }
 
-    result = @service.send(:store_business, business_data, "test")
+    result = @service.send(:store_business, business_data, "test", nil)
 
     assert_equal :created, result
 
@@ -101,7 +101,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
       categories: ["Updated"]
     }
 
-    result = @service.send(:store_business, business_data, "test")
+    result = @service.send(:store_business, business_data, "test", nil)
 
     assert_equal :updated, result
 
@@ -141,7 +141,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
       categories: ["Brewery"]
     }
 
-    result = @service.send(:store_business, business_data, "google")
+    result = @service.send(:store_business, business_data, "google", nil)
 
     assert_equal :merged, result
 
@@ -288,6 +288,31 @@ class IndexRestaurantsServiceTest < Minitest::Test
 
     # Verify only one restaurant exists
     assert_equal 1, @db[:restaurants].count
+  end
+
+  def test_index_restaurant_stores_location_when_provided
+    business_data = {
+      external_id: "test-location-123",
+      name: "Location Test Restaurant",
+      address: "123 Main St",
+      latitude: 44.5,
+      longitude: -79.5,
+      rating: 4.5,
+      categories: ["Restaurant"]
+    }
+
+    result = @service.index_restaurant(
+      business_data: business_data,
+      source: "test",
+      location: "Barrie, ON"
+    )
+
+    assert_equal :created, result
+
+    # Verify location was stored
+    restaurant = @restaurant_repo.find_by_external_id("test", "test-location-123")
+    assert restaurant
+    assert_equal "Barrie, ON", restaurant.location
   end
 
   private
