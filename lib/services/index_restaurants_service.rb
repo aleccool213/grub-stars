@@ -13,6 +13,7 @@ module Services
   # Service for indexing restaurants from external adapters
   class IndexRestaurantsService
     class NoAdaptersConfiguredError < StandardError; end
+    class InvalidLocationError < StandardError; end
 
     def initialize(
       restaurant_repo: nil,
@@ -45,6 +46,9 @@ module Services
         raise NoAdaptersConfiguredError, "No adapters configured. Set API keys in .env file."
       end
 
+      # Validate location before indexing
+      validate_location(location, configured_adapters.first)
+
       stats = { total: 0, created: 0, updated: 0, merged: 0 }
 
       configured_adapters.each do |adapter|
@@ -62,12 +66,23 @@ module Services
     # Index a single restaurant from adapter business data
     # @param business_data [Hash] Normalized business data from adapter
     # @param source [String] Source adapter name (e.g., "yelp", "google")
+    # @param location [String, nil] Optional location name to tag the restaurant
     # @return [Symbol] Result: :created, :updated, or :merged
-    def index_restaurant(business_data:, source:)
-      store_business(business_data, source)
+    def index_restaurant(business_data:, source:, location: nil)
+      store_business(business_data, source, location)
     end
 
     private
+
+    def validate_location(location, adapter)
+      # Validate that the location is a real place by attempting a test search
+      # If the adapter can search the location successfully, it's valid
+      begin
+        adapter.search_businesses(location: location, limit: 1)
+      rescue GrubStars::Adapters::Base::APIError => e
+        raise InvalidLocationError, "Invalid location '#{location}': #{e.message}"
+      end
+    end
 
     def default_adapters
       [
@@ -89,7 +104,7 @@ module Services
           percent: progress[:percent]
         )
 
-        result = store_business(biz, source)
+        result = store_business(biz, source, location)
         stats[:total] += 1
         stats[:created] += 1 if result == :created
         stats[:updated] += 1 if result == :updated
@@ -99,12 +114,12 @@ module Services
       stats
     end
 
-    def store_business(data, source)
+    def store_business(data, source, location)
       # First, check if we already have this exact external ID from this source
       existing_by_id = find_by_external_id(data[:external_id], source)
 
       if existing_by_id
-        update_restaurant(existing_by_id, data, source)
+        update_restaurant(existing_by_id, data, source, location)
         return :updated
       end
 
@@ -112,12 +127,12 @@ module Services
       match_result = find_match(data)
 
       if match_result
-        merge_restaurant(match_result[:restaurant], data, source)
+        merge_restaurant(match_result[:restaurant], data, source, location)
         return :merged
       end
 
       # No match found, create new restaurant
-      create_restaurant(data, source)
+      create_restaurant(data, source, location)
       :created
     end
 
@@ -142,7 +157,7 @@ module Services
       @matcher.find_match(data, candidates)
     end
 
-    def create_restaurant(data, source)
+    def create_restaurant(data, source, location)
       now = Time.now
 
       # Create restaurant domain model
@@ -151,7 +166,8 @@ module Services
         address: data[:address],
         latitude: data[:latitude],
         longitude: data[:longitude],
-        phone: data[:phone]
+        phone: data[:phone],
+        location: location
       )
 
       # Save to repository
@@ -166,13 +182,14 @@ module Services
       restaurant.id
     end
 
-    def update_restaurant(existing, data, source)
+    def update_restaurant(existing, data, source, location)
       # Update restaurant
       existing.name = data[:name]
       existing.address = data[:address]
       existing.latitude = data[:latitude]
       existing.longitude = data[:longitude]
       existing.phone = data[:phone]
+      existing.location = location
 
       @restaurant_repo.update(existing)
 
@@ -184,13 +201,14 @@ module Services
       existing.id
     end
 
-    def merge_restaurant(existing, data, source)
+    def merge_restaurant(existing, data, source, location)
       # Only fill in missing core data from new source
       updates = {}
       updates[:phone] = data[:phone] if existing.phone.nil? && data[:phone]
       updates[:address] = data[:address] if existing.address.nil? && data[:address]
       updates[:latitude] = data[:latitude] if existing.latitude.nil? && data[:latitude]
       updates[:longitude] = data[:longitude] if existing.longitude.nil? && data[:longitude]
+      updates[:location] = location if existing.location.nil? && location
 
       @restaurant_repo.update_fields(existing.id, updates) unless updates.empty?
 

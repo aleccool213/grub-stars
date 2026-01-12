@@ -50,7 +50,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
       photos: ["photo1.jpg", "photo2.jpg"]
     }
 
-    result = @service.send(:store_business, business_data, "test")
+    result = @service.send(:store_business, business_data, "test", nil)
 
     assert_equal :created, result
 
@@ -101,7 +101,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
       categories: ["Updated"]
     }
 
-    result = @service.send(:store_business, business_data, "test")
+    result = @service.send(:store_business, business_data, "test", nil)
 
     assert_equal :updated, result
 
@@ -141,7 +141,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
       categories: ["Brewery"]
     }
 
-    result = @service.send(:store_business, business_data, "google")
+    result = @service.send(:store_business, business_data, "google", nil)
 
     assert_equal :merged, result
 
@@ -156,16 +156,27 @@ class IndexRestaurantsServiceTest < Minitest::Test
   end
 
   def test_passes_categories_to_adapter
-    # Create a mock adapter that captures the categories parameter
-    captured_categories = nil
-    mock_adapter = Minitest::Mock.new
-    mock_adapter.expect(:configured?, true)
-    mock_adapter.expect(:source_name, "mock")
-    mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:|
-      captured_categories = categories
-      # Don't yield any businesses
-      0
-    end
+    # Create a stub adapter that captures the categories parameter
+    stub_adapter = Struct.new(:captured_categories) do
+      def configured?
+        true
+      end
+
+      def source_name
+        "stub"
+      end
+
+      def search_businesses(location:, categories: nil, limit: 50, offset: 0)
+        # Return empty array for location validation
+        []
+      end
+
+      def search_all_businesses(location:, categories:)
+        self.captured_categories = categories
+        # Don't yield any businesses
+        0
+      end
+    end.new
 
     service = Services::IndexRestaurantsService.new(
       restaurant_repo: @restaurant_repo,
@@ -174,14 +185,13 @@ class IndexRestaurantsServiceTest < Minitest::Test
       category_repo: @category_repo,
       external_id_repo: @external_id_repo,
       matcher: @matcher,
-      adapters: [mock_adapter],
+      adapters: [stub_adapter],
       logger: GrubStars::Logger.new
     )
 
     service.index(location: "Test City", categories: "bakery")
 
-    assert_equal "bakery", captured_categories
-    mock_adapter.verify
+    assert_equal "bakery", stub_adapter.captured_categories
   end
 
   def test_index_restaurant_creates_single_restaurant
@@ -288,6 +298,31 @@ class IndexRestaurantsServiceTest < Minitest::Test
 
     # Verify only one restaurant exists
     assert_equal 1, @db[:restaurants].count
+  end
+
+  def test_index_restaurant_stores_location_when_provided
+    business_data = {
+      external_id: "test-location-123",
+      name: "Location Test Restaurant",
+      address: "123 Main St",
+      latitude: 44.5,
+      longitude: -79.5,
+      rating: 4.5,
+      categories: ["Restaurant"]
+    }
+
+    result = @service.index_restaurant(
+      business_data: business_data,
+      source: "test",
+      location: "Barrie, ON"
+    )
+
+    assert_equal :created, result
+
+    # Verify location was stored
+    restaurant = @restaurant_repo.find_by_external_id("test", "test-location-123")
+    assert restaurant
+    assert_equal "Barrie, ON", restaurant.location
   end
 
   private

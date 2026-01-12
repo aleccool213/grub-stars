@@ -49,6 +49,7 @@ module GrubStars
     desc "search", "Find restaurants by name or category (fuzzy matching)"
     option :name, type: :string, desc: "Search by restaurant name"
     option :category, type: :string, desc: "Search by category (e.g., bakery, cafe)"
+    option :location, type: :string, desc: "Filter by location (e.g., 'Barrie, ON')"
     option :list_categories, type: :boolean, desc: "List all available categories"
     def search
       p = self.class.pastel
@@ -69,16 +70,17 @@ module GrubStars
       search_service = Services::SearchRestaurantsService.new
 
       results = if options[:name]
-                  search_service.search_by_name(options[:name])
+                  search_service.search_by_name(options[:name], location: options[:location])
                 elsif options[:category]
-                  search_service.search_by_category(options[:category])
+                  search_service.search_by_category(options[:category], location: options[:location])
                 else
                   puts p.red("Please provide --name or --category (or --list-categories)")
                   exit 1
                 end
 
       search_term = options[:name] || options[:category]
-      handle_search_results(results, search_term)
+      location_filter = options[:location] ? " in #{p.cyan(options[:location])}" : ""
+      handle_search_results(results, search_term, location_filter)
     end
 
     desc "index", "Search and retrieve data for a specific area"
@@ -103,6 +105,10 @@ module GrubStars
       puts "   #{p.green(stats[:created])} new | #{p.yellow(stats[:updated])} updated | #{p.cyan(stats[:merged])} merged"
     rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
       puts p.red("❌ Error: #{e.message}")
+      exit 1
+    rescue Services::IndexRestaurantsService::InvalidLocationError => e
+      puts p.red("❌ #{e.message}")
+      puts p.dim("   Please check the location name and try again.")
       exit 1
     rescue Adapters::Base::APIError => e
       puts p.red("❌ API Error: #{e.message}")
@@ -140,12 +146,12 @@ module GrubStars
 
     private
 
-    def handle_search_results(results, search_term)
+    def handle_search_results(results, search_term, location_filter = "")
       p = self.class.pastel
       prompt = self.class.prompt
 
       if results.empty?
-        puts p.yellow("🔍 No restaurants found matching '#{search_term}' in local database")
+        puts p.yellow("🔍 No restaurants found matching '#{search_term}'#{location_filter} in local database")
         puts
 
         # Offer fallback search (only in interactive mode)
@@ -163,7 +169,7 @@ module GrubStars
         show_restaurant_details(restaurant)
       else
         # Multiple results - let user pick
-        puts p.bold("🍽️  Found #{p.green(results.length)} matches for '#{search_term}':")
+        puts p.bold("🍽️  Found #{p.green(results.length)} matches for '#{search_term}'#{location_filter}:")
         puts
 
         choices = results.map.with_index do |r, idx|
@@ -194,8 +200,14 @@ module GrubStars
       puts "🆔 #{p.bold("ID")}: #{restaurant.id}"
       puts
 
+      if restaurant.location
+        puts "📍 #{p.bold("Location")}"
+        puts "   #{restaurant.location}"
+        puts
+      end
+
       if restaurant.address
-        puts "📍 #{p.bold("Address")}"
+        puts "🏠 #{p.bold("Address")}"
         puts "   #{restaurant.address}"
         puts
       end

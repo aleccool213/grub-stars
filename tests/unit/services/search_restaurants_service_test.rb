@@ -97,6 +97,50 @@ class SearchRestaurantsServiceTest < Minitest::Test
     assert_equal "Tim Hortons", restaurant.name
   end
 
+  def test_search_by_name_with_location_filter
+    # Create restaurants with locations
+    barrie_id = @db[:restaurants].insert(
+      name: "Pizza Hut",
+      location: "Barrie, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    toronto_id = @db[:restaurants].insert(
+      name: "Pizza Hut",
+      location: "Toronto, ON",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    results = @service.search_by_name("Pizza Hut", location: "Barrie, ON")
+
+    assert_equal 1, results.length
+    assert_equal "Barrie, ON", results.first.location
+  end
+
+  def test_search_by_category_with_location_filter
+    # Add locations to existing restaurants
+    @db[:restaurants].where(id: @restaurant1_id).update(location: "Barrie, ON")
+    @db[:restaurants].where(id: @restaurant2_id).update(location: "Toronto, ON")
+
+    results = @service.search_by_category("Cafe", location: "Barrie, ON")
+
+    assert_equal 1, results.length
+    assert_equal "Starbucks Coffee", results.first.name
+    assert_equal "Barrie, ON", results.first.location
+  end
+
+  def test_search_without_location_filter_returns_all
+    # Add locations to existing restaurants
+    @db[:restaurants].where(id: @restaurant1_id).update(location: "Barrie, ON")
+    @db[:restaurants].where(id: @restaurant2_id).update(location: "Toronto, ON")
+
+    results = @service.search_by_category("Cafe")
+
+    assert_equal 2, results.length
+  end
+
   private
 
   def create_test_db
