@@ -62,9 +62,10 @@ module Services
     # Index a single restaurant from adapter business data
     # @param business_data [Hash] Normalized business data from adapter
     # @param source [String] Source adapter name (e.g., "yelp", "google")
+    # @param location [String, nil] Optional location to associate with restaurant
     # @return [Symbol] Result: :created, :updated, or :merged
-    def index_restaurant(business_data:, source:)
-      store_business(business_data, source)
+    def index_restaurant(business_data:, source:, location: nil)
+      store_business(business_data, source, location)
     end
 
     private
@@ -89,7 +90,7 @@ module Services
           percent: progress[:percent]
         )
 
-        result = store_business(biz, source)
+        result = store_business(biz, source, location)
         stats[:total] += 1
         stats[:created] += 1 if result == :created
         stats[:updated] += 1 if result == :updated
@@ -99,12 +100,12 @@ module Services
       stats
     end
 
-    def store_business(data, source)
+    def store_business(data, source, location = nil)
       # First, check if we already have this exact external ID from this source
       existing_by_id = find_by_external_id(data[:external_id], source)
 
       if existing_by_id
-        update_restaurant(existing_by_id, data, source)
+        update_restaurant(existing_by_id, data, source, location)
         return :updated
       end
 
@@ -112,12 +113,12 @@ module Services
       match_result = find_match(data)
 
       if match_result
-        merge_restaurant(match_result[:restaurant], data, source)
+        merge_restaurant(match_result[:restaurant], data, source, location)
         return :merged
       end
 
       # No match found, create new restaurant
-      create_restaurant(data, source)
+      create_restaurant(data, source, location)
       :created
     end
 
@@ -142,7 +143,7 @@ module Services
       @matcher.find_match(data, candidates)
     end
 
-    def create_restaurant(data, source)
+    def create_restaurant(data, source, location = nil)
       now = Time.now
 
       # Create restaurant domain model
@@ -151,7 +152,8 @@ module Services
         address: data[:address],
         latitude: data[:latitude],
         longitude: data[:longitude],
-        phone: data[:phone]
+        phone: data[:phone],
+        location: location
       )
 
       # Save to repository
@@ -166,13 +168,15 @@ module Services
       restaurant.id
     end
 
-    def update_restaurant(existing, data, source)
+    def update_restaurant(existing, data, source, location = nil)
       # Update restaurant
       existing.name = data[:name]
       existing.address = data[:address]
       existing.latitude = data[:latitude]
       existing.longitude = data[:longitude]
       existing.phone = data[:phone]
+      # Update location if not set or if a new location is provided
+      existing.location = location if existing.location.nil? || location
 
       @restaurant_repo.update(existing)
 
@@ -184,13 +188,15 @@ module Services
       existing.id
     end
 
-    def merge_restaurant(existing, data, source)
+    def merge_restaurant(existing, data, source, location = nil)
       # Only fill in missing core data from new source
       updates = {}
       updates[:phone] = data[:phone] if existing.phone.nil? && data[:phone]
       updates[:address] = data[:address] if existing.address.nil? && data[:address]
       updates[:latitude] = data[:latitude] if existing.latitude.nil? && data[:latitude]
       updates[:longitude] = data[:longitude] if existing.longitude.nil? && data[:longitude]
+      # Set location if not already set
+      updates[:location] = location if existing.location.nil? && location
 
       @restaurant_repo.update_fields(existing.id, updates) unless updates.empty?
 

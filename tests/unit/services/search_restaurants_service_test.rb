@@ -97,6 +97,48 @@ class SearchRestaurantsServiceTest < Minitest::Test
     assert_equal "Tim Hortons", restaurant.name
   end
 
+  def test_search_by_name_with_location_filter
+    # Add location to existing restaurants
+    @db[:restaurants].where(id: @restaurant1_id).update(location: "barrie, ontario")
+    @db[:restaurants].where(id: @restaurant2_id).update(location: "toronto, ontario")
+
+    results = @service.search_by_name("coffee", location: "barrie, ontario")
+
+    assert_equal 1, results.length
+    assert_equal "Starbucks Coffee", results.first.name
+  end
+
+  def test_search_by_category_with_location_filter
+    # Add location to existing restaurants
+    @db[:restaurants].where(id: @restaurant1_id).update(location: "barrie, ontario")
+    @db[:restaurants].where(id: @restaurant2_id).update(location: "toronto, ontario")
+
+    results = @service.search_by_category("Cafe", location: "barrie, ontario")
+
+    assert_equal 1, results.length
+    assert_equal "Starbucks Coffee", results.first.name
+  end
+
+  def test_search_with_invalid_location_raises_error
+    # Try to search with a location that hasn't been indexed
+    error = assert_raises(Services::SearchRestaurantsService::LocationNotIndexedError) do
+      @service.search_by_name("Starbucks", location: "nonexistent, location")
+    end
+
+    assert_match(/Location 'nonexistent, location' has not been indexed/, error.message)
+  end
+
+  def test_all_indexed_locations
+    @db[:restaurants].where(id: @restaurant1_id).update(location: "barrie, ontario")
+    @db[:restaurants].where(id: @restaurant2_id).update(location: "toronto, ontario")
+
+    locations = @service.all_indexed_locations
+
+    assert_equal 2, locations.length
+    assert_includes locations, "barrie, ontario"
+    assert_includes locations, "toronto, ontario"
+  end
+
   private
 
   def create_test_db

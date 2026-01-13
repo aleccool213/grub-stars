@@ -49,6 +49,7 @@ module GrubStars
     desc "search", "Find restaurants by name or category (fuzzy matching)"
     option :name, type: :string, desc: "Search by restaurant name"
     option :category, type: :string, desc: "Search by category (e.g., bakery, cafe)"
+    option :location, type: :string, desc: "Filter by location (e.g., 'barrie, ontario')"
     option :list_categories, type: :boolean, desc: "List all available categories"
     def search
       p = self.class.pastel
@@ -69,9 +70,9 @@ module GrubStars
       search_service = Services::SearchRestaurantsService.new
 
       results = if options[:name]
-                  search_service.search_by_name(options[:name])
+                  search_service.search_by_name(options[:name], location: options[:location])
                 elsif options[:category]
-                  search_service.search_by_category(options[:category])
+                  search_service.search_by_category(options[:category], location: options[:location])
                 else
                   puts p.red("Please provide --name or --category (or --list-categories)")
                   exit 1
@@ -79,6 +80,9 @@ module GrubStars
 
       search_term = options[:name] || options[:category]
       handle_search_results(results, search_term)
+    rescue Services::SearchRestaurantsService::LocationNotIndexedError => e
+      puts p.red("❌ Error: #{e.message}")
+      exit 1
     end
 
     desc "index", "Search and retrieve data for a specific area"
@@ -193,6 +197,12 @@ module GrubStars
       # Basic info
       puts "🆔 #{p.bold("ID")}: #{restaurant.id}"
       puts
+
+      if restaurant.location
+        puts "📌 #{p.bold("Location")}"
+        puts "   #{restaurant.location}"
+        puts
+      end
 
       if restaurant.address
         puts "📍 #{p.bold("Address")}"

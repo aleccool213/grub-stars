@@ -18,7 +18,8 @@ class RestaurantRepositoryTest < Minitest::Test
       address: "123 Main St",
       latitude: 44.5,
       longitude: -79.5,
-      phone: "555-1234"
+      phone: "555-1234",
+      location: "barrie, ontario"
     )
 
     result = @repo.create(restaurant)
@@ -26,11 +27,13 @@ class RestaurantRepositoryTest < Minitest::Test
     assert result.id
     assert_equal "Test Restaurant", result.name
     assert_equal "123 Main St", result.address
+    assert_equal "barrie, ontario", result.location
 
     # Verify in database
     row = @db[:restaurants].where(id: result.id).first
     assert row
     assert_equal "Test Restaurant", row[:name]
+    assert_equal "barrie, ontario", row[:location]
   end
 
   def test_find_by_id
@@ -155,6 +158,90 @@ class RestaurantRepositoryTest < Minitest::Test
     assert_includes names, "Nearby 1"
     assert_includes names, "Nearby 2"
     refute_includes names, "Far Away"
+  end
+
+  def test_search_by_name_with_location_filter
+    @db[:restaurants].insert(
+      name: "Starbucks",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    @db[:restaurants].insert(
+      name: "Starbucks",
+      location: "toronto, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    results = @repo.search_by_name("Starbucks", location: "barrie, ontario")
+
+    assert_equal 1, results.length
+    assert_equal "barrie, ontario", results.first.location
+  end
+
+  def test_search_by_category_with_location_filter
+    bakery_id = @db[:categories].insert(name: "Bakery")
+
+    barrie_id = @db[:restaurants].insert(
+      name: "Barrie Bakery",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    toronto_id = @db[:restaurants].insert(
+      name: "Toronto Bakery",
+      location: "toronto, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    @db[:restaurant_categories].insert(restaurant_id: barrie_id, category_id: bakery_id)
+    @db[:restaurant_categories].insert(restaurant_id: toronto_id, category_id: bakery_id)
+
+    results = @repo.search_by_category("Bakery", location: "barrie, ontario")
+
+    assert_equal 1, results.length
+    assert_equal "Barrie Bakery", results.first.name
+    assert_equal "barrie, ontario", results.first.location
+  end
+
+  def test_all_indexed_locations
+    @db[:restaurants].insert(
+      name: "Restaurant 1",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    @db[:restaurants].insert(
+      name: "Restaurant 2",
+      location: "Barrie, Ontario",  # Different case
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    @db[:restaurants].insert(
+      name: "Restaurant 3",
+      location: "toronto, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    @db[:restaurants].insert(
+      name: "Restaurant 4",
+      location: nil,  # No location
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    locations = @repo.all_indexed_locations
+
+    assert_equal 2, locations.length
+    assert_includes locations, "barrie, ontario"
+    assert_includes locations, "toronto, ontario"
   end
 
   private
