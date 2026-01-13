@@ -46,8 +46,10 @@ module Infrastructure
       end
 
       # Search restaurants by name
-      def search_by_name(query)
-        @db[:restaurants]
+      # @param query [String] Name to search for
+      # @param location [String, nil] Optional location filter (e.g., "barrie, ontario")
+      def search_by_name(query, location: nil)
+        dataset = @db[:restaurants]
           .select_all(:restaurants)
           .select_append(Sequel.function(:fuzzy_match, :name, query).as(:match_score))
           .where(
@@ -56,14 +58,21 @@ module Infrastructure
               Sequel.lit("fuzzy_match(name, ?) >= ?", query, FUZZY_THRESHOLD)
             )
           )
+
+        # Add location filter if provided
+        dataset = dataset.where(Sequel.ilike(:location, location)) if location
+
+        dataset
           .order(Sequel.desc(:match_score), :name)
           .all
           .map { |row| to_domain_model_with_basic_associations(row) }
       end
 
       # Search restaurants by category
-      def search_by_category(category)
-        @db[:restaurants]
+      # @param category [String] Category to search for
+      # @param location [String, nil] Optional location filter (e.g., "barrie, ontario")
+      def search_by_category(category, location: nil)
+        dataset = @db[:restaurants]
           .join(:restaurant_categories, restaurant_id: Sequel[:restaurants][:id])
           .join(:categories, id: Sequel[:restaurant_categories][:category_id])
           .select_all(:restaurants)
@@ -76,10 +85,27 @@ module Infrastructure
               Sequel.lit("similarity(categories.name, ?) >= ?", category, FUZZY_THRESHOLD)
             )
           )
+
+        # Add location filter if provided
+        dataset = dataset.where(Sequel.ilike(Sequel[:restaurants][:location], location)) if location
+
+        dataset
           .distinct
           .order(Sequel.desc(:match_score), Sequel[:restaurants][:name])
           .all
           .map { |row| to_domain_model_with_basic_associations(row) }
+      end
+
+      # Get all unique indexed locations
+      # @return [Array<String>] List of unique locations (normalized to lowercase)
+      def all_indexed_locations
+        @db[:restaurants]
+          .select(Sequel.function(:lower, :location).as(:location))
+          .where(Sequel.~(location: nil))
+          .distinct
+          .all
+          .map { |row| row[:location] }
+          .compact
       end
 
       # Find candidate restaurants for matching (within geographic bounds)
@@ -105,6 +131,7 @@ module Infrastructure
           latitude: restaurant.latitude,
           longitude: restaurant.longitude,
           phone: restaurant.phone,
+          location: restaurant.location,
           created_at: now,
           updated_at: now
         )
@@ -122,6 +149,7 @@ module Infrastructure
           latitude: restaurant.latitude,
           longitude: restaurant.longitude,
           phone: restaurant.phone,
+          location: restaurant.location,
           updated_at: Time.now
         )
         restaurant
@@ -153,6 +181,7 @@ module Infrastructure
           latitude: row[:latitude],
           longitude: row[:longitude],
           phone: row[:phone],
+          location: row[:location],
           created_at: row[:created_at],
           updated_at: row[:updated_at]
         )

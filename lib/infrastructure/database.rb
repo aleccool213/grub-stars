@@ -114,6 +114,7 @@ module GrubStars
         Float :latitude
         Float :longitude
         String :phone
+        String :location  # Location where this restaurant was indexed (e.g., "barrie, ontario")
         DateTime :created_at
         DateTime :updated_at
       end
