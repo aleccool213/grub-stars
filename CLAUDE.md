@@ -29,7 +29,8 @@ bundle _2.5.23_ install            # Install dependencies with specific version
 **Running Commands:**
 ```bash
 # Option 1: Use binstubs (recommended)
-./bin/rake test                    # Run all tests
+./bin/rake                         # Run all tests (default task)
+./bin/rake test                    # Run all tests (explicit)
 ./bin/rake test:integration        # Run integration tests only
 ./bin/grst --help                  # Run CLI locally
 
