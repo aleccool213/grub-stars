@@ -16,11 +16,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development
 
+### Bundler Version Requirements
+
+This project requires **Bundler 2.5.23** for compatibility with Ruby 3.3.6. Bundler 4.0.3+ has a known bug causing `uninitialized class variable @@accept_charset in CGI` errors.
+
+**Setup:**
 ```bash
-bundle install                     # Install dependencies
-bundle exec rake test              # Run all tests
-bundle exec rake test:integration  # Run integration tests only
+gem install bundler -v 2.5.23     # Install correct bundler version
+bundle _2.5.23_ install            # Install dependencies with specific version
+```
+
+**Running Commands:**
+```bash
+# Option 1: Use binstubs (recommended)
+./bin/rake test                    # Run all tests
+./bin/rake test:integration        # Run integration tests only
 ./bin/grst --help                  # Run CLI locally
+
+# Option 2: Use bundle exec with specific version
+bundle _2.5.23_ exec rake test     # Run tests via bundle exec
 ```
 
 ## Configuration
