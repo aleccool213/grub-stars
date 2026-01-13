@@ -1,0 +1,10 @@
+{
+  "name": "grub-stars",
+  "image": "mcr.microsoft.com/devcontainers/ruby:3.3",
+  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && gem install bundler -v 2.5.23 && bundle _2.5.23_ install",
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  }
+}
