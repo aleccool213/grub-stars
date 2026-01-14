@@ -9,7 +9,7 @@ module GrubStars
       attr_writer :config_dir
 
       def config_dir
-        @config_dir ||= File.expand_path("~/.grub_stars")
+        @config_dir ||= ENV.fetch("GRUB_STARS_CONFIG_DIR", File.expand_path("~/.grub_stars"))
       end
 
       def config_path
