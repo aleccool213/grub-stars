@@ -81,7 +81,25 @@ bundle _2.5.23_ exec rackup -p 3000                    # Start on custom port
 | `/restaurants/search?name=X` | GET | Search by name |
 | `/restaurants/search?category=X` | GET | Search by category |
 | `/restaurants/:id` | GET | Get restaurant details |
-| `/index` | POST | Index restaurants (body: `{"location": "city", "category": "optional"}`) |
+| `/index` | POST | Start indexing job (async, returns job_id) |
+| `/jobs` | GET | List all jobs |
+| `/jobs/:id` | GET | Get job status |
+
+### Async Indexing
+
+Indexing runs asynchronously (max 3 concurrent jobs):
+
+```bash
+# Start indexing - returns immediately with job_id
+curl -X POST http://localhost:9292/index \
+  -H "Content-Type: application/json" \
+  -d '{"location": "barrie, ontario"}'
+
+# Check job status
+curl http://localhost:9292/jobs/<job_id>
+```
+
+Job statuses: `pending`, `running`, `completed`, `failed`
 
 ### Response Format
 
@@ -112,7 +130,8 @@ lib/
 ├── grub_stars.rb                    # Main entry, requires all layers
 ├── cli.rb                           # Presentation layer (Thor CLI)
 ├── api/
-│   └── server.rb                    # Presentation layer (Sinatra REST API)
+│   ├── server.rb                    # Presentation layer (Sinatra REST API)
+│   └── job_manager.rb               # In-memory background job processing
 ├── config.rb                        # Configuration management
 ├── logger.rb                        # Logging utility
 ├── domain/                          # Domain layer (pure business logic)

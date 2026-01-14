@@ -12,6 +12,7 @@ gem "tty-spinner", "~> 0.9"
 gem "tty-prompt", "~> 0.23"
 gem "sinatra", "~> 3.0"
 gem "rackup", "~> 1.0"
+gem "concurrent-ruby", "~> 1.2"
 
 group :development do
   gem "rubocop", "~> 1.69"

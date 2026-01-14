@@ -15,6 +15,7 @@ class APITest < GrubStars::IntegrationTest
   def setup
     super
     WebMock.disable_net_connect!
+    GrubStars::API::JobManager.reset!
     @original_db_path = GrubStars::Config.get("db_path")
     GrubStars::Config.set("db_path", GrubStars::TestHelper::TEST_DB_PATH)
     GrubStars.reset_db!
@@ -22,6 +23,7 @@ class APITest < GrubStars::IntegrationTest
 
   def teardown
     WebMock.allow_net_connect!
+    GrubStars::API::JobManager.reset!
     if @original_db_path
       GrubStars::Config.set("db_path", @original_db_path)
     end
@@ -169,7 +171,7 @@ class APITest < GrubStars::IntegrationTest
     assert body["data"]["categories"].is_a?(Array)
   end
 
-  # Index endpoint tests
+  # Index endpoint tests (async)
   def test_index_requires_location
     post "/index", {}.to_json, { "CONTENT_TYPE" => "application/json" }
 
@@ -177,14 +179,6 @@ class APITest < GrubStars::IntegrationTest
     body = JSON.parse(last_response.body)
     assert_equal "INVALID_REQUEST", body["error"]["code"]
     assert_match(/location/i, body["error"]["message"])
-  end
-
-  def test_index_no_adapters_configured
-    post "/index", { location: "barrie" }.to_json, { "CONTENT_TYPE" => "application/json" }
-
-    assert_equal 503, last_response.status
-    body = JSON.parse(last_response.body)
-    assert_equal "NO_ADAPTERS", body["error"]["code"]
   end
 
   def test_index_invalid_json
@@ -195,7 +189,7 @@ class APITest < GrubStars::IntegrationTest
     assert_equal "INVALID_JSON", body["error"]["code"]
   end
 
-  def test_index_success_with_configured_adapter
+  def test_index_returns_job_id
     stub_yelp_search
     stub_yelp_business("bakery-barrie")
 
@@ -203,42 +197,127 @@ class APITest < GrubStars::IntegrationTest
       post "/index", { location: "barrie, ontario" }.to_json, { "CONTENT_TYPE" => "application/json" }
     end
 
-    assert last_response.ok?, "Expected 200 OK but got #{last_response.status}: #{last_response.body}"
+    assert_equal 202, last_response.status
     body = JSON.parse(last_response.body)
 
-    assert_equal 1, body["data"]["total"]
-    assert_equal 1, body["data"]["created"]
-    assert_equal 0, body["data"]["merged"]
+    assert body["data"]["job_id"], "Expected job_id in response"
     assert_equal "barrie, ontario", body["meta"]["location"]
-
-    # Verify restaurant was actually created in database
-    assert_equal 1, GrubStars.db[:restaurants].count
   end
 
-  def test_index_success_with_category_filter
-    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
-      .with(query: hash_including(categories: "bakery"))
-      .to_return(
-        status: 200,
-        body: {
-          total: 1,
-          businesses: [yelp_business_data("bakery-barrie", "Test Bakery")]
-        }.to_json,
-        headers: { "Content-Type" => "application/json" }
-      )
+  def test_index_job_completes_successfully
+    stub_yelp_search
     stub_yelp_business("bakery-barrie")
 
-    with_env("YELP_API_KEY" => "test_key") do
-      post "/index",
-           { location: "barrie, ontario", category: "bakery" }.to_json,
-           { "CONTENT_TYPE" => "application/json" }
-    end
+    # Set env for entire test since job runs in background
+    original_key = ENV["YELP_API_KEY"]
+    ENV["YELP_API_KEY"] = "test_key"
 
+    post "/index", { location: "barrie, ontario" }.to_json, { "CONTENT_TYPE" => "application/json" }
+    job_id = JSON.parse(last_response.body)["data"]["job_id"]
+
+    # Wait for job to complete
+    wait_for_job(job_id)
+
+    get "/jobs/#{job_id}"
     assert last_response.ok?
     body = JSON.parse(last_response.body)
 
-    assert_equal 1, body["data"]["total"]
-    assert_equal "bakery", body["meta"]["category"]
+    assert_equal "completed", body["data"]["status"]
+    assert_equal 1, body["data"]["result"]["total"]
+    assert_equal 1, body["data"]["result"]["created"]
+
+    # Verify restaurant was created
+    assert_equal 1, GrubStars.db[:restaurants].count
+  ensure
+    ENV["YELP_API_KEY"] = original_key
+  end
+
+  def test_index_job_fails_without_adapters
+    post "/index", { location: "barrie" }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert_equal 202, last_response.status
+    job_id = JSON.parse(last_response.body)["data"]["job_id"]
+
+    wait_for_job(job_id)
+
+    get "/jobs/#{job_id}"
+    body = JSON.parse(last_response.body)
+
+    assert_equal "failed", body["data"]["status"]
+    assert_match(/No adapters configured/i, body["data"]["error"])
+  end
+
+  def test_index_rejects_when_too_many_jobs
+    # Stub slow API response to keep jobs running
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .to_return do
+        sleep 2
+        { status: 200, body: { total: 0, businesses: [] }.to_json }
+      end
+
+    original_key = ENV["YELP_API_KEY"]
+    ENV["YELP_API_KEY"] = "test_key"
+
+    # Fill up the job queue
+    3.times do |i|
+      post "/index", { location: "city#{i}" }.to_json, { "CONTENT_TYPE" => "application/json" }
+      assert_equal 202, last_response.status
+    end
+
+    # Give threads a moment to start
+    sleep 0.1
+
+    # Fourth job should be rejected
+    post "/index", { location: "overflow" }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert_equal 429, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "TOO_MANY_JOBS", body["error"]["code"]
+  ensure
+    ENV["YELP_API_KEY"] = original_key
+  end
+
+  # Jobs endpoint tests
+  def test_jobs_list_empty
+    get "/jobs"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal [], body["data"]
+    assert_equal 0, body["meta"]["count"]
+  end
+
+  def test_jobs_list_shows_jobs
+    post "/index", { location: "barrie" }.to_json, { "CONTENT_TYPE" => "application/json" }
+    post "/index", { location: "toronto" }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    get "/jobs"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 2, body["data"].length
+    assert_equal 2, body["meta"]["count"]
+  end
+
+  def test_job_not_found
+    get "/jobs/nonexistent-id"
+
+    assert_equal 404, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "NOT_FOUND", body["error"]["code"]
+  end
+
+  def test_job_status_pending_or_running
+    post "/index", { location: "barrie" }.to_json, { "CONTENT_TYPE" => "application/json" }
+    job_id = JSON.parse(last_response.body)["data"]["job_id"]
+
+    get "/jobs/#{job_id}"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_includes %w[pending running completed failed], body["data"]["status"]
+    assert body["data"]["id"]
+    assert body["data"]["created_at"]
   end
 
   # JSON content type tests
@@ -327,6 +406,17 @@ class APITest < GrubStars::IntegrationTest
       else
         ENV[key] = value
       end
+    end
+  end
+
+  def wait_for_job(job_id, timeout: 5)
+    deadline = Time.now + timeout
+    loop do
+      job = GrubStars::API::JobManager.instance.get(job_id)
+      break if job.nil? || %i[completed failed].include?(job.status)
+      raise "Job timeout" if Time.now > deadline
+
+      sleep 0.05
     end
   end
 

@@ -3,10 +3,12 @@
 require "sinatra/base"
 require "json"
 require_relative "../grub_stars"
+require_relative "job_manager"
 
 module GrubStars
   module API
     class Server < Sinatra::Base
+      MAX_CONCURRENT_JOBS = 3
       configure do
         set :show_exceptions, false
         set :raise_errors, false
@@ -68,7 +70,7 @@ module GrubStars
         json_response(restaurant.to_h)
       end
 
-      # Index restaurants
+      # Index restaurants (async)
       post "/index" do
         body = parse_json_body
         location = body["location"]
@@ -78,14 +80,34 @@ module GrubStars
           halt 400, json_error("INVALID_REQUEST", "location is required")
         end
 
-        service = Services::IndexRestaurantsService.new
-        stats = service.index(location: location, categories: category)
+        if job_manager.active_count >= MAX_CONCURRENT_JOBS
+          halt 429, json_error("TOO_MANY_JOBS", "Maximum #{MAX_CONCURRENT_JOBS} concurrent jobs allowed")
+        end
 
-        json_response(stats, location: location, category: category)
-      rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
-        halt 503, json_error("NO_ADAPTERS", e.message)
-      rescue Infrastructure::Adapters::Base::APIError => e
-        halt 502, json_error("API_ERROR", e.message)
+        job_id = job_manager.enqueue do
+          service = Services::IndexRestaurantsService.new
+          service.index(location: location, categories: category)
+        end
+
+        status 202
+        json_response({ job_id: job_id }, location: location, category: category)
+      end
+
+      # List all jobs
+      get "/jobs" do
+        jobs = job_manager.all.map { |j| serialize_job(j) }
+        json_response(jobs, count: jobs.length)
+      end
+
+      # Get job status
+      get "/jobs/:id" do
+        job = job_manager.get(params[:id])
+
+        if job.nil?
+          halt 404, json_error("NOT_FOUND", "Job with ID #{params[:id]} not found")
+        end
+
+        json_response(serialize_job(job))
       end
 
       # Error handlers
@@ -134,6 +156,21 @@ module GrubStars
           end,
           categories: restaurant.category_names,
           sources: restaurant.sources
+        }
+      end
+
+      def job_manager
+        JobManager.instance
+      end
+
+      def serialize_job(job)
+        {
+          id: job.id,
+          status: job.status.to_s,
+          result: job.result,
+          error: job.error,
+          created_at: job.created_at&.iso8601,
+          completed_at: job.completed_at&.iso8601
         }
       end
     end
