@@ -4,12 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**grub stars** (`grst`) is a command-line application that aggregates restaurant information (reviews, photos, videos, ratings) from multiple sources into a local SQLite database. Users index a geographic area once, then perform fast local searches without hitting multiple APIs repeatedly.
+**grub stars** aggregates restaurant information (reviews, photos, videos, ratings) from multiple sources into a local SQLite database. Users index a geographic area once, then perform fast local searches without hitting multiple APIs repeatedly.
+
+The project provides multiple interfaces:
+- **CLI** (`grst`) - Command-line interface for terminal users
+- **REST API** - Sinatra-based HTTP API for programmatic access
+- **Web UI** (planned) - Browser-based interface
 
 ## Tech Stack
 
 - **Ruby**
 - **Thor** - CLI framework
+- **Sinatra** - REST API framework
 - **Sequel + sqlite3** - Database ORM and driver
 - **Faraday** - HTTP client for all adapters
 - **dotenv** - Environment variable management
@@ -56,6 +62,47 @@ grst search --category bakery                          # Search locally by categ
 grst info --name "restaurant name"                     # Show detailed restaurant info
 ```
 
+## REST API
+
+Start the API server:
+
+```bash
+bundle _2.5.23_ exec rackup                            # Start on default port 9292
+bundle _2.5.23_ exec rackup -p 3000                    # Start on custom port
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/categories` | GET | List all categories |
+| `/locations` | GET | List all indexed locations |
+| `/restaurants/search?name=X` | GET | Search by name |
+| `/restaurants/search?category=X` | GET | Search by category |
+| `/restaurants/:id` | GET | Get restaurant details |
+| `/index` | POST | Index restaurants (body: `{"location": "city", "category": "optional"}`) |
+
+### Response Format
+
+```json
+{
+  "data": <result>,
+  "meta": { "timestamp": "...", "count": 10 }
+}
+```
+
+### Docker Deployment
+
+```bash
+docker build -t grub-stars-api .
+docker run -p 9292:9292 \
+  -e YELP_API_KEY=xxx \
+  -e GOOGLE_API_KEY=xxx \
+  -v grub_stars_data:/data \
+  grub-stars-api
+```
+
 ## Code Structure
 
 The codebase follows a **layered architecture** with clear separation of concerns:
@@ -64,6 +111,8 @@ The codebase follows a **layered architecture** with clear separation of concern
 lib/
 ├── grub_stars.rb                    # Main entry, requires all layers
 ├── cli.rb                           # Presentation layer (Thor CLI)
+├── api/
+│   └── server.rb                    # Presentation layer (Sinatra REST API)
 ├── config.rb                        # Configuration management
 ├── logger.rb                        # Logging utility
 ├── domain/                          # Domain layer (pure business logic)
@@ -98,6 +147,7 @@ lib/
 tests/
 ├── test_helper.rb
 ├── integration/                     # Full-stack integration tests
+│   ├── api_test.rb                 # REST API tests
 │   ├── cli_test.rb
 │   └── index_test.rb
 └── unit/                           # Unit tests (with mocks)
@@ -109,6 +159,9 @@ tests/
 dev/
 ├── mock_server.rb                  # Sinatra mock API server
 └── fixtures/                       # Mock data for Yelp and Google
+
+config.ru                           # Rack configuration for API server
+Dockerfile                          # Container configuration for deployment
 ```
 
 ## Architecture
@@ -116,26 +169,28 @@ dev/
 ### Layered Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────┐
-│              Presentation Layer                     │
-│              (lib/cli.rb)                           │
-│  - User I/O and formatting only                     │
-└────────────────────┬────────────────────────────────┘
-                     │ calls
-┌────────────────────▼────────────────────────────────┐
-│              Service Layer                          │
-│              (lib/services/)                        │
-│  - Orchestrates business operations                 │
-│  - Uses repositories and domain logic               │
-└──────┬─────────────────────────────────┬───────────┘
-       │ uses                            │ uses
-┌──────▼────────────────┐    ┌───────────▼────────────┐
-│   Domain Layer        │    │  Infrastructure Layer  │
-│   (lib/domain/)       │    │  (lib/infrastructure/) │
-│  - Pure business      │    │  - Repositories        │
-│    logic & models     │    │  - Database            │
-│  - Zero dependencies  │    │  - Adapters            │
-└───────────────────────┘    └────────────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│                      Presentation Layer                            │
+│  ┌─────────────────────┐    ┌─────────────────────┐                │
+│  │   CLI (lib/cli.rb)  │    │ REST API            │    (Web UI)    │
+│  │   Thor commands     │    │ (lib/api/server.rb) │    (planned)   │
+│  └─────────────────────┘    └─────────────────────┘                │
+└────────────────────────────────┬───────────────────────────────────┘
+                                 │ calls
+┌────────────────────────────────▼───────────────────────────────────┐
+│                        Service Layer                               │
+│                        (lib/services/)                             │
+│  - Orchestrates business operations                                │
+│  - Uses repositories and domain logic                              │
+└──────┬───────────────────────────────────────────────┬─────────────┘
+       │ uses                                          │ uses
+┌──────▼────────────────┐              ┌───────────────▼─────────────┐
+│   Domain Layer        │              │  Infrastructure Layer       │
+│   (lib/domain/)       │              │  (lib/infrastructure/)      │
+│  - Pure business      │              │  - Repositories             │
+│    logic & models     │              │  - Database                 │
+│  - Zero dependencies  │              │  - Adapters                 │
+└───────────────────────┘              └─────────────────────────────┘
 ```
 
 **Key Principle:** Dependencies flow inward toward the domain layer. The domain has zero external dependencies.
@@ -233,31 +288,46 @@ Services use dependency injection for testability and accept repositories/domain
 
 - `ListCategoriesService` - List available categories
 
-### 4. Presentation Layer (`lib/cli.rb`)
+### 4. Presentation Layer
 
-**Thor CLI commands for user interaction.**
+**Multiple interfaces for different use cases.**
 
-- Handles user I/O and output formatting only
+**CLI (`lib/cli.rb`)** - Thor-based command-line interface:
+- Handles terminal I/O and formatting
 - Calls services to perform business operations
-- **No business logic or database access**
 - Commands: `index`, `search`, `info`, `categories`
+
+**REST API (`lib/api/server.rb`)** - Sinatra-based HTTP API:
+- JSON request/response format
+- Mirrors CLI functionality via HTTP endpoints
+- Suitable for programmatic access and web frontends
+- Endpoints: `/health`, `/categories`, `/locations`, `/restaurants/search`, `/restaurants/:id`, `/index`
+
+**Web UI** (planned) - Browser-based interface:
+- Will consume the REST API
+- Interactive restaurant search and browsing
+
+**Key Principle:** All presentation layers are thin - they only handle I/O formatting and delegate to the service layer.
 
 ## Implementation Status
 
 ✅ **Completed:**
 1. **API Research**: Verified data access from Yelp, Google Maps, and TripAdvisor
 2. **CLI Layer**: Thor-based commands with service-based architecture
-3. **Database**: SQLite schema with full relationship modeling
-4. **Adapters**: Yelp, Google Maps, and TripAdvisor adapters implemented
-5. **Domain Models**: Pure Ruby models (Restaurant, Rating, Review, Media, Category, ExternalId)
-6. **Repositories**: Full data access layer with repository pattern
-7. **Services**: All core services implemented (Index, Search, Details, Categories)
-8. **Matcher**: Pure deduplication logic with confidence scoring
-9. **Layered Architecture**: Complete refactoring to clean architecture
-10. **Test Coverage**: Comprehensive unit and integration tests
-11. **Fallback Search**: When local search fails, fallback to live API search with on-demand indexing
+3. **REST API Layer**: Sinatra-based HTTP API with JSON responses
+4. **Docker Support**: Dockerfile for containerized deployment
+5. **Database**: SQLite schema with full relationship modeling
+6. **Adapters**: Yelp, Google Maps, and TripAdvisor adapters implemented
+7. **Domain Models**: Pure Ruby models (Restaurant, Rating, Review, Media, Category, ExternalId)
+8. **Repositories**: Full data access layer with repository pattern
+9. **Services**: All core services implemented (Index, Search, Details, Categories)
+10. **Matcher**: Pure deduplication logic with confidence scoring
+11. **Layered Architecture**: Complete refactoring to clean architecture
+12. **Test Coverage**: Comprehensive unit and integration tests (CLI + API)
+13. **Fallback Search**: When local search fails, fallback to live API search with on-demand indexing
 
 🚧 **Planned:**
+- Web UI (browser-based interface consuming REST API)
 - Instagram adapter (photos/videos only)
 - TikTok adapter (videos only)
 
