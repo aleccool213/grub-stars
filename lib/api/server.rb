@@ -10,10 +10,19 @@ module GrubStars
       configure do
         set :show_exceptions, false
         set :raise_errors, false
+        # Serve static files from web directory
+        set :public_folder, File.expand_path("../../../web", __FILE__)
       end
 
       before do
-        content_type :json
+        # Only set JSON content type for API routes
+        content_type :json unless request.path_info.start_with?("/js", "/css") || request.path_info.end_with?(".html")
+      end
+
+      # Serve index.html at root
+      get "/" do
+        content_type :html
+        send_file File.join(settings.public_folder, "index.html")
       end
 
       # Health check

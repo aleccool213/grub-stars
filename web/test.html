@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>grub stars - Test Suite</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <header class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">grub stars</h1>
+      <p class="text-xl text-gray-600">Test Suite</p>
+    </header>
+
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-2xl font-bold mb-4">Browser-Based Tests</h2>
+      <p class="text-gray-600 mb-4">
+        Open the browser console (F12) to see detailed test results.
+        Tests run automatically on page load.
+      </p>
+      <div class="bg-blue-50 border border-blue-200 rounded p-4">
+        <p class="text-sm text-blue-800">
+          <strong>Note:</strong> Make sure the API server is running at
+          <code class="bg-blue-100 px-1 rounded">http://localhost:9292</code>
+          for integration tests to work.
+        </p>
+      </div>
+    </div>
+
+    <!-- Test results will be rendered here -->
+    <div id="test-results"></div>
+
+    <footer class="text-center mt-8 text-gray-500 text-sm">
+      <p>Zero-build, zero-framework testing • Just vanilla JavaScript</p>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { runTests, renderResults } from './js/test-framework.js';
+
+    // Import all test files
+    import './js/api.test.js';
+    // Add more test imports here as you create them:
+    // import './js/components/restaurant-card.test.js';
+    // import './js/utils/formatters.test.js';
+
+    // Run tests when page loads
+    window.addEventListener('DOMContentLoaded', async () => {
+      console.log('🚀 Starting test suite...\n');
+      console.log('API Server: http://localhost:9292');
+      console.log('Open DevTools Console for detailed output\n');
+
+      try {
+        const results = await runTests();
+        renderResults('test-results');
+
+        // Set page title to show pass/fail
+        if (results.failed === 0) {
+          document.title = `✅ All tests passed - grub stars`;
+        } else {
+          document.title = `❌ ${results.failed} failed - grub stars`;
+        }
+      } catch (error) {
+        console.error('Test runner error:', error);
+        document.getElementById('test-results').innerHTML = `
+          <div class="max-w-2xl mx-auto p-6 bg-red-100 text-red-800 rounded-lg">
+            <h2 class="text-2xl font-bold mb-2">Test Runner Error</h2>
+            <p>${error.message}</p>
+            <pre class="mt-4 text-sm">${error.stack}</pre>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
