@@ -5,3 +5,4 @@
 # Binstubs (except grst)
 /bin/*
 !/bin/grst
+node_modules/

@@ -1,0 +1,13 @@
+{
+  "name": "grub-stars",
+  "version": "1.0.0",
+  "description": "Restaurant aggregator - JavaScript test dependencies",
+  "private": true,
+  "scripts": {
+    "test": "node run-tests.js",
+    "test:install": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "playwright": "^1.41.0"
+  }
+}
