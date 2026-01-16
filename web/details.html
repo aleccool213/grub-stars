@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Details - grub stars</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">
+        <a href="/" class="hover:text-blue-600">grub stars</a>
+      </h1>
+    </header>
+
+    <main>
+      <div class="max-w-4xl mx-auto">
+        <a href="/" class="inline-block mb-4 text-blue-600 hover:text-blue-800">
+          ← Back to search
+        </a>
+
+        <!-- Restaurant details will be loaded here -->
+        <div id="restaurant-details"></div>
+      </div>
+    </main>
+
+    <footer class="text-center mt-12 text-gray-500 text-sm">
+      <p>grub stars</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/js/details.js"></script>
+</body>
+</html>

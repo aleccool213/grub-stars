@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Index Location - grub stars</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">
+        <a href="/" class="hover:text-blue-600">grub stars</a>
+      </h1>
+      <p class="text-gray-600 mt-2">Index a new location</p>
+    </header>
+
+    <main>
+      <div class="max-w-2xl mx-auto bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Index New Location</h2>
+        <p class="text-gray-600 mb-6">
+          Add restaurants from a specific geographic area to your local database.
+        </p>
+
+        <form id="index-form" class="space-y-4">
+          <div>
+            <label for="location" class="block text-sm font-medium text-gray-700 mb-1">
+              Location *
+            </label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              placeholder="e.g., Barrie, Ontario"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <p class="text-sm text-gray-500 mt-1">
+              City, state/province format works best
+            </p>
+          </div>
+
+          <div>
+            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">
+              Category (optional)
+            </label>
+            <input
+              type="text"
+              id="category"
+              name="category"
+              placeholder="e.g., bakery, restaurant"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <p class="text-sm text-gray-500 mt-1">
+              Leave empty to index all restaurants, or specify a category to filter
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            Start Indexing
+          </button>
+        </form>
+
+        <!-- Results area -->
+        <div id="index-results" class="mt-6"></div>
+      </div>
+    </main>
+
+    <footer class="text-center mt-12 text-gray-500 text-sm">
+      <nav class="space-x-4 mb-4">
+        <a href="/" class="hover:text-gray-700">Search</a>
+        <a href="/categories.html" class="hover:text-gray-700">Categories</a>
+        <a href="/index-location.html" class="hover:text-gray-700">Index Location</a>
+      </nav>
+      <p>grub stars</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/js/index-form.js"></script>
+</body>
+</html>
