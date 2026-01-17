@@ -113,6 +113,54 @@ docker run -p 9292:9292 \
   grub-stars-api
 ```
 
+### Fly.io Cloud Deployment
+
+The project includes Fly.io configuration for two environments:
+
+| Environment | Config File | Description |
+|-------------|-------------|-------------|
+| **Test** | `fly.test.toml` | Uses mock API server (no real keys needed) |
+| **Prod** | `fly.prod.toml` | Uses real API keys (set as secrets) |
+
+**Prerequisites:**
+```bash
+# Install Fly.io CLI
+curl -L https://fly.io/install.sh | sh
+
+# Login to Fly.io
+fly auth login
+```
+
+**Deploy Test Environment:**
+```bash
+./scripts/deploy-test.sh
+# Or manually:
+fly deploy --config fly.test.toml
+```
+
+**Deploy Production Environment:**
+```bash
+# First, set your API secrets
+fly secrets set YELP_API_KEY=your_key --config fly.prod.toml
+fly secrets set GOOGLE_API_KEY=your_key --config fly.prod.toml
+fly secrets set TRIPADVISOR_API_KEY=your_key --config fly.prod.toml
+
+# Then deploy
+./scripts/deploy-prod.sh
+# Or manually:
+fly deploy --config fly.prod.toml
+```
+
+**Useful Commands:**
+```bash
+fly logs --config fly.test.toml         # View logs
+fly ssh console --config fly.test.toml  # SSH into container
+fly status --config fly.test.toml       # Check status
+fly apps open --config fly.test.toml    # Open in browser
+```
+
+**Cost:** Free tier includes 3 shared VMs (256MB RAM each) - enough for both test and prod.
+
 ## Code Structure
 
 The codebase follows a **layered architecture** with clear separation of concerns:
@@ -170,8 +218,16 @@ dev/
 ├── mock_server.rb                  # Sinatra mock API server
 └── fixtures/                       # Mock data for Yelp and Google
 
+scripts/
+├── deploy-test.sh                  # Deploy test env to Fly.io
+├── deploy-prod.sh                  # Deploy prod env to Fly.io
+└── start-test.sh                   # Start script for test container
+
 config.ru                           # Rack configuration for API server
-Dockerfile                          # Container configuration for deployment
+Dockerfile                          # Container configuration for production
+Dockerfile.test                     # Container for test (includes mock server)
+fly.test.toml                       # Fly.io config for test environment
+fly.prod.toml                       # Fly.io config for prod environment
 ```
 
 ## Architecture
@@ -335,6 +391,7 @@ Services use dependency injection for testability and accept repositories/domain
 11. **Layered Architecture**: Complete refactoring to clean architecture
 12. **Test Coverage**: Comprehensive unit and integration tests (CLI + API)
 13. **Fallback Search**: When local search fails, fallback to live API search with on-demand indexing
+14. **Fly.io Deployment**: Test env (with mock server) and prod env configurations
 
 🚧 **Planned:**
 - Web UI (browser-based interface consuming REST API)

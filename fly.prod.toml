@@ -1,0 +1,36 @@
+# Fly.io configuration for PRODUCTION environment
+# Uses real API keys (set via fly secrets)
+#
+# Deploy: fly deploy --config fly.prod.toml
+#
+# Set secrets before first deploy:
+#   fly secrets set YELP_API_KEY=your_key --config fly.prod.toml
+#   fly secrets set GOOGLE_API_KEY=your_key --config fly.prod.toml
+#   fly secrets set TRIPADVISOR_API_KEY=your_key --config fly.prod.toml
+
+app = 'grub-stars-prod'
+primary_region = 'ord'  # Chicago - change to your preferred region
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  RACK_ENV = 'production'
+  GRUB_STARS_CONFIG_DIR = '/data'
+
+[http_service]
+  internal_port = 9292
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[mounts]
+  source = 'grub_stars_prod_data'
+  destination = '/data'

@@ -1,0 +1,39 @@
+# Fly.io configuration for TEST environment
+# Uses mock API server for testing without real API keys
+#
+# Deploy: fly deploy --config fly.test.toml
+
+app = 'grub-stars-test'
+primary_region = 'ord'  # Chicago - change to your preferred region
+
+[build]
+  dockerfile = 'Dockerfile.test'
+
+[env]
+  RACK_ENV = 'production'
+  GRUB_STARS_CONFIG_DIR = '/data'
+  # Mock server URLs (mock runs on port 4567 in same container)
+  YELP_API_BASE_URL = 'http://localhost:4567'
+  GOOGLE_API_BASE_URL = 'http://localhost:4567'
+  TRIPADVISOR_API_BASE_URL = 'http://localhost:4567/api/v1'
+  # Mock API keys (any value works with mock server)
+  YELP_API_KEY = 'mock_api_key'
+  GOOGLE_API_KEY = 'mock_api_key'
+  TRIPADVISOR_API_KEY = 'mock_api_key'
+
+[http_service]
+  internal_port = 9292
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[mounts]
+  source = 'grub_stars_test_data'
+  destination = '/data'
