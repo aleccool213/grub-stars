@@ -1,11 +1,12 @@
 #!/bin/bash
 # Deploy to production environment on Fly.io
-# Uses 1Password CLI to fetch API keys automatically
+# Uses 1Password CLI to fetch all credentials automatically
 #
 # Prerequisites:
 #   1. Install 1Password CLI: https://1password.com/downloads/command-line/
 #   2. Sign in: eval $(op signin)
 #   3. Create a "grub-stars" item in 1Password with these fields:
+#      - FLY_ACCESS_TOKEN (from: fly tokens create deploy -a grub-stars-prod)
 #      - YELP_API_KEY
 #      - GOOGLE_API_KEY
 #      - TRIPADVISOR_API_KEY
@@ -18,10 +19,10 @@ set -e
 # === 1Password Configuration ===
 # Adjust these to match your 1Password setup
 OP_VAULT="Private"                    # Your vault name
-OP_ITEM="grub-stars"                  # Item name containing API keys
+OP_ITEM="grub-stars"                  # Item name containing all credentials
 
-# Field names in 1Password (should match env var names)
-OP_FIELDS=("YELP_API_KEY" "GOOGLE_API_KEY" "TRIPADVISOR_API_KEY")
+# API key fields in 1Password
+OP_API_FIELDS=("YELP_API_KEY" "GOOGLE_API_KEY" "TRIPADVISOR_API_KEY")
 
 echo "=== Deploying grub-stars PRODUCTION environment ==="
 echo ""
@@ -38,26 +39,45 @@ if ! command -v op &> /dev/null; then
   echo "ERROR: 1Password CLI (op) not found. Install it:"
   echo "  https://1password.com/downloads/command-line/"
   echo ""
-  echo "Or set secrets manually:"
+  echo "Or deploy manually:"
+  echo "  fly auth login"
   echo "  fly secrets set YELP_API_KEY=xxx GOOGLE_API_KEY=xxx TRIPADVISOR_API_KEY=xxx --config fly.prod.toml"
+  echo "  fly deploy --config fly.prod.toml"
   exit 1
 fi
 
-# Check if logged into 1Password
+# Check if signed into 1Password
 if ! op account list &> /dev/null; then
   echo "Not signed into 1Password. Run:"
   echo "  eval \$(op signin)"
   exit 1
 fi
 
-# Check if logged into Fly.io
+# Fetch Fly.io access token from 1Password
+echo "Fetching Fly.io access token from 1Password..."
+FLY_ACCESS_TOKEN=$(op read "op://$OP_VAULT/$OP_ITEM/FLY_ACCESS_TOKEN" 2>/dev/null) || {
+  echo "ERROR: Could not read FLY_ACCESS_TOKEN from 1Password"
+  echo ""
+  echo "To create a deploy token, run:"
+  echo "  fly auth login"
+  echo "  fly tokens create deploy -a grub-stars-prod"
+  echo ""
+  echo "Then add the token to 1Password item '$OP_ITEM' as field 'FLY_ACCESS_TOKEN'"
+  exit 1
+}
+export FLY_ACCESS_TOKEN
+
+echo "Authenticated with Fly.io via token"
+
+# Verify token works
 if ! fly auth whoami &> /dev/null; then
-  echo "Not logged in to Fly.io. Running 'fly auth login'..."
-  fly auth login
+  echo "ERROR: FLY_ACCESS_TOKEN is invalid or expired"
+  echo "Generate a new one with: fly tokens create deploy -a grub-stars-prod"
+  exit 1
 fi
 
 # Create app if it doesn't exist
-if ! fly apps list | grep -q "grub-stars-prod"; then
+if ! fly apps list 2>/dev/null | grep -q "grub-stars-prod"; then
   echo "Creating grub-stars-prod app..."
   fly apps create grub-stars-prod
 fi
@@ -65,14 +85,15 @@ fi
 # Create volume if it doesn't exist
 if ! fly volumes list --config fly.prod.toml 2>/dev/null | grep -q "grub_stars_prod_data"; then
   echo "Creating persistent volume..."
-  fly volumes create grub_stars_prod_data --size 1 --region ord --config fly.prod.toml
+  fly volumes create grub_stars_prod_data --size 1 --region ord --config fly.prod.toml --yes
 fi
 
-# Fetch secrets from 1Password and set them in Fly.io
-echo "Fetching API keys from 1Password (vault: $OP_VAULT, item: $OP_ITEM)..."
+# Fetch API secrets from 1Password and set them in Fly.io
+echo ""
+echo "Fetching API keys from 1Password..."
 SECRETS_ARGS=""
 
-for field in "${OP_FIELDS[@]}"; do
+for field in "${OP_API_FIELDS[@]}"; do
   echo "  Reading $field..."
   value=$(op read "op://$OP_VAULT/$OP_ITEM/$field" 2>/dev/null) || {
     echo "ERROR: Could not read $field from 1Password"
