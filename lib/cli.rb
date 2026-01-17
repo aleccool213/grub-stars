@@ -86,21 +86,21 @@ module GrubStars
     end
 
     desc "index", "Search and retrieve data for a specific area"
-    option :city, type: :string, required: true, desc: "City to index (e.g., 'barrie, ontario')"
+    option :location, type: :string, required: true, desc: "Location to index (e.g., 'barrie, ontario')"
     option :category, type: :string, desc: "Optional category filter (e.g., 'bakery', 'cafe')"
     def index
       p = self.class.pastel
 
       if options[:category]
-        puts p.bold("🗺️  Indexing #{p.cyan(options[:category])} in #{p.cyan(options[:city])}")
+        puts p.bold("🗺️  Indexing #{p.cyan(options[:category])} in #{p.cyan(options[:location])}")
       else
-        puts p.bold("🗺️  Indexing restaurants in #{p.cyan(options[:city])}")
+        puts p.bold("🗺️  Indexing restaurants in #{p.cyan(options[:location])}")
       end
       puts p.dim("   Database: #{Config.db_path}")
       puts
 
       index_service = Services::IndexRestaurantsService.new
-      stats = index_service.index(location: options[:city], categories: options[:category])
+      stats = index_service.index(location: options[:location], categories: options[:category])
 
       puts
       puts p.green("✅ Done! #{p.bold(stats[:total])} restaurants processed")

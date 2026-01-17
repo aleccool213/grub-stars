@@ -28,20 +28,30 @@ This project requires **Bundler 2.5.23** for compatibility with Ruby 3.3.6. Bund
 
 **Setup:**
 ```bash
-gem install bundler -v 2.5.23     # Install correct bundler version
+gem install bundler -v 2.5.23      # Install correct bundler version
 bundle _2.5.23_ install            # Install dependencies with specific version
 ```
 
-**Running Commands:**
+**Running Tests:**
 ```bash
-# Option 1: Use binstubs (recommended)
-./bin/rake test                    # Run all tests
-./bin/rake test:integration        # Run integration tests only
-./bin/grst --help                  # Run CLI locally
+# Use ruby with the rake gem's executable directly (most reliable)
+ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test              # Run all tests
+ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake TEST=tests/integration/cli_test.rb  # Run specific test file
 
-# Option 2: Use bundle exec with specific version
-bundle _2.5.23_ exec rake test     # Run tests via bundle exec
+# Alternative: Run specific test file directly with ruby
+ruby -I lib -I tests tests/integration/cli_test.rb
 ```
+
+**Running CLI:**
+```bash
+ruby -I lib bin/grst --help        # Run CLI locally
+```
+
+**IMPORTANT - Commands that DO NOT work (avoid these):**
+- `./bin/rake test` - binstubs may not exist
+- `bundle exec rake test` - fails with "command not found: rake"
+- `bundle _2.5.23_ exec rake test` - may fail if bundler not properly installed
+- `bundle install` without version specifier - uses Bundler 4.0.3+ which has CGI bugs
 
 ## Configuration
 
@@ -56,10 +66,10 @@ Environment variables: `YELP_API_KEY`, `GOOGLE_API_KEY`, `TRIPADVISOR_API_KEY`, 
 ## CLI Commands
 
 ```bash
-grst index --city "barrie, ontario"                    # Index all restaurants in area
-grst index --city "barrie, ontario" --category bakery  # Index only bakeries in area
-grst search --category bakery                          # Search locally by category/name
-grst info --name "restaurant name"                     # Show detailed restaurant info
+grst index --location "barrie, ontario"                    # Index all restaurants in area
+grst index --location "barrie, ontario" --category bakery  # Index only bakeries in area
+grst search --category bakery                              # Search locally by category/name
+grst info --name "restaurant name"                         # Show detailed restaurant info
 ```
 
 ## REST API
@@ -251,7 +261,7 @@ This provides a seamless experience where unindexed restaurants can be discovere
 All adapters support optional category filtering during indexing:
 - Users can index a location with a category filter (e.g., only bakeries)
 - This allows multiple indexing passes with different categories for targeted data collection
-- Example: `grst index --city "barrie, ontario" --category bakery`
+- Example: `grst index --location "barrie, ontario" --category bakery`
 
 **Implemented:**
 - **Yelp** (`YELP_API_KEY`) - ratings, reviews (enhanced plan), photos

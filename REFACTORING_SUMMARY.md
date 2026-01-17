@@ -211,7 +211,7 @@ tests/unit/
 
 The CLI interface is unchanged:
 ```bash
-grst index --city "barrie, ontario"
+grst index --location "barrie, ontario"
 grst search --name "pizza"
 grst info --id 1
 ```

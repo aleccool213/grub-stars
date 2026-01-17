@@ -63,8 +63,8 @@ bundle install
 
 **Index an area:**
 ```bash
-./bin/grst index --city "barrie, ontario"                    # Index all restaurants
-./bin/grst index --city "barrie, ontario" --category bakery  # Index only bakeries
+./bin/grst index --location "barrie, ontario"                    # Index all restaurants
+./bin/grst index --location "barrie, ontario" --category bakery  # Index only bakeries
 ```
 
 **Search for restaurants:**
@@ -174,13 +174,13 @@ tests/
 ## How It Works
 
 ### 1. Indexing
-When you run `grst index --city "barrie, ontario"`, grub-stars:
+When you run `grst index --location "barrie, ontario"`, grub-stars:
 1. Queries all configured adapters (Yelp, Google Maps, etc.) for restaurants in the area
 2. Uses a **matcher** with confidence scoring to identify duplicate restaurants across sources
 3. Stores everything in a local SQLite database
 
 You can optionally filter by category during indexing:
-- `grst index --city "barrie, ontario" --category bakery` - only indexes bakeries
+- `grst index --location "barrie, ontario" --category bakery` - only indexes bakeries
 - This allows for targeted data collection and multiple indexing passes with different categories
 
 ### 2. Deduplication

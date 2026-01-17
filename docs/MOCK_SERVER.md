@@ -29,7 +29,7 @@ A local Sinatra-based mock server that mimics both the Yelp Fusion API and Googl
 
 3. **Run CLI commands** as normal:
    ```bash
-   ./bin/grst index --city "barrie, ontario"
+   ./bin/grst index --location "barrie, ontario"
    ./bin/grst search --category bakeries
    ./bin/grst info --name "Squares"
    ```
@@ -275,7 +275,7 @@ end
 Test restaurant deduplication with controlled data:
 ```bash
 # Both adapters configured to use mock server
-./bin/grst index --city "barrie, ontario"
+./bin/grst index --location "barrie, ontario"
 
 # Should index 8 unique restaurants (not 16)
 # Each restaurant should have ratings from both Yelp and Google
@@ -288,7 +288,7 @@ Show the application to stakeholders without API costs:
 bundle exec ruby dev/mock_server.rb
 
 # Demo all commands
-./bin/grst index --city "barrie, ontario"
+./bin/grst index --location "barrie, ontario"
 ./bin/grst search --category bakeries
 ./bin/grst info --name "Squares"
 ```
@@ -381,7 +381,7 @@ Run mock server in terminal, use CLI interactively:
 bundle exec ruby dev/mock_server.rb
 
 # Terminal 2
-./bin/grst index --city "barrie, ontario"
+./bin/grst index --location "barrie, ontario"
 ./bin/grst search --name "pizza"
 ```
 

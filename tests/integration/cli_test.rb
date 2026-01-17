@@ -50,11 +50,11 @@ class CLITest < GrubStars::IntegrationTest
     assert_equal 1, exit_code
   end
 
-  def test_index_with_city_shows_message
+  def test_index_with_location_shows_message
     # Without API keys configured, it will fail but should show the initial message
     capture_stdout do
       begin
-        GrubStars::CLI.start(["index", "--city", "barrie, ontario"])
+        GrubStars::CLI.start(["index", "--location", "barrie, ontario"])
       rescue SystemExit
         # Expected - no adapters configured
       end
@@ -62,7 +62,7 @@ class CLITest < GrubStars::IntegrationTest
     # Test passes if no unexpected exception was raised
   end
 
-  def test_index_without_city_fails
+  def test_index_without_location_fails
     assert_raises(SystemExit) do
       capture_output { GrubStars::CLI.start(["index"]) }
     end
@@ -71,7 +71,7 @@ class CLITest < GrubStars::IntegrationTest
   def test_index_without_adapters_shows_error
     exit_code = nil
     output = capture_stdout do
-      exit_code = run_cli_expecting_exit(["index", "--city", "barrie"])
+      exit_code = run_cli_expecting_exit(["index", "--location", "barrie"])
     end
     assert_equal 1, exit_code
     assert_match(/No adapters configured/, output)
