@@ -1,0 +1,28 @@
+{
+  "name": "details-page",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 720 },
+  "steps": [
+    { "action": "goto", "path": "/details.html" },
+    { "action": "wait", "state": "networkidle" },
+    {
+      "action": "screenshot",
+      "name": "details-no-id",
+      "description": "Details page with no restaurant ID - shows error state"
+    },
+    { "action": "goto", "path": "/details.html?id=999" },
+    { "action": "wait", "state": "networkidle" },
+    {
+      "action": "screenshot",
+      "name": "details-not-found",
+      "description": "Details page with invalid ID - shows not found state"
+    },
+    { "action": "goto", "path": "/details.html?id=1" },
+    { "action": "wait", "state": "networkidle" },
+    {
+      "action": "screenshot",
+      "name": "details-restaurant",
+      "description": "Details page showing restaurant information"
+    }
+  ]
+}
