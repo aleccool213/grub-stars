@@ -66,13 +66,13 @@ The index command delegates to `IndexRestaurantsService`:
 
 ```ruby
 desc "index", "Index restaurants in a geographic area"
-option :city, required: true, type: :string
+option :location, required: true, type: :string
 def index
   # Create service instance
   service = Services::IndexRestaurantsService.new
 
   # Call service method
-  stats = service.index(location: options[:city])
+  stats = service.index(location: options[:location])
 
   # Format output for user
   puts "Indexed #{stats[:total]} restaurants"

@@ -30,7 +30,7 @@ bundle install
 Before searching, index restaurants in your area:
 
 ```bash
-./bin/grst index --city "barrie, ontario"
+./bin/grst index --location "barrie, ontario"
 ```
 
 This fetches restaurant data from all configured adapters and stores it locally.

@@ -56,10 +56,10 @@ Environment variables: `YELP_API_KEY`, `GOOGLE_API_KEY`, `TRIPADVISOR_API_KEY`, 
 ## CLI Commands
 
 ```bash
-grst index --city "barrie, ontario"                    # Index all restaurants in area
-grst index --city "barrie, ontario" --category bakery  # Index only bakeries in area
-grst search --category bakery                          # Search locally by category/name
-grst info --name "restaurant name"                     # Show detailed restaurant info
+grst index --location "barrie, ontario"                    # Index all restaurants in area
+grst index --location "barrie, ontario" --category bakery  # Index only bakeries in area
+grst search --category bakery                              # Search locally by category/name
+grst info --name "restaurant name"                         # Show detailed restaurant info
 ```
 
 ## REST API
@@ -251,7 +251,7 @@ This provides a seamless experience where unindexed restaurants can be discovere
 All adapters support optional category filtering during indexing:
 - Users can index a location with a category filter (e.g., only bakeries)
 - This allows multiple indexing passes with different categories for targeted data collection
-- Example: `grst index --city "barrie, ontario" --category bakery`
+- Example: `grst index --location "barrie, ontario" --category bakery`
 
 **Implemented:**
 - **Yelp** (`YELP_API_KEY`) - ratings, reviews (enhanced plan), photos
