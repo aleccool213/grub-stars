@@ -28,20 +28,30 @@ This project requires **Bundler 2.5.23** for compatibility with Ruby 3.3.6. Bund
 
 **Setup:**
 ```bash
-gem install bundler -v 2.5.23     # Install correct bundler version
+gem install bundler -v 2.5.23      # Install correct bundler version
 bundle _2.5.23_ install            # Install dependencies with specific version
 ```
 
-**Running Commands:**
+**Running Tests:**
 ```bash
-# Option 1: Use binstubs (recommended)
-./bin/rake test                    # Run all tests
-./bin/rake test:integration        # Run integration tests only
-./bin/grst --help                  # Run CLI locally
+# Use ruby with the rake gem's executable directly (most reliable)
+ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test              # Run all tests
+ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake TEST=tests/integration/cli_test.rb  # Run specific test file
 
-# Option 2: Use bundle exec with specific version
-bundle _2.5.23_ exec rake test     # Run tests via bundle exec
+# Alternative: Run specific test file directly with ruby
+ruby -I lib -I tests tests/integration/cli_test.rb
 ```
+
+**Running CLI:**
+```bash
+ruby -I lib bin/grst --help        # Run CLI locally
+```
+
+**IMPORTANT - Commands that DO NOT work (avoid these):**
+- `./bin/rake test` - binstubs may not exist
+- `bundle exec rake test` - fails with "command not found: rake"
+- `bundle _2.5.23_ exec rake test` - may fail if bundler not properly installed
+- `bundle install` without version specifier - uses Bundler 4.0.3+ which has CGI bugs
 
 ## Configuration
 
