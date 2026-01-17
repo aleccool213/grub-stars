@@ -19,7 +19,7 @@
 
 ---
 
-A command-line restaurant reviews aggregator that brings together ratings, reviews, photos, and videos from multiple sources into a single, fast, local database.
+A restaurant reviews aggregator that brings together ratings, reviews, photos, and videos from multiple sources into a single, fast, local database. Access your aggregated data through a modern web UI, REST API, or command-line interface.
 
 ## Why grub-stars?
 
@@ -40,7 +40,8 @@ Stop switching between Yelp, Google Maps, TripAdvisor, Instagram, and TikTok to 
 ```bash
 git clone https://github.com/aleccool213/grub-stars.git
 cd grub-stars
-bundle install
+gem install bundler -v 2.5.23
+bundle _2.5.23_ install
 ```
 
 ### Configuration
@@ -59,28 +60,31 @@ bundle install
 
    Configure at least one adapter to get started.
 
-### Usage
+### Running the Web Server
 
-**Index an area:**
+Start the web server to access the web UI and REST API:
+
 ```bash
-./bin/grst index --location "barrie, ontario"                    # Index all restaurants
-./bin/grst index --location "barrie, ontario" --category bakery  # Index only bakeries
+bundle _2.5.23_ exec rackup
 ```
 
-**Search for restaurants:**
-```bash
-./bin/grst search --category bakery
-./bin/grst search --name "corner cafe"
-```
+Then open your browser to `http://localhost:9292`
 
-**View detailed info:**
-```bash
-./bin/grst info --name "squares and circles"
-```
+**Web UI Features:**
+- 🔍 Search restaurants by name or category
+- 📍 Index new geographic areas
+- 🏷️ Browse by categories
+- 📱 Responsive design for desktop and mobile
 
-**List categories:**
+### Using the CLI (Optional)
+
+If you prefer the command-line interface:
+
 ```bash
-./bin/grst categories
+ruby -I lib bin/grst index --location "barrie, ontario"                    # Index all restaurants
+ruby -I lib bin/grst index --location "barrie, ontario" --category bakery  # Index only bakeries
+ruby -I lib bin/grst search --category bakery                              # Search locally
+ruby -I lib bin/grst info --name "restaurant name"                         # Get detailed info
 ```
 
 ## Architecture
@@ -88,25 +92,33 @@ bundle install
 grub-stars uses a **clean layered architecture** that separates concerns and makes the codebase testable and extensible:
 
 ```
-┌─────────────────────────────┐
-│   Presentation (CLI)        │  User interaction
-└──────────┬──────────────────┘
-           │
-┌──────────▼──────────────────┐
-│   Services                  │  Business operations
-└──────┬─────────────┬────────┘
-       │             │
-┌──────▼─────┐  ┌───▼──────────┐
-│   Domain   │  │Infrastructure│
-│   Models   │  │ Repositories │
-│   Matcher  │  │ Adapters     │
-└────────────┘  │ Database     │
-                └──────────────┘
+┌──────────────────────────────────────────────────────┐
+│            Presentation Layer                        │
+│  ┌─────────────────────┐  ┌──────────────────────┐   │
+│  │   Web UI            │  │   REST API           │   │
+│  │   (Browser)         │  │   (lib/api/server.rb)│   │
+│  └─────────────────────┘  └──────────────────────┘   │
+│                                                      │
+│  CLI (optional)                                      │
+│  (lib/cli.rb)                                        │
+└──────────────────┬───────────────────────────────────┘
+                   │
+┌──────────────────▼───────────────────────────────────┐
+│   Services (lib/services/)                           │
+│   Business operations & use cases                    │
+└──────┬──────────────────────────────┬────────────────┘
+       │                              │
+┌──────▼──────────────┐    ┌─────────▼───────────────┐
+│   Domain            │    │  Infrastructure         │
+│   Pure logic        │    │  Repositories           │
+│   Models            │    │  Database (SQLite)      │
+│   Matcher           │    │  External API Adapters  │
+└─────────────────────┘    └─────────────────────────┘
 ```
 
 **Layers:**
-- **Presentation** (`lib/cli.rb`) - Thor CLI commands
-- **Services** (`lib/services/`) - Use cases like indexing, searching, getting details
+- **Presentation** - Web UI (vanilla JavaScript), REST API (Sinatra), and CLI (Thor) - all thin wrappers that delegate to services
+- **Services** (`lib/services/`) - Use cases: indexing, searching, getting details, listing categories
 - **Domain** (`lib/domain/`) - Pure business logic and models (Restaurant, Rating, Review, etc.)
 - **Infrastructure** (`lib/infrastructure/`) - Repositories, database, and external API adapters
 
@@ -127,10 +139,17 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design documentation.
 
 ### Running Tests
 
+**Ruby tests (CLI, API, domain logic):**
 ```bash
-bundle exec rake test              # Run all tests
-bundle exec rake test:integration  # Run integration tests only
-bundle exec rake test:unit         # Run unit tests only
+ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test              # Run all tests
+ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test:integration  # Run integration tests only
+ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test:unit         # Run unit tests only
+```
+
+**JavaScript tests (Web UI):**
+```bash
+npm test                           # Run all JS tests
+npm run test:install               # Install Playwright (first time only)
 ```
 
 ### Project Structure
@@ -140,7 +159,15 @@ lib/
 ├── domain/          # Pure business logic (zero dependencies)
 ├── infrastructure/  # Database, repositories, adapters
 ├── services/        # Application use cases
-└── cli.rb          # User interface
+├── api/             # REST API (Sinatra)
+└── cli.rb           # CLI interface (Thor)
+
+web/                 # Web UI (vanilla JavaScript + HTML)
+├── index.html       # Search page
+├── details.html     # Restaurant details
+├── index-location.html  # Indexing page
+├── js/              # JavaScript components and tests
+└── css/             # Styles
 
 tests/
 ├── unit/           # Fast tests with mocks
@@ -149,12 +176,19 @@ tests/
 
 ### Tech Stack
 
+**Backend:**
 - **Ruby** - Core language
+- **Sinatra** - REST API framework
 - **Thor** - CLI framework
 - **Sequel** - Database ORM
 - **SQLite3** - Local database
 - **Faraday** - HTTP client for adapters
 - **dotenv** - Environment management
+
+**Frontend:**
+- **Vanilla JavaScript** - No framework dependencies
+- **HTML5 & CSS3** - Modern web standards
+- **Playwright** - Headless testing
 
 ## Getting API Keys
 
@@ -174,14 +208,12 @@ tests/
 ## How It Works
 
 ### 1. Indexing
-When you run `grst index --location "barrie, ontario"`, grub-stars:
+When you index a location (via Web UI or CLI), grub-stars:
 1. Queries all configured adapters (Yelp, Google Maps, etc.) for restaurants in the area
 2. Uses a **matcher** with confidence scoring to identify duplicate restaurants across sources
 3. Stores everything in a local SQLite database
 
-You can optionally filter by category during indexing:
-- `grst index --location "barrie, ontario" --category bakery` - only indexes bakeries
-- This allows for targeted data collection and multiple indexing passes with different categories
+You can optionally filter by category during indexing to focus on specific restaurant types.
 
 ### 2. Deduplication
 The matcher prevents duplicates by scoring similarity:
@@ -190,10 +222,42 @@ The matcher prevents duplicates by scoring similarity:
 - GPS proximity: points based on distance
 - Phone number match: additional points
 
-Restaurants scoring >50 are considered the same and merged.
+Restaurants scoring >50 are considered the same and their data is merged.
 
 ### 3. Searching
-All searches happen locally against SQLite, so they're instant. No API calls required after indexing.
+All searches happen locally against SQLite through the Web UI, REST API, or CLI, so they're instant. No API calls required after indexing.
+
+## REST API
+
+The REST API provides programmatic access to all functionality:
+
+```bash
+# Start the server
+bundle _2.5.23_ exec rackup -p 3000
+```
+
+### Available Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/categories` | GET | List all categories |
+| `/locations` | GET | List all indexed locations |
+| `/restaurants/search?name=X` | GET | Search by name |
+| `/restaurants/search?category=X` | GET | Search by category |
+| `/restaurants/:id` | GET | Get restaurant details |
+| `/index` | POST | Index restaurants (body: `{"location": "city", "category": "optional"}`) |
+
+### Response Format
+
+```json
+{
+  "data": <result>,
+  "meta": { "timestamp": "...", "count": 10 }
+}
+```
+
+For detailed API examples and integration guides, see [docs/api.md](docs/api.md).
 
 ## Design Principles
 
@@ -218,12 +282,12 @@ MIT License - see LICENSE file for details
 
 ## Future Plans
 
-- Add web UI using the same service layer
-- Build REST API for programmatic access
+- Add Instagram adapter (photos/videos only)
+- Add TikTok adapter (videos only)
 - Add caching layer for API responses
-- Support for additional data sources
 - Export functionality (CSV, JSON)
 - Restaurant comparison features
+- Mobile app for native iOS/Android access
 
 ---
 
