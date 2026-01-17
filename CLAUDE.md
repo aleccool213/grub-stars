@@ -53,6 +53,80 @@ ruby -I lib bin/grst --help        # Run CLI locally
 - `bundle _2.5.23_ exec rake test` - may fail if bundler not properly installed
 - `bundle install` without version specifier - uses Bundler 4.0.3+ which has CGI bugs
 
+### PR Screenshots (for Claude Code)
+
+Use the Playwright-based screenshot tools to capture UI changes for PR descriptions. This helps demonstrate features, bug fixes, or design changes visually.
+
+**Setup (one-time):**
+```bash
+npm install                          # Install Playwright
+npx playwright install chromium      # Install browser
+```
+
+**Taking Screenshots:**
+
+1. **Quick single screenshot:**
+```bash
+# Start the server first
+bundle _2.5.23_ exec rackup &
+
+# Take a screenshot
+node scripts/screenshot.js --url http://localhost:9292 --name homepage
+```
+
+2. **Run a scenario file (for complex interactions):**
+```bash
+node scripts/screenshot.js --scenario scripts/scenarios/search-flow.json
+```
+
+3. **Dynamic scenario with custom actions:**
+```bash
+node scripts/screenshot.js --url http://localhost:9292 \
+  --actions '[{"action":"click","selector":"#search"},{"action":"wait","ms":500}]' \
+  --name after-click
+```
+
+**Posting to PR:**
+```bash
+# After taking screenshots, post them to a PR
+node scripts/post-screenshots-to-pr.js <PR_NUMBER>
+
+# With custom section name
+node scripts/post-screenshots-to-pr.js 42 --section "UI Changes"
+
+# Preview without making changes
+node scripts/post-screenshots-to-pr.js 42 --dry-run
+```
+
+**Creating Custom Scenarios:**
+
+Create JSON files in `scripts/scenarios/` with this structure:
+```json
+{
+  "name": "feature-demo",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 720 },
+  "steps": [
+    { "action": "goto", "path": "/" },
+    { "action": "screenshot", "name": "before", "description": "Initial state" },
+    { "action": "click", "selector": "#my-button" },
+    { "action": "wait", "ms": 500 },
+    { "action": "screenshot", "name": "after", "description": "After clicking" }
+  ]
+}
+```
+
+**Supported Actions:**
+- `goto` - Navigate to path/URL
+- `click` - Click an element
+- `type` - Type text into input
+- `hover` - Hover over element
+- `scroll` - Scroll to element or position
+- `wait` - Wait for ms, selector, or state
+- `screenshot` - Capture screenshot
+- `select` - Select dropdown option
+- `press` - Press keyboard key
+
 ## Configuration
 
 API keys are configured via environment variables. Copy the template and add your keys:
