@@ -114,8 +114,8 @@ test('renderStars handles half stars', () => {
   const stars = renderStars(3.5);
 
   // Should have 3 full, 1 half, 1 empty
-  // Full stars have text-yellow-400 and fill="currentColor" (no gradient)
-  const fullStarCount = (stars.match(/text-yellow-400" fill="currentColor"/g) || []).length;
+  // Full stars have text-yellow-400 with style and fill="currentColor" (no gradient)
+  const fullStarCount = (stars.match(/text-yellow-400"[^>]*fill="currentColor"/g) || []).length;
   const hasHalfStar = stars.includes('half-star');
   const emptyStarCount = (stars.match(/text-gray-300/g) || []).length;
 

@@ -110,10 +110,10 @@ function showRestaurant(restaurant) {
           </div>
         ` : ''}
 
-        <div class="text-gray-600 space-y-1">
+        <div class="text-gray-600 space-y-1" style="color: #4b5563;">
           ${restaurant.address ? `
-            <p class="flex items-center">
-              <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p class="flex items-center" style="display: flex; align-items: center;">
+              <svg class="w-5 h-5 mr-2 text-gray-400" style="width: 20px; height: 20px; min-width: 20px; margin-right: 0.5rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -122,19 +122,19 @@ function showRestaurant(restaurant) {
           ` : ''}
 
           ${restaurant.phone ? `
-            <p class="flex items-center">
-              <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p class="flex items-center" style="display: flex; align-items: center;">
+              <svg class="w-5 h-5 mr-2 text-gray-400" style="width: 20px; height: 20px; min-width: 20px; margin-right: 0.5rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
-              <a href="tel:${escapeHtml(restaurant.phone)}" class="text-blue-600 hover:underline">
+              <a href="tel:${escapeHtml(restaurant.phone)}" class="text-blue-600 hover:underline" style="color: #2563eb;">
                 ${escapeHtml(restaurant.phone)}
               </a>
             </p>
           ` : ''}
 
           ${restaurant.location ? `
-            <p class="flex items-center">
-              <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p class="flex items-center" style="display: flex; align-items: center;">
+              <svg class="w-5 h-5 mr-2 text-gray-400" style="width: 20px; height: 20px; min-width: 20px; margin-right: 0.5rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               ${escapeHtml(restaurant.location)}
@@ -250,17 +250,17 @@ function showRestaurant(restaurant) {
  */
 function showNotFound(id) {
   detailsContainer.innerHTML = `
-    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
-      <div class="text-yellow-500 mb-4">
-        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center" style="background-color: #fefce8; border: 1px solid #fef08a; border-radius: 0.5rem; padding: 2rem; text-align: center;">
+      <div class="text-yellow-500 mb-4" style="color: #eab308; margin-bottom: 1rem;">
+        <svg class="w-16 h-16 mx-auto" style="width: 64px; height: 64px; margin: 0 auto; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-yellow-800 mb-2">Restaurant Not Found</h3>
-      <p class="text-yellow-700 mb-4">
+      <h3 class="text-lg font-semibold text-yellow-800 mb-2" style="font-size: 1.125rem; font-weight: 600; color: #854d0e; margin-bottom: 0.5rem;">Restaurant Not Found</h3>
+      <p class="text-yellow-700 mb-4" style="color: #a16207; margin-bottom: 1rem;">
         We couldn't find a restaurant with ID ${escapeHtml(String(id))}.
       </p>
-      <a href="/" class="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded transition-colors">
+      <a href="/" class="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded transition-colors" style="display: inline-block; background-color: #ca8a04; color: white; font-weight: 500; padding: 0.5rem 1rem; border-radius: 0.25rem; text-decoration: none;">
         Back to Search
       </a>
     </div>
@@ -315,14 +315,14 @@ function renderStars(rating) {
 
   // Full stars
   for (let i = 0; i < fullStars; i++) {
-    stars += `<svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    stars += `<svg class="w-4 h-4 text-yellow-400" style="width: 16px; height: 16px; color: #facc15;" fill="currentColor" viewBox="0 0 20 20">
       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
     </svg>`;
   }
 
   // Half star
   if (hasHalfStar) {
-    stars += `<svg class="w-4 h-4 text-yellow-400" viewBox="0 0 20 20">
+    stars += `<svg class="w-4 h-4 text-yellow-400" style="width: 16px; height: 16px; color: #facc15;" viewBox="0 0 20 20">
       <defs>
         <linearGradient id="half-star">
           <stop offset="50%" stop-color="currentColor"/>
@@ -335,7 +335,7 @@ function renderStars(rating) {
 
   // Empty stars
   for (let i = 0; i < emptyStars; i++) {
-    stars += `<svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+    stars += `<svg class="w-4 h-4 text-gray-300" style="width: 16px; height: 16px; color: #d1d5db;" fill="currentColor" viewBox="0 0 20 20">
       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
     </svg>`;
   }
