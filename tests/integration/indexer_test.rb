@@ -6,6 +6,7 @@ require "webmock/minitest"
 class IndexerTest < GrubStars::IntegrationTest
   def setup
     super
+    WebMock.reset!
     WebMock.disable_net_connect!
   end
 
