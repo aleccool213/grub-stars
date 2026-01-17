@@ -117,13 +117,16 @@ web/
 ├── test.html               # Test runner
 ├── js/
 │   ├── api.js             # REST API client
-│   ├── search.js          # Search page controller (TODO)
+│   ├── search.js          # Search page controller
 │   ├── details.js         # Details page controller (TODO)
 │   ├── index-form.js      # Index form controller (TODO)
 │   ├── categories-list.js # Categories controller (TODO)
 │   ├── test-framework.js  # Browser test framework
 │   ├── api.test.js        # API client tests
-│   └── components/        # Reusable components (TODO)
+│   └── components/        # Reusable components
+│       ├── restaurant-card.js    # Restaurant result card
+│       ├── loading-spinner.js    # Loading state indicator
+│       └── error-message.js      # Error display component
 └── css/
     └── custom.css         # Custom styles
 ```
