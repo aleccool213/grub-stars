@@ -53,6 +53,65 @@ ruby -I lib bin/grst --help        # Run CLI locally
 - `bundle _2.5.23_ exec rake test` - may fail if bundler not properly installed
 - `bundle install` without version specifier - uses Bundler 4.0.3+ which has CGI bugs
 
+### JavaScript/Web UI Testing
+
+The Web UI uses a zero-dependency, browser-based test framework with Playwright for headless execution.
+
+**Running JavaScript Tests:**
+```bash
+npm test                           # Run all JS tests in headless Chromium
+npm run test:install               # Install Playwright browsers (first time only)
+```
+
+**Test Framework Features:**
+
+The custom test framework (`web/js/test-framework.js`) provides:
+
+- **Assertions:** `assert`, `assertEqual`, `assertTruthy`, `assertFalsy`, `assertIncludes`, `assertThrows`
+- **DOM Interaction:** `click`, `dblclick`, `submit`, `type`, `clear`, `select`, `keyPress`, `focus`, `blur`
+- **Async Utilities:** `waitFor`, `waitForElement`, `waitForText`
+- **Test Isolation:** `createContainer`, `destroyContainer`
+- **Mocking:** `createMockFn`
+
+**Writing Interaction Tests:**
+
+```javascript
+import {
+  test, assert, assertEqual,
+  createContainer, destroyContainer,
+  click, type, submit, waitFor
+} from './test-framework.js';
+
+test('form submission captures input', async () => {
+  const container = createContainer();
+  let submitted = null;
+
+  container.innerHTML = `
+    <form id="search-form">
+      <input name="query" id="query" />
+      <button type="submit">Search</button>
+    </form>
+  `;
+
+  const form = container.querySelector('#search-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitted = new FormData(form).get('query');
+  });
+
+  type(container.querySelector('#query'), 'Pizza');
+  submit(form);
+
+  assertEqual(submitted, 'Pizza', 'Form should capture input');
+  destroyContainer(container);
+});
+```
+
+**Test Files:**
+- `web/js/api.test.js` - API client tests
+- `web/js/components/*.test.js` - Component rendering tests
+- `web/js/interactions.test.js` - Click, form, and async interaction tests
+
 ### PR Screenshots (for Claude Code)
 
 Use the Playwright-based screenshot tools to capture UI changes for PR descriptions. This helps demonstrate features, bug fixes, or design changes visually.
@@ -244,8 +303,31 @@ dev/
 ├── mock_server.rb                  # Sinatra mock API server
 └── fixtures/                       # Mock data for Yelp and Google
 
+web/                                # Web UI (vanilla JavaScript)
+├── index.html                      # Main search page
+├── details.html                    # Restaurant details page
+├── categories.html                 # Browse categories
+├── index-location.html             # Location indexing page
+├── test.html                       # Test runner page
+├── js/
+│   ├── api.js                      # REST API client
+│   ├── api.test.js                 # API client tests
+│   ├── search.js                   # Search page controller
+│   ├── test-framework.js           # Custom test framework
+│   ├── interactions.test.js        # DOM interaction tests
+│   └── components/
+│       ├── restaurant-card.js      # Restaurant card component
+│       ├── restaurant-card.test.js
+│       ├── loading-spinner.js      # Loading spinner component
+│       ├── loading-spinner.test.js
+│       ├── error-message.js        # Error message component
+│       └── error-message.test.js
+└── css/
+    └── custom.css                  # Custom styles
+
 config.ru                           # Rack configuration for API server
 Dockerfile                          # Container configuration for deployment
+run-tests.js                        # Playwright test runner for JS tests
 ```
 
 ## Architecture
