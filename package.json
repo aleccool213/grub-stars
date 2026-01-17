@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "test": "node run-tests.js",
-    "test:install": "playwright install --with-deps chromium"
+    "test:install": "playwright install --with-deps chromium",
+    "screenshot": "node scripts/screenshot.js",
+    "screenshot:post": "node scripts/post-screenshots-to-pr.js"
   },
   "devDependencies": {
     "playwright": "^1.41.0"

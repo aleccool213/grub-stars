@@ -53,6 +53,139 @@ ruby -I lib bin/grst --help        # Run CLI locally
 - `bundle _2.5.23_ exec rake test` - may fail if bundler not properly installed
 - `bundle install` without version specifier - uses Bundler 4.0.3+ which has CGI bugs
 
+### JavaScript/Web UI Testing
+
+The Web UI uses a zero-dependency, browser-based test framework with Playwright for headless execution.
+
+**Running JavaScript Tests:**
+```bash
+npm test                           # Run all JS tests in headless Chromium
+npm run test:install               # Install Playwright browsers (first time only)
+```
+
+**Test Framework Features:**
+
+The custom test framework (`web/js/test-framework.js`) provides:
+
+- **Assertions:** `assert`, `assertEqual`, `assertTruthy`, `assertFalsy`, `assertIncludes`, `assertThrows`
+- **DOM Interaction:** `click`, `dblclick`, `submit`, `type`, `clear`, `select`, `keyPress`, `focus`, `blur`
+- **Async Utilities:** `waitFor`, `waitForElement`, `waitForText`
+- **Test Isolation:** `createContainer`, `destroyContainer`
+- **Mocking:** `createMockFn`
+
+**Writing Interaction Tests:**
+
+```javascript
+import {
+  test, assert, assertEqual,
+  createContainer, destroyContainer,
+  click, type, submit, waitFor
+} from './test-framework.js';
+
+test('form submission captures input', async () => {
+  const container = createContainer();
+  let submitted = null;
+
+  container.innerHTML = `
+    <form id="search-form">
+      <input name="query" id="query" />
+      <button type="submit">Search</button>
+    </form>
+  `;
+
+  const form = container.querySelector('#search-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitted = new FormData(form).get('query');
+  });
+
+  type(container.querySelector('#query'), 'Pizza');
+  submit(form);
+
+  assertEqual(submitted, 'Pizza', 'Form should capture input');
+  destroyContainer(container);
+});
+```
+
+**Test Files:**
+- `web/js/api.test.js` - API client tests
+- `web/js/components/*.test.js` - Component rendering tests
+- `web/js/interactions.test.js` - Click, form, and async interaction tests
+
+### PR Screenshots (for Claude Code)
+
+Use the Playwright-based screenshot tools to capture UI changes for PR descriptions. This helps demonstrate features, bug fixes, or design changes visually.
+
+**Setup (one-time):**
+```bash
+npm install                          # Install Playwright
+npx playwright install chromium      # Install browser
+```
+
+**Taking Screenshots:**
+
+1. **Quick single screenshot:**
+```bash
+# Start the server first
+bundle _2.5.23_ exec rackup &
+
+# Take a screenshot
+node scripts/screenshot.js --url http://localhost:9292 --name homepage
+```
+
+2. **Run a scenario file (for complex interactions):**
+```bash
+node scripts/screenshot.js --scenario scripts/scenarios/search-flow.json
+```
+
+3. **Dynamic scenario with custom actions:**
+```bash
+node scripts/screenshot.js --url http://localhost:9292 \
+  --actions '[{"action":"click","selector":"#search"},{"action":"wait","ms":500}]' \
+  --name after-click
+```
+
+**Posting to PR:**
+```bash
+# After taking screenshots, post them to a PR
+node scripts/post-screenshots-to-pr.js <PR_NUMBER>
+
+# With custom section name
+node scripts/post-screenshots-to-pr.js 42 --section "UI Changes"
+
+# Preview without making changes
+node scripts/post-screenshots-to-pr.js 42 --dry-run
+```
+
+**Creating Custom Scenarios:**
+
+Create JSON files in `scripts/scenarios/` with this structure:
+```json
+{
+  "name": "feature-demo",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 720 },
+  "steps": [
+    { "action": "goto", "path": "/" },
+    { "action": "screenshot", "name": "before", "description": "Initial state" },
+    { "action": "click", "selector": "#my-button" },
+    { "action": "wait", "ms": 500 },
+    { "action": "screenshot", "name": "after", "description": "After clicking" }
+  ]
+}
+```
+
+**Supported Actions:**
+- `goto` - Navigate to path/URL
+- `click` - Click an element
+- `type` - Type text into input
+- `hover` - Hover over element
+- `scroll` - Scroll to element or position
+- `wait` - Wait for ms, selector, or state
+- `screenshot` - Capture screenshot
+- `select` - Select dropdown option
+- `press` - Press keyboard key
+
 ## Configuration
 
 API keys are configured via environment variables. Copy the template and add your keys:
@@ -223,11 +356,34 @@ scripts/
 ├── deploy-prod.sh                  # Deploy prod env to Fly.io
 └── start-test.sh                   # Start script for test container
 
+web/                                # Web UI (vanilla JavaScript)
+├── index.html                      # Main search page
+├── details.html                    # Restaurant details page
+├── categories.html                 # Browse categories
+├── index-location.html             # Location indexing page
+├── test.html                       # Test runner page
+├── js/
+│   ├── api.js                      # REST API client
+│   ├── api.test.js                 # API client tests
+│   ├── search.js                   # Search page controller
+│   ├── test-framework.js           # Custom test framework
+│   ├── interactions.test.js        # DOM interaction tests
+│   └── components/
+│       ├── restaurant-card.js      # Restaurant card component
+│       ├── restaurant-card.test.js
+│       ├── loading-spinner.js      # Loading spinner component
+│       ├── loading-spinner.test.js
+│       ├── error-message.js        # Error message component
+│       └── error-message.test.js
+└── css/
+    └── custom.css                  # Custom styles
+
 config.ru                           # Rack configuration for API server
 Dockerfile                          # Container configuration for production
 Dockerfile.test                     # Container for test (includes mock server)
 fly.test.toml                       # Fly.io config for test environment
 fly.prod.toml                       # Fly.io config for prod environment
+run-tests.js                        # Playwright test runner for JS tests
 ```
 
 ## Architecture

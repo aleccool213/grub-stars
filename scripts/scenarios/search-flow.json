@@ -1,0 +1,39 @@
+{
+  "name": "search-flow",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 720 },
+  "steps": [
+    {
+      "action": "goto",
+      "path": "/"
+    },
+    {
+      "action": "screenshot",
+      "name": "01-before-search",
+      "description": "Initial state before searching"
+    },
+    {
+      "action": "type",
+      "selector": "input[name='query'], input[type='search'], #search-input",
+      "text": "pizza"
+    },
+    {
+      "action": "screenshot",
+      "name": "02-search-input",
+      "description": "Search query entered"
+    },
+    {
+      "action": "click",
+      "selector": "button[type='submit'], .search-button, #search-btn"
+    },
+    {
+      "action": "wait",
+      "ms": 1000
+    },
+    {
+      "action": "screenshot",
+      "name": "03-search-results",
+      "description": "Search results displayed"
+    }
+  ]
+}

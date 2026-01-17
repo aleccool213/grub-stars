@@ -1,0 +1,14 @@
+{
+  "name": "homepage",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 720 },
+  "steps": [
+    { "action": "goto", "path": "/" },
+    { "action": "wait", "state": "networkidle" },
+    {
+      "action": "screenshot",
+      "name": "homepage",
+      "description": "Main homepage view"
+    }
+  ]
+}

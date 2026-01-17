@@ -1,0 +1,34 @@
+{
+  "name": "api-demo",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 800 },
+  "steps": [
+    {
+      "action": "goto",
+      "path": "/health"
+    },
+    {
+      "action": "screenshot",
+      "name": "health-endpoint",
+      "description": "Health check endpoint response"
+    },
+    {
+      "action": "goto",
+      "path": "/categories"
+    },
+    {
+      "action": "screenshot",
+      "name": "categories-endpoint",
+      "description": "Categories listing endpoint"
+    },
+    {
+      "action": "goto",
+      "path": "/locations"
+    },
+    {
+      "action": "screenshot",
+      "name": "locations-endpoint",
+      "description": "Indexed locations endpoint"
+    }
+  ]
+}
