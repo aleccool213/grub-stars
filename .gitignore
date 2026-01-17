@@ -6,3 +6,6 @@
 /bin/*
 !/bin/grst
 node_modules/
+
+# Environment variables (contains API keys)
+.env
