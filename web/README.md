@@ -209,10 +209,12 @@ Sinatra serves them from the public folder.
 See `docs/web-frontend.md` for the complete 14-phase implementation plan.
 
 **Immediate TODOs:**
-1. Implement page controllers (search.js, details.js, etc.)
-2. Create reusable components (restaurant-card.js, rating-display.js)
-3. Add responsive design (mobile + desktop)
-4. Implement error handling and loading states
+1. ~~Implement search.js page controller~~ (done)
+2. ~~Create reusable components (restaurant-card.js, loading-spinner.js, error-message.js)~~ (done)
+3. Implement index-form.js to run indexer from web UI
+4. Implement details.js page controller
+5. Implement categories-list.js page controller
+6. Add responsive design (mobile + desktop)
 
 ## Philosophy
 
