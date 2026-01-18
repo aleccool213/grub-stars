@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-18T15:52:41.955Z",
+  "timestamp": "2026-01-18T22:49:54.859Z",
   "screenshots": [
     {
       "name": "details-no-id",
@@ -30,6 +30,18 @@
       "filename": "categories-filled.png",
       "filepath": "screenshots/categories-filled.png",
       "description": "Categories page with populated data"
+    },
+    {
+      "name": "index-form-empty",
+      "filename": "index-form-empty.png",
+      "filepath": "screenshots/index-form-empty.png",
+      "description": "Index location page - empty form ready for input"
+    },
+    {
+      "name": "index-form-filled",
+      "filename": "index-form-filled.png",
+      "filepath": "screenshots/index-form-filled.png",
+      "description": "Index location page - form filled with location and category filter"
     }
   ]
 }
