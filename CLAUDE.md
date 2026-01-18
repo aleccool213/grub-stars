@@ -186,6 +186,32 @@ Create JSON files in `scripts/scenarios/` with this structure:
 - `select` - Select dropdown option
 - `press` - Press keyboard key
 
+**Best Practices for PR Screenshots:**
+
+When capturing screenshots for pull requests, always capture **both empty and filled states** to demonstrate the full user experience:
+
+1. **Empty state** - Shows what users see before any data exists (e.g., "No categories yet" message)
+2. **Filled state** - Shows the UI with real data populated
+
+To capture filled states, use the mock server to populate test data:
+```bash
+# Terminal 1: Start mock server
+ruby dev/mock_server.rb
+
+# Terminal 2: Start main server (with .env pointing to mock)
+ruby -I lib $(bundle _2.5.23_ show rack)/bin/rackup config.ru
+
+# Index test data
+curl -X POST http://localhost:9292/index \
+  -H "Content-Type: application/json" \
+  -d '{"location": "barrie, ontario"}'
+
+# Take screenshots
+node scripts/screenshot.js --url http://localhost:9292/categories.html --name categories-filled
+```
+
+This ensures reviewers can see both the graceful handling of empty data and the fully functional UI.
+
 ## Configuration
 
 API keys are configured via environment variables. Copy the template and add your keys:

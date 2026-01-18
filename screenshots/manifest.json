@@ -1,12 +1,35 @@
 {
-  "scenario": "categories-page",
-  "timestamp": "2026-01-18T13:08:05.508Z",
+  "timestamp": "2026-01-18T15:52:41.955Z",
   "screenshots": [
+    {
+      "name": "details-no-id",
+      "filename": "details-no-id.png",
+      "filepath": "screenshots/details-no-id.png",
+      "description": "Details page with no restaurant ID parameter"
+    },
+    {
+      "name": "details-not-found",
+      "filename": "details-not-found.png",
+      "filepath": "screenshots/details-not-found.png",
+      "description": "Details page when restaurant is not found"
+    },
+    {
+      "name": "details-restaurant",
+      "filename": "details-restaurant.png",
+      "filepath": "screenshots/details-restaurant.png",
+      "description": "Details page showing restaurant information"
+    },
     {
       "name": "categories-page",
       "filename": "categories-page.png",
       "filepath": "screenshots/categories-page.png",
-      "description": ""
+      "description": "Categories page empty state"
+    },
+    {
+      "name": "categories-filled",
+      "filename": "categories-filled.png",
+      "filepath": "screenshots/categories-filled.png",
+      "description": "Categories page with populated data"
     }
   ]
 }
