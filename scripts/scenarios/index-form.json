@@ -1,0 +1,21 @@
+{
+  "name": "index-form",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 720 },
+  "steps": [
+    { "action": "goto", "path": "/index-location.html" },
+    { "action": "wait", "state": "networkidle" },
+    {
+      "action": "screenshot",
+      "name": "index-form-empty",
+      "description": "Index location page - empty form ready for input"
+    },
+    { "action": "type", "selector": "#location", "text": "barrie, ontario" },
+    { "action": "type", "selector": "#category", "text": "bakery" },
+    {
+      "action": "screenshot",
+      "name": "index-form-filled",
+      "description": "Index location page - form filled with location and category filter"
+    }
+  ]
+}

@@ -118,9 +118,9 @@ web/
 ├── js/
 │   ├── api.js             # REST API client
 │   ├── search.js          # Search page controller
-│   ├── details.js         # Details page controller (TODO)
-│   ├── index-form.js      # Index form controller (TODO)
-│   ├── categories-list.js # Categories controller (TODO)
+│   ├── details.js         # Details page controller
+│   ├── index-form.js      # Index form controller
+│   ├── categories-list.js # Categories controller
 │   ├── test-framework.js  # Browser test framework
 │   ├── api.test.js        # API client tests
 │   └── components/        # Reusable components
@@ -211,9 +211,9 @@ See `docs/web-frontend.md` for the complete 14-phase implementation plan.
 **Immediate TODOs:**
 1. ~~Implement search.js page controller~~ (done)
 2. ~~Create reusable components (restaurant-card.js, loading-spinner.js, error-message.js)~~ (done)
-3. Implement index-form.js to run indexer from web UI
-4. Implement details.js page controller
-5. Implement categories-list.js page controller
+3. ~~Implement index-form.js to run indexer from web UI~~ (done)
+4. ~~Implement details.js page controller~~ (done)
+5. ~~Implement categories-list.js page controller~~ (done)
 6. Add responsive design (mobile + desktop)
 
 ## Philosophy
