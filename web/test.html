@@ -5,34 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>grub stars - Test Suite</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/custom.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-cream min-h-screen">
+  <!-- Gradient header bar -->
+  <div class="gradient-bar"></div>
+
   <div class="container mx-auto px-4 py-8">
     <header class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-gray-800 mb-2">grub stars</h1>
-      <p class="text-xl text-gray-600">Test Suite</p>
+      <h1 class="text-4xl font-bold text-cocoa mb-2 flex items-center justify-center gap-2">
+        <span>⭐</span> grub stars
+      </h1>
+      <p class="text-xl text-cocoa/70">Test Suite</p>
     </header>
 
-    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow p-6 mb-6">
-      <h2 class="text-2xl font-bold mb-4">Browser-Based Tests</h2>
-      <p class="text-gray-600 mb-4">
+    <div class="max-w-2xl mx-auto card p-6 mb-6">
+      <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
+        <span>🧪</span> Browser-Based Tests
+      </h2>
+      <p class="text-cocoa/70 mb-4">
         Open the browser console (F12) to see detailed test results.
         Tests run automatically on page load.
       </p>
-      <div class="bg-blue-50 border border-blue-200 rounded p-4">
-        <p class="text-sm text-blue-800">
-          <strong>Note:</strong> Make sure the API server is running at
-          <code class="bg-blue-100 px-1 rounded">http://localhost:9292</code>
-          for integration tests to work.
-        </p>
+      <div class="alert alert-warning">
+        <span class="text-xl">💡</span>
+        <div>
+          <p class="text-sm text-cocoa">
+            <strong>Note:</strong> Make sure the API server is running at
+            <code class="bg-sunny/50 px-1 rounded">http://localhost:9292</code>
+            for integration tests to work.
+          </p>
+        </div>
       </div>
     </div>
 
     <!-- Test results will be rendered here -->
     <div id="test-results"></div>
 
-    <footer class="text-center mt-8 text-gray-500 text-sm">
-      <p>Zero-build, zero-framework testing • Just vanilla JavaScript</p>
+    <footer class="text-center mt-8 py-8 bg-latte/50 rounded-2xl">
+      <p class="text-cocoa/60">Zero-build, zero-framework testing • Just vanilla JavaScript</p>
     </footer>
   </div>
 
@@ -68,10 +80,13 @@
       } catch (error) {
         console.error('Test runner error:', error);
         document.getElementById('test-results').innerHTML = `
-          <div class="max-w-2xl mx-auto p-6 bg-red-100 text-red-800 rounded-lg">
-            <h2 class="text-2xl font-bold mb-2">Test Runner Error</h2>
-            <p>${error.message}</p>
-            <pre class="mt-4 text-sm">${error.stack}</pre>
+          <div class="max-w-2xl mx-auto alert alert-error">
+            <span class="text-2xl">😅</span>
+            <div>
+              <h2 class="font-bold text-cocoa mb-2">Test Runner Error</h2>
+              <p class="text-cocoa/80">${error.message}</p>
+              <pre class="mt-4 text-sm bg-coral/10 p-2 rounded overflow-auto">${error.stack}</pre>
+            </div>
           </div>
         `;
       }

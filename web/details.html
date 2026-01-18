@@ -5,20 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Restaurant Details - grub stars</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/tailwind-config.js"></script>
   <link rel="stylesheet" href="/css/custom.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-cream min-h-screen">
+  <!-- Gradient header bar -->
+  <div class="gradient-bar"></div>
+
   <div class="container mx-auto px-4 py-8">
     <header class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">
-        <a href="/" class="hover:text-blue-600">grub stars</a>
+      <h1 class="text-3xl font-bold text-cocoa">
+        <a href="/" class="hover:text-electric transition-colors flex items-center justify-center gap-2">
+          <span>⭐</span> grub stars
+        </a>
       </h1>
     </header>
 
     <main>
       <div class="max-w-4xl mx-auto">
-        <a href="/" class="inline-block mb-4 text-blue-600 hover:text-blue-800">
-          ← Back to search
+        <a href="/" class="inline-flex items-center gap-2 mb-4 text-electric hover:text-hotpink transition-colors font-medium">
+          <span>←</span> Back to search
         </a>
 
         <!-- Restaurant details will be loaded here -->
@@ -26,8 +32,8 @@
       </div>
     </main>
 
-    <footer class="text-center mt-12 text-gray-500 text-sm">
-      <p>grub stars</p>
+    <footer class="text-center mt-12 py-8 bg-latte/50 rounded-2xl">
+      <p class="text-cocoa/60">Made with 🍕 by friends, for friends</p>
     </footer>
   </div>
 

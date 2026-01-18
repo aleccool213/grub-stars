@@ -3,56 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>grub stars - Search Restaurants</title>
+  <title>grub stars - Find Delicious Food</title>
   <meta name="description" content="Search and discover restaurants from multiple sources">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/js/tailwind-config.js"></script>
   <link rel="stylesheet" href="/css/custom.css">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-cream min-h-screen">
+  <!-- Gradient header bar -->
+  <div class="gradient-bar"></div>
+
   <div class="container mx-auto px-4 py-8">
     <header class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-gray-800 mb-2">grub stars</h1>
-      <p class="text-xl text-gray-600">Search restaurants from multiple sources</p>
+      <h1 class="text-4xl font-bold text-cocoa mb-2 flex items-center justify-center gap-2">
+        <span class="animate-float">⭐</span>
+        grub stars
+        <span class="animate-float" style="animation-delay: 0.5s;">⭐</span>
+      </h1>
+      <p class="text-xl text-cocoa/70">Find delicious food with friends</p>
     </header>
 
     <main>
-      <div class="max-w-2xl mx-auto bg-white rounded-lg shadow p-6 mb-6">
-        <h2 class="text-2xl font-bold mb-4">Search Restaurants</h2>
+      <div class="max-w-2xl mx-auto card p-6 mb-6">
+        <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
+          <span>🔍</span> Search Restaurants
+        </h2>
         <form id="search-form" class="space-y-4">
           <div>
-            <label for="search-name" class="block text-sm font-medium text-gray-700 mb-1">
-              Restaurant Name
+            <label for="search-name" class="block text-sm font-medium text-cocoa mb-1">
+              What are you craving?
             </label>
             <input
               type="text"
               id="search-name"
               name="name"
-              placeholder="e.g., Pizza Place"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Pizza, sushi, burgers..."
+              class="input-whimsical"
             >
           </div>
 
           <div>
-            <label for="search-category" class="block text-sm font-medium text-gray-700 mb-1">
-              Category (optional)
+            <label for="search-category" class="block text-sm font-medium text-cocoa mb-1">
+              Category
             </label>
             <select
               id="search-category"
               name="category"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="input-whimsical"
             >
               <option value="">All categories</option>
             </select>
           </div>
 
           <div>
-            <label for="search-location" class="block text-sm font-medium text-gray-700 mb-1">
-              Location (optional)
+            <label for="search-location" class="block text-sm font-medium text-cocoa mb-1">
+              Location
             </label>
             <select
               id="search-location"
               name="location"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="input-whimsical"
             >
               <option value="">All locations</option>
             </select>
@@ -60,9 +70,9 @@
 
           <button
             type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            class="w-full btn-primary text-lg"
           >
-            Search
+            Find Food! 🍕
           </button>
         </form>
       </div>
@@ -71,13 +81,13 @@
       <div id="results" class="max-w-4xl mx-auto"></div>
     </main>
 
-    <footer class="text-center mt-12 text-gray-500 text-sm">
-      <nav class="space-x-4 mb-4">
-        <a href="/" class="hover:text-gray-700">Search</a>
-        <a href="/categories.html" class="hover:text-gray-700">Categories</a>
-        <a href="/index-location.html" class="hover:text-gray-700">Index Location</a>
+    <footer class="text-center mt-12 py-8 bg-latte/50 rounded-2xl">
+      <nav class="flex justify-center gap-6 mb-4">
+        <a href="/" class="text-cocoa hover:text-electric transition-colors font-medium">Search</a>
+        <a href="/categories.html" class="text-cocoa/60 hover:text-electric transition-colors font-medium">Categories</a>
+        <a href="/index-location.html" class="text-cocoa/60 hover:text-electric transition-colors font-medium">Add Area</a>
       </nav>
-      <p>grub stars • Aggregating restaurant data locally</p>
+      <p class="text-cocoa/60">Made with 🍕 by friends, for friends</p>
     </footer>
   </div>
 
