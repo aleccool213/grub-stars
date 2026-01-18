@@ -1,24 +1,12 @@
 {
-  "scenario": "details-page",
-  "timestamp": "2026-01-17T20:27:39.267Z",
+  "scenario": "categories-page",
+  "timestamp": "2026-01-18T13:08:05.508Z",
   "screenshots": [
     {
-      "name": "details-no-id",
-      "filename": "details-no-id.png",
-      "filepath": "screenshots/details-no-id.png",
-      "description": "Details page with no restaurant ID - shows error state"
-    },
-    {
-      "name": "details-not-found",
-      "filename": "details-not-found.png",
-      "filepath": "screenshots/details-not-found.png",
-      "description": "Details page with invalid ID - shows not found state"
-    },
-    {
-      "name": "details-restaurant",
-      "filename": "details-restaurant.png",
-      "filepath": "screenshots/details-restaurant.png",
-      "description": "Details page showing restaurant information"
+      "name": "categories-page",
+      "filename": "categories-page.png",
+      "filepath": "screenshots/categories-page.png",
+      "description": ""
     }
   ]
 }
