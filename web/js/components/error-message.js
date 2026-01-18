@@ -18,6 +18,7 @@ export function errorMessage(message, options = {}) {
     <button
       type="button"
       class="mt-4 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition-colors"
+      style="margin-top: 1rem; background-color: #dc2626; color: white; font-weight: 500; padding: 0.5rem 1rem; border-radius: 0.25rem; border: none; cursor: pointer;"
       data-action="retry"
     >
       ${escapeHtml(retryText)}
@@ -25,14 +26,14 @@ export function errorMessage(message, options = {}) {
   ` : '';
 
   return `
-    <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-      <div class="text-red-600 mb-2">
-        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 text-center" style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem; padding: 1.5rem; text-align: center;">
+      <div class="text-red-600 mb-2" style="color: #dc2626; margin-bottom: 0.5rem;">
+        <svg class="w-12 h-12 mx-auto" style="width: 48px; height: 48px; margin: 0 auto; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-red-800 mb-1">Something went wrong</h3>
-      <p class="text-red-600">${escapeHtml(message)}</p>
+      <h3 class="text-lg font-semibold text-red-800 mb-1" style="font-size: 1.125rem; font-weight: 600; color: #991b1b; margin-bottom: 0.25rem;">Something went wrong</h3>
+      <p class="text-red-600" style="color: #dc2626;">${escapeHtml(message)}</p>
       ${retryButton}
     </div>
   `;
