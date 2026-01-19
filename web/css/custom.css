@@ -1,10 +1,29 @@
 /**
- * Custom styles for grub stars web UI
- * Most styling is handled by Tailwind CSS via CDN
- * This file is for custom overrides and additions
+ * Grub Stars - Whimsical Theme CSS
+ * "Cosmic Comfort Food" design system
  */
 
-/* Custom animations */
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap');
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+body {
+  font-family: 'Nunito', system-ui, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6,
+.font-display {
+  font-family: 'Fredoka', 'Comic Sans MS', cursive;
+}
+
+/* ============================================
+   Custom Animations
+   ============================================ */
+
+/* Shimmer loading effect */
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -16,17 +35,17 @@
 
 .shimmer {
   animation: shimmer 2s infinite linear;
-  background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+  background: linear-gradient(to right, #F5E6D3 0%, #FFFBF5 20%, #F5E6D3 40%, #F5E6D3 100%);
   background-size: 1000px 100%;
 }
 
-/* Loading spinner */
+/* Loading spinner - now uses theme colors */
 .spinner {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #3b82f6;
+  border: 4px solid #F5E6D3;
+  border-top: 4px solid #A855F7;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   animation: spin 1s linear infinite;
 }
 
@@ -35,15 +54,306 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Focus styles for accessibility */
-*:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
+/* Wiggle animation - for fun hover effects */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
 }
 
-/* Print styles */
+.animate-wiggle {
+  animation: wiggle 0.3s ease-in-out;
+}
+
+.hover-wiggle:hover {
+  animation: wiggle 0.3s ease-in-out;
+}
+
+/* Float animation - for decorative elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Pop in animation - for new elements appearing */
+@keyframes pop-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.3s ease-out;
+}
+
+/* Bounce in animation - more playful entrance */
+@keyframes bounce-in {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.1); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.4s ease-out;
+}
+
+/* Pulse glow - for attention-grabbing elements */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(168, 85, 247, 0.2);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Rainbow gradient animation - for special elements */
+@keyframes rainbow-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-rainbow {
+  background: linear-gradient(90deg, #FFB347, #FF6B9D, #A855F7, #6EE7B7, #FFB347);
+  background-size: 300% 100%;
+  animation: rainbow-shift 3s ease infinite;
+}
+
+/* Sparkle effect */
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   Focus & Accessibility Styles
+   ============================================ */
+
+*:focus-visible {
+  outline: 3px solid #A855F7;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ============================================
+   Gradient Header Bar
+   ============================================ */
+
+.gradient-bar {
+  background: linear-gradient(90deg, #A855F7, #FF6B9D, #FFB347);
+  height: 4px;
+}
+
+/* ============================================
+   Card Styles
+   ============================================ */
+
+.card {
+  background: white;
+  border-radius: 1rem;
+  border: 2px solid #F5E6D3;
+  box-shadow: 0 4px 20px -2px rgba(168, 85, 247, 0.15);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px -4px rgba(168, 85, 247, 0.3);
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+
+.btn-primary {
+  background: linear-gradient(135deg, #FFB347, #FF6B9D);
+  color: white;
+  font-family: 'Fredoka', cursive;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px -2px rgba(255, 107, 157, 0.4);
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px -2px rgba(255, 107, 157, 0.5);
+}
+
+.btn-secondary {
+  background: #F5E6D3;
+  color: #4A3728;
+  font-family: 'Fredoka', cursive;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid #FFB347;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #FFB347;
+  color: white;
+}
+
+/* ============================================
+   Form Styles
+   ============================================ */
+
+.input-whimsical {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 2px solid #F5E6D3;
+  background: white;
+  font-family: 'Nunito', sans-serif;
+  color: #4A3728;
+  transition: all 0.2s ease;
+}
+
+.input-whimsical:focus {
+  border-color: #A855F7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+  outline: none;
+}
+
+.input-whimsical::placeholder {
+  color: rgba(74, 55, 40, 0.4);
+}
+
+/* ============================================
+   Tag & Badge Styles
+   ============================================ */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tag-category {
+  background: rgba(168, 85, 247, 0.15);
+  color: #A855F7;
+}
+
+.tag-category:hover {
+  background: rgba(168, 85, 247, 0.25);
+}
+
+.tag-rating {
+  background: #FDE047;
+  color: #4A3728;
+}
+
+.tag-source {
+  background: rgba(251, 113, 133, 0.2);
+  color: #FB7185;
+  font-size: 0.75rem;
+}
+
+/* ============================================
+   Alert Styles
+   ============================================ */
+
+.alert {
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 2px solid;
+}
+
+.alert-success {
+  background: rgba(110, 231, 183, 0.2);
+  border-color: #6EE7B7;
+}
+
+.alert-error {
+  background: rgba(251, 113, 133, 0.2);
+  border-color: #FB7185;
+}
+
+.alert-warning {
+  background: rgba(253, 224, 71, 0.3);
+  border-color: #FDE047;
+}
+
+/* ============================================
+   Empty State Styles
+   ============================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+/* ============================================
+   Star Rating Display
+   ============================================ */
+
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  color: #FDE047;
+}
+
+.star-empty {
+  color: #F5E6D3;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
 @media print {
   .no-print {
     display: none !important;
+  }
+
+  .gradient-bar {
+    display: none;
+  }
+
+  body {
+    background: white !important;
+  }
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
