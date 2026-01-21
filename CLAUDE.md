@@ -22,9 +22,13 @@ The project provides multiple interfaces:
 
 ## Development
 
+### Ruby Version
+
+This project uses **Ruby 4.0+**. The Gemfile includes compatibility gems (`ostruct`, `minitest-mock`) that were moved out of Ruby's standard library in version 4.0.
+
 ### Bundler Version Requirements
 
-This project requires **Bundler 2.5.23** for compatibility with Ruby 3.3.6. Bundler 4.0.3+ has a known bug causing `uninitialized class variable @@accept_charset in CGI` errors.
+This project requires **Bundler 2.5.23**. Bundler 4.0.3+ has a known bug causing `uninitialized class variable @@accept_charset in CGI` errors.
 
 **Setup:**
 ```bash

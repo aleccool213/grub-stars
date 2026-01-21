@@ -2,6 +2,9 @@
 
 source "https://rubygems.org"
 
+# Ruby 4.0 compatibility - these were moved out of stdlib
+gem "ostruct"
+
 gem "thor", "~> 1.4"
 gem "sequel", "~> 5.99"
 gem "sqlite3", "~> 1.6"
@@ -20,6 +23,7 @@ end
 
 group :test do
   gem "minitest", "~> 5.25"
+  gem "minitest-mock", "~> 5.27"
   gem "rake", "~> 13.2"
   gem "webmock", "~> 3.23"
   gem "rack-test", "~> 2.1"
