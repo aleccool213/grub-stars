@@ -591,3 +591,71 @@ Services use dependency injection for testability and accept repositories/domain
 - **Selective indexing**: User indexes specific geographic areas as needed
 - **Lightweight storage**: Store URLs to media, not the media itself
 - **Flexible refresh**: Users can re-index areas as frequently as needed
+
+## Future Ideas
+
+### Location Autocomplete with Geocoding
+
+**Problem:** Users can create duplicate locations with different spellings (e.g., "barrie, on" vs "barrie, ontario" vs "Barrie, Ontario, Canada"). The current free-text input has poor UX and leads to data fragmentation.
+
+**Solution:** Integrate a geocoding/autocomplete service for the location input field.
+
+**Open Source Options:**
+
+| Service | Pros | Cons |
+|---------|------|------|
+| **Photon** (photon.komoot.io) | Free API, fast autocomplete, OSM data, no API key | Rate limited, best for low-medium traffic |
+| **Nominatim** (OSM) | Free, comprehensive, no API key for low volume | Strict usage policy, slower than Photon |
+| **Pelias** | Self-hosted, full control, OSM/other data sources | Requires infrastructure to host |
+| **OpenCage** | Clean API, good free tier (2,500/day) | Requires API key, commercial |
+
+**Recommendation:** Start with **Photon** - free, fast, designed for typeahead. Example:
+```
+https://photon.komoot.io/api/?q=barrie&limit=5
+```
+
+**Implementation:**
+- Replace free-text input with autocomplete dropdown
+- Store normalized location data (lat/lng + formatted name)
+- Use coordinates as canonical identifier to prevent duplicates
+- Display formatted address from geocoder response
+
+---
+
+### Restaurant Name Search with Autocomplete
+
+**Problem:** The current search form has a "What are you craving?" field that searches by food type/category. Users may also want to search for a specific restaurant by name from the local database.
+
+**Solution:** Add a dedicated restaurant name search with autocomplete/typeahead that queries the local DB.
+
+**Implementation:**
+- Add a separate input field or toggle for "Search by restaurant name"
+- Implement client-side debounced autocomplete (300ms delay)
+- New API endpoint: `GET /restaurants/autocomplete?q=<partial_name>&limit=10`
+- Show dropdown with matching restaurant names as user types
+- Clicking a result navigates directly to the restaurant details page
+
+**UX Considerations:**
+- Could combine with food type search using tabs or a toggle
+- Show recent searches for quick access
+- Display restaurant rating/location in autocomplete dropdown for disambiguation
+
+---
+
+### Onboarding Hints & Empty State Guidance
+
+**Problem:** New users don't understand that search only works on previously indexed locations. The app doesn't support live searching external APIs from the search page, which can be confusing when no results are found.
+
+**Solution:** Add clear onboarding hints and contextual guidance on the front page.
+
+**Implementation:**
+- Add a subtle info banner or tooltip explaining the local-first model
+- Example text: "Search works on locations you've indexed. No locations yet? Start by adding an area!"
+- Show empty state with CTA when no locations are indexed
+- Add "How it works" section or expandable FAQ
+- Consider a first-time user tour/walkthrough
+
+**Copy Ideas:**
+- "🗂️ This app searches your local collection, not live APIs"
+- "Index a location first, then search lightning-fast offline"
+- "Your data, your searches - no API calls needed after indexing"
