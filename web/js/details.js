@@ -6,6 +6,7 @@
 import { getRestaurant } from './api.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
+import { insertNavBar } from './components/nav-bar.js';
 
 // DOM elements
 let detailsContainer;
@@ -14,6 +15,9 @@ let detailsContainer;
  * Initialize the details page
  */
 async function init() {
+  // Insert navigation bar
+  insertNavBar({ currentPage: 'details' });
+
   detailsContainer = document.getElementById('restaurant-details');
 
   if (!detailsContainer) {

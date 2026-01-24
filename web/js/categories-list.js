@@ -6,6 +6,7 @@
 import { getCategories } from './api.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
+import { insertNavBar } from './components/nav-bar.js';
 
 // DOM elements
 let categoriesContainer;
@@ -14,6 +15,9 @@ let categoriesContainer;
  * Initialize the categories page
  */
 async function init() {
+  // Insert navigation bar
+  insertNavBar({ currentPage: 'categories' });
+
   categoriesContainer = document.getElementById('categories-list');
 
   if (!categoriesContainer) {

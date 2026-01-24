@@ -7,6 +7,12 @@
  * <script src="/js/tailwind-config.js"></script>
  */
 
+// Guard against missing Tailwind (e.g., when CDN is blocked)
+if (typeof tailwind === 'undefined') {
+  console.warn('Tailwind CSS not loaded (CDN may be blocked). Styles will not be applied.');
+  window.tailwind = { config: {} };
+}
+
 tailwind.config = {
   theme: {
     extend: {

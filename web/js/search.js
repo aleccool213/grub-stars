@@ -7,6 +7,7 @@ import { searchRestaurants, getCategories, getLocations } from './api.js';
 import { restaurantList } from './components/restaurant-card.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
+import { insertNavBar } from './components/nav-bar.js';
 
 // DOM elements
 let searchForm;
@@ -19,6 +20,9 @@ let resultsContainer;
  * Initialize the search page
  */
 async function init() {
+  // Insert navigation bar
+  insertNavBar({ currentPage: 'search' });
+
   // Get DOM elements
   searchForm = document.getElementById('search-form');
   searchNameInput = document.getElementById('search-name');

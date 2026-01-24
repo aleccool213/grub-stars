@@ -4,48 +4,54 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>grub stars - Test Suite</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="/js/tailwind-config.js"></script>
-  <link rel="stylesheet" href="/css/custom.css">
+  <!-- Minimal inline styles for test page - no external dependencies -->
+  <style>
+    :root {
+      --cream: #FFFBF5;
+      --cocoa: #4A3728;
+      --electric: #A855F7;
+      --mint: #6EE7B7;
+      --coral: #FB7185;
+      --latte: #F5E6D3;
+    }
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--cocoa);
+      margin: 0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1, h2 { margin: 0 0 1rem; }
+    .card { background: white; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 20px -2px rgba(168, 85, 247, 0.15); }
+    .test-pass { color: var(--mint); }
+    .test-fail { color: var(--coral); }
+    .test-result { padding: 0.5rem; margin: 0.25rem 0; border-radius: 0.5rem; }
+    .test-result.pass { background: rgba(110, 231, 183, 0.1); }
+    .test-result.fail { background: rgba(251, 113, 133, 0.1); }
+    pre { background: var(--latte); padding: 1rem; border-radius: 0.5rem; overflow: auto; font-size: 0.875rem; }
+    code { background: var(--latte); padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
+    footer { text-align: center; margin-top: 2rem; color: rgba(74, 55, 40, 0.6); }
+  </style>
 </head>
-<body class="bg-cream min-h-screen">
-  <!-- Gradient header bar -->
-  <div class="gradient-bar"></div>
-
-  <div class="container mx-auto px-4 py-8">
-    <header class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-cocoa mb-2 flex items-center justify-center gap-2">
-        <span>⭐</span> grub stars
-      </h1>
-      <p class="text-xl text-cocoa/70">Test Suite</p>
+<body>
+  <div class="container">
+    <header style="text-align: center; margin-bottom: 2rem;">
+      <h1>⭐ grub stars - Test Suite</h1>
+      <p>Browser-based JavaScript tests</p>
     </header>
 
-    <div class="max-w-2xl mx-auto card p-6 mb-6">
-      <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
-        <span>🧪</span> Browser-Based Tests
-      </h2>
-      <p class="text-cocoa/70 mb-4">
-        Open the browser console (F12) to see detailed test results.
-        Tests run automatically on page load.
-      </p>
-      <div class="alert alert-warning">
-        <span class="text-xl">💡</span>
-        <div>
-          <p class="text-sm text-cocoa">
-            <strong>Note:</strong> Make sure the API server is running at
-            <code class="bg-sunny/50 px-1 rounded">http://localhost:9292</code>
-            for integration tests to work.
-          </p>
-        </div>
-      </div>
+    <div class="card">
+      <h2>🧪 Test Runner</h2>
+      <p>Tests run automatically on page load. Check the console (F12) for detailed output.</p>
+      <p><strong>Note:</strong> API server at <code>http://localhost:9292</code> needed for integration tests.</p>
     </div>
 
     <!-- Test results will be rendered here -->
     <div id="test-results"></div>
 
-    <footer class="text-center mt-8 py-8 bg-latte/50 rounded-2xl">
-      <p class="text-cocoa/60">Zero-build, zero-framework testing • Just vanilla JavaScript</p>
-    </footer>
+    <footer>Zero-build, zero-framework testing • Just vanilla JavaScript</footer>
   </div>
 
   <script type="module">
@@ -59,6 +65,7 @@
     import './js/components/restaurant-card.test.js';
     import './js/components/loading-spinner.test.js';
     import './js/components/error-message.test.js';
+    import './js/components/nav-bar.test.js';
     import './js/interactions.test.js';
 
     // Run tests when page loads
@@ -80,13 +87,10 @@
       } catch (error) {
         console.error('Test runner error:', error);
         document.getElementById('test-results').innerHTML = `
-          <div class="max-w-2xl mx-auto alert alert-error">
-            <span class="text-2xl">😅</span>
-            <div>
-              <h2 class="font-bold text-cocoa mb-2">Test Runner Error</h2>
-              <p class="text-cocoa/80">${error.message}</p>
-              <pre class="mt-4 text-sm bg-coral/10 p-2 rounded overflow-auto">${error.stack}</pre>
-            </div>
+          <div class="card" style="border: 2px solid var(--coral);">
+            <h2>😅 Test Runner Error</h2>
+            <p>${error.message}</p>
+            <pre>${error.stack}</pre>
           </div>
         `;
       }

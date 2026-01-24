@@ -77,14 +77,29 @@ async function runTests() {
       '--no-sandbox',
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
       '--disable-gpu',
-      '--no-proxy-server',
-      '--disable-web-security',
     ],
   });
 
   try {
     const page = await browser.newPage();
+
+    // Block external network requests to allow offline testing
+    // This prevents CDN failures from crashing the test page
+    await page.route('**/*', (route) => {
+      const url = route.request().url();
+      // Allow localhost requests, block external CDN/font requests
+      if (url.startsWith(`http://localhost:${port}`)) {
+        route.continue();
+      } else {
+        // Abort external requests silently (CDN, fonts, etc.)
+        route.abort('blockedbyclient');
+      }
+    });
 
     // Collect console messages
     const consoleMessages = [];
