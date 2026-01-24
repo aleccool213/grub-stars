@@ -13,6 +13,40 @@ jobs:
     needs: []
 
     steps:
+      - name: Check for Fly.io API token
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "=============================================="
+            echo "  FLY_API_TOKEN secret is not configured!"
+            echo "=============================================="
+            echo ""
+            echo "To enable automatic deployments, follow these steps:"
+            echo ""
+            echo "1. Install the Fly.io CLI (if not already installed):"
+            echo "   curl -L https://fly.io/install.sh | sh"
+            echo ""
+            echo "2. Login to Fly.io:"
+            echo "   fly auth login"
+            echo ""
+            echo "3. Create a deploy token:"
+            echo "   fly tokens create deploy -x 999999h"
+            echo ""
+            echo "4. Add the token to GitHub:"
+            echo "   - Go to: https://github.com/${{ github.repository }}/settings/secrets/actions"
+            echo "   - Click 'New repository secret'"
+            echo "   - Name: FLY_API_TOKEN"
+            echo "   - Value: (paste the token from step 3)"
+            echo "   - Click 'Add secret'"
+            echo ""
+            echo "5. Re-run this workflow or push a new commit to main"
+            echo ""
+            echo "=============================================="
+            exit 1
+          fi
+          echo "FLY_API_TOKEN is configured"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
       - name: Checkout code
         uses: actions/checkout@v4
 
