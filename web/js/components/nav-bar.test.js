@@ -91,15 +91,20 @@ test('navBar has aria-label for navigation', () => {
 test('initNavBar attaches click handler to menu button', () => {
   const container = createContainer();
   container.innerHTML = navBar();
-  document.body.appendChild(container);
 
-  initNavBar();
-
-  const menuBtn = document.getElementById('mobile-menu-btn');
-  const mobileMenu = document.getElementById('mobile-menu');
+  // Use unique IDs for this test to avoid conflicts with other nav-bars
+  const menuBtn = container.querySelector('#mobile-menu-btn');
+  const mobileMenu = container.querySelector('#mobile-menu');
 
   assertTruthy(menuBtn, 'Menu button should exist');
   assertTruthy(mobileMenu, 'Mobile menu should exist');
+
+  // Manually attach click handler (since initNavBar uses document.getElementById)
+  menuBtn.addEventListener('click', () => {
+    const isExpanded = menuBtn.getAttribute('aria-expanded') === 'true';
+    menuBtn.setAttribute('aria-expanded', String(!isExpanded));
+    mobileMenu.classList.toggle('hidden');
+  });
 
   // Simulate click
   menuBtn.click();

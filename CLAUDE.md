@@ -216,6 +216,23 @@ node scripts/screenshot.js --url http://localhost:9292/categories.html --name ca
 
 This ensures reviewers can see both the graceful handling of empty data and the fully functional UI.
 
+### Known Issues
+
+**Screenshots and JS Tests require CDN access:**
+
+The Web UI depends on Tailwind CSS loaded from `cdn.tailwindcss.com`. In environments without external network access (e.g., sandboxed CI, air-gapped systems), both screenshots and JavaScript tests will fail with errors like:
+
+- `Page crashed` or `ERR_NAME_NOT_RESOLVED` for screenshots
+- `tailwind is not defined` for JS tests
+
+**Workaround options:**
+
+1. **Run locally** - Execute screenshot/test commands on a machine with internet access
+2. **Bundle Tailwind** - Replace CDN with a local Tailwind build (requires build step)
+3. **Mock Tailwind** - For tests only, inject a minimal Tailwind stub that defines the `tailwind` global
+
+**TODO:** Consider bundling Tailwind CSS locally to remove CDN dependency and enable offline testing.
+
 ## Configuration
 
 API keys are configured via environment variables. Copy the template and add your keys:
