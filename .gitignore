@@ -9,3 +9,6 @@ node_modules/
 
 # Environment variables (contains API keys)
 .env
+
+# Generated screenshots (for PR documentation)
+screenshots/
