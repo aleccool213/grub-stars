@@ -10,7 +10,7 @@
  * @param {string} restaurant.name - Restaurant name
  * @param {string} restaurant.address - Full address
  * @param {Array} restaurant.categories - Array of category names
- * @param {Array} restaurant.ratings - Array of rating objects with source, value, count
+ * @param {Array} restaurant.ratings - Array of rating objects with source, score, review_count
  * @returns {string} - HTML string for the card
  */
 export function restaurantCard(restaurant) {
@@ -30,13 +30,16 @@ export function restaurantCard(restaurant) {
     `<span class="inline-block bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded mr-1 mb-1">${escapeHtml(cat)}</span>`
   ).join('');
 
-  // Rating source badges
-  const ratingBadges = ratings.slice(0, 3).map(r =>
-    `<span class="inline-flex items-center text-xs text-gray-500 mr-2">
-      <span class="font-medium">${escapeHtml(r.source)}:</span>
-      <span class="ml-1">${r.value.toFixed(1)}</span>
-    </span>`
-  ).join('');
+  // Rating source badges (only show ratings with valid values)
+  const ratingBadges = ratings
+    .filter(r => r.score != null && r.score > 0)
+    .slice(0, 3)
+    .map(r =>
+      `<span class="inline-flex items-center text-xs text-gray-500 mr-2">
+        <span class="font-medium">${escapeHtml(r.source)}:</span>
+        <span class="ml-1">${r.score.toFixed(1)}</span>
+      </span>`
+    ).join('');
 
   return `
     <article class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4">
@@ -66,9 +69,9 @@ export function restaurantCard(restaurant) {
  */
 function calculateAverageRating(ratings) {
   if (!ratings || ratings.length === 0) return null;
-  const validRatings = ratings.filter(r => r.value && r.value > 0);
+  const validRatings = ratings.filter(r => r.score && r.score > 0);
   if (validRatings.length === 0) return null;
-  const sum = validRatings.reduce((acc, r) => acc + r.value, 0);
+  const sum = validRatings.reduce((acc, r) => acc + r.score, 0);
   return sum / validRatings.length;
 }
 

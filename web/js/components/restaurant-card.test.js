@@ -13,8 +13,8 @@ const mockRestaurant = {
   address: '123 Main St, City, State',
   categories: ['Italian', 'Pizza', 'Pasta'],
   ratings: [
-    { source: 'Yelp', value: 4.5, review_count: 100 },
-    { source: 'Google', value: 4.2, review_count: 50 }
+    { source: 'Yelp', score: 4.5, review_count: 100 },
+    { source: 'Google', score: 4.2, review_count: 50 }
   ]
 };
 
@@ -104,6 +104,48 @@ test('restaurantCard handles empty ratings', () => {
 
   assertTruthy(html.includes('No ratings'), 'Should show no ratings message');
   assertTruthy(html.includes('0 reviews'), 'Should show 0 reviews');
+});
+
+test('restaurantCard handles ratings with null or undefined scores', () => {
+  const restaurant = {
+    id: 4,
+    name: 'Null Rating Restaurant',
+    address: '789 Elm St',
+    ratings: [
+      { source: 'Yelp', score: null, review_count: 10 },
+      { source: 'Google', score: undefined, review_count: 20 },
+      { source: 'TripAdvisor', score: 4.0, review_count: 30 }
+    ]
+  };
+  const html = restaurantCard(restaurant);
+
+  // Should not throw error and should render
+  assertTruthy(html.includes('Null Rating Restaurant'), 'Should render restaurant name');
+  // Should only show TripAdvisor rating badge (the only valid one)
+  assertTruthy(html.includes('TripAdvisor'), 'Should include valid rating source');
+  assertTruthy(html.includes('4.0'), 'Should include valid rating score');
+  // Should not include null/undefined sources in badges
+  assertFalsy(html.includes('Yelp:'), 'Should not show Yelp badge with null score');
+  assertFalsy(html.includes('Google:'), 'Should not show Google badge with undefined score');
+});
+
+test('restaurantCard handles ratings with zero scores', () => {
+  const restaurant = {
+    id: 5,
+    name: 'Zero Rating Restaurant',
+    address: '101 Pine St',
+    ratings: [
+      { source: 'Yelp', score: 0, review_count: 5 },
+      { source: 'Google', score: 3.5, review_count: 15 }
+    ]
+  };
+  const html = restaurantCard(restaurant);
+
+  // Should not throw error
+  assertTruthy(html.includes('Zero Rating Restaurant'), 'Should render restaurant name');
+  // Should only show Google rating (zero is filtered out)
+  assertTruthy(html.includes('Google'), 'Should include valid rating source');
+  assertFalsy(html.includes('Yelp:'), 'Should not show Yelp badge with zero score');
 });
 
 test('restaurantCard handles missing categories', () => {
