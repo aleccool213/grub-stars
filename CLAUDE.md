@@ -216,22 +216,21 @@ node scripts/screenshot.js --url http://localhost:9292/categories.html --name ca
 
 This ensures reviewers can see both the graceful handling of empty data and the fully functional UI.
 
-### Known Issues
+### CSS Framework (Twind)
 
-**Screenshots and JS Tests require CDN access:**
+The Web UI uses **Twind** (~58KB), a lightweight Tailwind-in-JS runtime that generates CSS on the fly without a build step.
 
-The Web UI depends on Tailwind CSS loaded from `cdn.tailwindcss.com`. In environments without external network access (e.g., sandboxed CI, air-gapped systems), both screenshots and JavaScript tests will fail with errors like:
+**How it works:**
+- `web/js/vendor/twind.min.js` - Bundled Twind runtime (downloaded from jsdelivr)
+- `web/js/twind-config.js` - Custom theme configuration (colors, fonts, animations)
+- No external CDN dependency - works fully offline
 
-- `Page crashed` or `ERR_NAME_NOT_RESOLVED` for screenshots
-- `tailwind is not defined` for JS tests
+**Custom theme includes:**
+- Colors: `mango`, `hotpink`, `electric`, `mint`, `sunny`, `coral`, `cream`, `cocoa`, `latte`
+- Fonts: `display` (Fredoka), `body` (Nunito)
+- Animations: `wiggle`, `float`, `pop-in`, `bounce-in`, `pulse-glow`, `rainbow`, `sparkle`
 
-**Workaround options:**
-
-1. **Run locally** - Execute screenshot/test commands on a machine with internet access
-2. **Bundle Tailwind** - Replace CDN with a local Tailwind build (requires build step)
-3. **Mock Tailwind** - For tests only, inject a minimal Tailwind stub that defines the `tailwind` global
-
-**TODO:** Consider bundling Tailwind CSS locally to remove CDN dependency and enable offline testing.
+**Note:** Google Fonts are still loaded externally via `custom.css`. For fully offline operation, consider bundling the fonts locally.
 
 ## Configuration
 
