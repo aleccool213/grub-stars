@@ -14,8 +14,8 @@
 if (typeof twind === 'undefined') {
   console.error('Twind not loaded. Make sure to include twind.min.js before this file.');
 } else {
+  // @twind/cdn already includes presetAutoprefix and presetTailwind
   twind.install({
-    presets: [twind.presetAutoprefix(), twind.presetTailwind()],
     theme: {
       extend: {
         colors: {
