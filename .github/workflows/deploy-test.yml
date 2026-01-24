@@ -1,0 +1,48 @@
+name: Deploy Test Environment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Fly.io Test
+    runs-on: ubuntu-latest
+    # Only deploy if tests pass
+    needs: []
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create app if not exists
+        run: |
+          if ! flyctl apps list | grep -q "grub-stars-test"; then
+            echo "Creating grub-stars-test app..."
+            flyctl apps create grub-stars-test --org personal || true
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Create volume if not exists
+        run: |
+          if ! flyctl volumes list --config fly.test.toml 2>/dev/null | grep -q "grub_stars_test_data"; then
+            echo "Creating persistent volume..."
+            flyctl volumes create grub_stars_test_data --size 1 --region ord --config fly.test.toml --yes || true
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy to Fly.io
+        run: flyctl deploy --config fly.test.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Show deployment URL
+        run: |
+          echo "✅ Deployment complete!"
+          echo "App URL: https://grub-stars-test.fly.dev"
