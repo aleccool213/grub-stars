@@ -160,7 +160,9 @@ async function executeAction(page, action, context) {
     case 'goto':
       const url = action.url || `${baseUrl}${action.path || '/'}`;
       console.log(`  → Navigating to ${url}`);
-      await page.goto(url, { waitUntil: action.waitUntil || 'networkidle' });
+      await page.goto(url, { waitUntil: action.waitUntil || 'domcontentloaded', timeout: 30000 });
+      // Give Twind time to generate styles
+      await page.waitForTimeout(500);
       break;
 
     case 'click':
@@ -272,7 +274,17 @@ async function runScenario(scenario, options) {
   console.log(`Output: ${outputDir}\n`);
 
   const browser = await chromium.launch({
-    headless: true
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-gpu',
+    ],
   });
 
   const context = await browser.newContext({
@@ -282,6 +294,17 @@ async function runScenario(scenario, options) {
 
   const page = await context.newPage();
   const screenshots = [];
+
+  // Block external requests (fonts, CDN) that may fail in sandboxed environments
+  await page.route('**/*', (route) => {
+    const url = route.request().url();
+    // Allow localhost/127.0.0.1 requests, block external CDN/font requests
+    if (url.includes('localhost') || url.includes('127.0.0.1')) {
+      route.continue();
+    } else {
+      route.abort('blockedbyclient');
+    }
+  });
 
   const execContext = { baseUrl, outputDir, screenshots };
 
@@ -326,7 +349,7 @@ async function main() {
       baseUrl: options.url,
       viewport: options.viewport,
       steps: [
-        { action: 'goto', path: '/' },
+        { action: 'goto', url: options.url },
         ...options.actions,
         { action: 'screenshot', name: options.name || 'screenshot' }
       ]
