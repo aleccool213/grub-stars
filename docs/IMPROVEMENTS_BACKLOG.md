@@ -39,7 +39,7 @@
   - Add "How it works" section or expandable FAQ
   - Display clear messaging about the local-first model
 
-- [ ] **Clarify form field requirements**
+- [x] **Clarify form field requirements**
   - Indicate which fields are optional vs required on all forms
   - Improve form labels and placeholder text
   - Example: Location index form should clearly mark "Category" as optional
