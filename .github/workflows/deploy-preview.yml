@@ -39,7 +39,26 @@ jobs:
         run: |
           if ! flyctl apps list | grep -q "${{ steps.app-name.outputs.name }}"; then
             echo "Creating ${{ steps.app-name.outputs.name }} app..."
-            flyctl apps create ${{ steps.app-name.outputs.name }} --org personal || true
+            if ! flyctl apps create ${{ steps.app-name.outputs.name }} --org personal 2>&1; then
+              echo ""
+              echo "=============================================="
+              echo "  ERROR: Failed to create Fly.io app"
+              echo "=============================================="
+              echo ""
+              echo "Your FLY_API_TOKEN likely doesn't have permission to create new apps."
+              echo "Deploy tokens can only deploy to existing apps, not create new ones."
+              echo ""
+              echo "To fix this, update FLY_API_TOKEN with a full auth token:"
+              echo ""
+              echo "  1. Run: fly auth token"
+              echo "  2. Copy the token output"
+              echo "  3. Go to: https://github.com/${{ github.repository }}/settings/secrets/actions"
+              echo "  4. Update the FLY_API_TOKEN secret with the new token"
+              echo "  5. Re-run this workflow"
+              echo ""
+              echo "=============================================="
+              exit 1
+            fi
           fi
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
@@ -48,7 +67,18 @@ jobs:
         run: |
           if ! flyctl volumes list --app ${{ steps.app-name.outputs.name }} 2>/dev/null | grep -q "grub_stars_data"; then
             echo "Creating persistent volume..."
-            flyctl volumes create grub_stars_data --size 1 --region ord --app ${{ steps.app-name.outputs.name }} --yes || true
+            if ! flyctl volumes create grub_stars_data --size 1 --region ord --app ${{ steps.app-name.outputs.name }} --yes 2>&1; then
+              echo ""
+              echo "=============================================="
+              echo "  ERROR: Failed to create volume"
+              echo "=============================================="
+              echo ""
+              echo "Could not create volume for app ${{ steps.app-name.outputs.name }}."
+              echo "The app may not exist or your token may lack permissions."
+              echo ""
+              echo "=============================================="
+              exit 1
+            fi
           fi
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
