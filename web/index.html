@@ -17,12 +17,12 @@
           <span>🔍</span> Search Restaurants
         </h2>
         <p class="text-sm text-cocoa/70 mb-4">
-          Fill in at least one field below to search your indexed restaurants
+          Search by name or category. Location is optional to filter results.
         </p>
         <form id="search-form" class="space-y-4">
           <div>
             <label for="search-name" class="block text-sm font-medium text-cocoa mb-1">
-              What are you craving? <span class="text-cocoa/50 font-normal">(optional)</span>
+              What are you craving?
             </label>
             <input
               type="text"
@@ -36,7 +36,7 @@
 
           <div>
             <label for="search-category" class="block text-sm font-medium text-cocoa mb-1">
-              Category <span class="text-cocoa/50 font-normal">(optional)</span>
+              Category
             </label>
             <select
               id="search-category"
@@ -49,7 +49,7 @@
 
           <div>
             <label for="search-location" class="block text-sm font-medium text-cocoa mb-1">
-              Location <span class="text-cocoa/50 font-normal">(optional)</span>
+              Location <span class="text-cocoa/50 font-normal">(filter)</span>
             </label>
             <select
               id="search-location"
@@ -58,6 +58,11 @@
             >
               <option value="">All locations</option>
             </select>
+          </div>
+
+          <!-- Dynamic validation hint -->
+          <div id="search-hint" class="text-sm rounded-lg p-3 transition-all" style="display: none;">
+            <p id="search-hint-text"></p>
           </div>
 
           <button

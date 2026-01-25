@@ -15,6 +15,8 @@ let searchNameInput;
 let categorySelect;
 let locationSelect;
 let resultsContainer;
+let searchHint;
+let searchHintText;
 
 /**
  * Initialize the search page
@@ -29,6 +31,8 @@ async function init() {
   categorySelect = document.getElementById('search-category');
   locationSelect = document.getElementById('search-location');
   resultsContainer = document.getElementById('results');
+  searchHint = document.getElementById('search-hint');
+  searchHintText = document.getElementById('search-hint-text');
 
   if (!searchForm || !resultsContainer) {
     console.error('Required elements not found on page');
@@ -41,11 +45,19 @@ async function init() {
   // Add retry handler for error messages
   resultsContainer.addEventListener('click', handleRetryClick);
 
+  // Add input listeners for dynamic validation hints
+  if (searchNameInput) searchNameInput.addEventListener('input', updateValidationHint);
+  if (categorySelect) categorySelect.addEventListener('change', updateValidationHint);
+  if (locationSelect) locationSelect.addEventListener('change', updateValidationHint);
+
   // Load categories and locations in parallel
   await Promise.all([
     loadCategories(),
     loadLocations()
   ]);
+
+  // Show initial hint
+  updateValidationHint();
 
   // Check URL for initial search parameters
   await handleUrlParams();
@@ -137,13 +149,50 @@ async function handleSearch(event) {
 }
 
 /**
+ * Update the validation hint based on current form state
+ */
+function updateValidationHint() {
+  if (!searchHint || !searchHintText) return;
+
+  const name = searchNameInput?.value?.trim() || '';
+  const category = categorySelect?.value || '';
+  const location = locationSelect?.value || '';
+
+  // Determine what's filled in
+  const hasName = name.length > 0;
+  const hasCategory = category.length > 0;
+  const hasLocation = location.length > 0;
+
+  // Valid combinations:
+  // - name (with or without location)
+  // - category (with or without location)
+  // - name + category (with or without location)
+  const isValid = hasName || hasCategory;
+
+  if (!hasName && !hasCategory && !hasLocation) {
+    // Nothing filled in - show helpful hint
+    searchHint.style.display = 'block';
+    searchHint.className = 'text-sm rounded-lg p-3 transition-all bg-blue-50 border border-blue-200';
+    searchHintText.innerHTML = '💡 <strong>Search by name or category</strong> (location is optional to filter results)';
+  } else if (!isValid && hasLocation) {
+    // Only location filled - show error hint
+    searchHint.style.display = 'block';
+    searchHint.className = 'text-sm rounded-lg p-3 transition-all bg-amber-50 border border-amber-200';
+    searchHintText.innerHTML = '⚠️ Please enter a <strong>name</strong> or select a <strong>category</strong> to search. Location alone is not enough.';
+  } else {
+    // Valid combination - hide hint
+    searchHint.style.display = 'none';
+  }
+}
+
+/**
  * Perform the search and display results
  * @param {Object} params - Search parameters
  */
 async function performSearch(params) {
-  // Validate: at least one search criteria required
-  if (!params.name && !params.category && !params.location) {
-    showEmptyState('Enter a restaurant name, select a category, or choose a location to search.');
+  // Validate: name or category required (location is just a filter)
+  if (!params.name && !params.category) {
+    showEmptyState('Please enter a restaurant name or select a category to search. Location is optional to filter results.');
     return;
   }
 
