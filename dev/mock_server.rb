@@ -77,6 +77,15 @@ get "/businesses/search" do
 
   businesses = YELP_BUSINESSES["businesses"]
 
+  # Filter by location (city name in query)
+  location_lower = location.downcase
+  businesses = businesses.select do |biz|
+    city = biz.dig("location", "city")&.downcase || ""
+    state = biz.dig("location", "state")&.downcase || ""
+    # Match if location contains city name or state abbreviation
+    location_lower.include?(city) || location_lower.include?(state)
+  end
+
   # Filter by categories if provided
   if categories
     category_list = categories.split(",")
@@ -141,9 +150,26 @@ get "/textsearch/json" do
 
   # Return all businesses for any query containing a location
   results = GOOGLE_BUSINESSES["results"]
+  query_lower = query.downcase
+
+  # Filter by location (extract city names from formatted_address)
+  # Support common city names: Barrie, Toronto, Vancouver
+  city_filter = nil
+  ["barrie", "toronto", "vancouver"].each do |city|
+    if query_lower.include?(city)
+      city_filter = city
+      break
+    end
+  end
+
+  if city_filter
+    results = results.select do |r|
+      address = r["formatted_address"]&.downcase || ""
+      address.include?(city_filter)
+    end
+  end
 
   # Filter by category keywords in query if present
-  query_lower = query.downcase
   if query_lower.include?("bakery") || query_lower.include?("bakeries")
     results = results.select { |r| r["types"].include?("bakery") }
   elsif query_lower.include?("sushi") || query_lower.include?("japanese")
@@ -238,9 +264,25 @@ get "/api/v1/location/search" do
 
   # Return all locations for now (could filter by query)
   locations = TRIPADVISOR_LOCATIONS["data"]
-
-  # Simple filtering by query
   query_lower = search_query.downcase
+
+  # Filter by location (city name in query)
+  city_filter = nil
+  ["barrie", "toronto", "vancouver"].each do |city|
+    if query_lower.include?(city)
+      city_filter = city
+      break
+    end
+  end
+
+  if city_filter
+    locations = locations.select do |loc|
+      city = loc.dig("address_obj", "city")&.downcase || ""
+      city.include?(city_filter)
+    end
+  end
+
+  # Simple filtering by category query
   if query_lower.include?("bakery") || query_lower.include?("bakeries")
     locations = locations.select do |loc|
       loc.dig("subcategory")&.any? { |sc| sc["name"]&.downcase&.include?("bakery") } ||
