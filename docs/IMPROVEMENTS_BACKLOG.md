@@ -81,7 +81,7 @@
   - Link to search results for each location
   - Allow quick re-indexing from location list
 
-- [ ] **Disable browser autofill on forms**
+- [x] **Disable browser autofill on forms**
   - Add `autocomplete="off"` attributes to location and category form inputs
   - Prevents browser from suggesting previously entered values
   - Better UX for app-specific form fields
