@@ -15,8 +15,18 @@ module GrubStars
       end
 
       before do
+        # CORS headers for local development
+        headers "Access-Control-Allow-Origin" => "*",
+                "Access-Control-Allow-Methods" => "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers" => "Content-Type"
+
         # Only set JSON content type for API routes
         content_type :json unless request.path_info.start_with?("/js", "/css") || request.path_info.end_with?(".html")
+      end
+
+      # Handle CORS preflight requests
+      options "*" do
+        200
       end
 
       # Serve index.html at root
