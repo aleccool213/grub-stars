@@ -37,6 +37,18 @@
   - Add "Directions" link to open in maps app
   - Show which sources have data for this restaurant (e.g., "From Yelp, Google Maps")
 
+- [ ] **Create locations browse page**
+  - Add dedicated page to browse all indexed locations (like categories.html)
+  - Display list of all locations in the database
+  - Show location name and number of restaurants indexed
+  - Link to search results for each location
+  - Allow quick re-indexing from location list
+
+- [ ] **Disable browser autofill on forms**
+  - Add `autocomplete="off"` attributes to location and category form inputs
+  - Prevents browser from suggesting previously entered values
+  - Better UX for app-specific form fields
+
 ## Notes
 
 These improvements focus on making the app more discoverable and user-friendly, especially for first-time users who may be unfamiliar with the local-first indexing model.
