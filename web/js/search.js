@@ -15,6 +15,7 @@ import {
   isOnboardingDismissed,
   initOnboardingBanner
 } from './components/onboarding-banner.js';
+import { initRestaurantAutocomplete } from './components/restaurant-autocomplete.js';
 
 // DOM elements
 let searchForm;
@@ -56,6 +57,16 @@ async function init() {
 
   // Add retry handler for error messages
   resultsContainer.addEventListener('click', handleRetryClick);
+
+  // Initialize restaurant name autocomplete
+  if (searchNameInput) {
+    initRestaurantAutocomplete(searchNameInput, {
+      onSelect: (restaurant) => {
+        // Navigate to restaurant details page when selected from autocomplete
+        window.location.href = `/details.html?id=${restaurant.id}`;
+      }
+    });
+  }
 
   // Add input listeners for dynamic validation hints
   if (searchNameInput) searchNameInput.addEventListener('input', updateValidationHint);

@@ -113,3 +113,14 @@ export async function indexLocation(location, category = null) {
 export async function checkHealth() {
   return apiRequest('/health');
 }
+
+/**
+ * Autocomplete restaurant names
+ * @param {string} query - Partial restaurant name (min 2 characters)
+ * @param {number} limit - Maximum results (default 10, max 20)
+ * @returns {Promise<Object>} - Autocomplete results with data and meta
+ */
+export async function autocompleteRestaurants(query, limit = 10) {
+  const queryParams = new URLSearchParams({ q: query, limit: limit.toString() });
+  return apiRequest(`/restaurants/autocomplete?${queryParams}`);
+}
