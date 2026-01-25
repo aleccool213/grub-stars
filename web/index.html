@@ -13,9 +13,20 @@
   <div class="container mx-auto px-4 py-8">
     <main>
       <div class="max-w-2xl mx-auto card p-6 mb-6">
-        <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
-          <span>🔍</span> Search Restaurants
-        </h2>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-2xl font-bold text-cocoa flex items-center gap-2">
+            <span>🔍</span> Search Restaurants
+          </h2>
+          <button
+            type="button"
+            id="help-button"
+            class="btn-secondary p-2 text-sm"
+            aria-label="Show keyboard shortcuts help"
+            title="Keyboard shortcuts (Ctrl+?)"
+          >
+            ?
+          </button>
+        </div>
         <p class="text-sm text-cocoa/70 mb-4">
           Fill in at least one field below to search your indexed restaurants
         </p>
@@ -76,6 +87,40 @@
     <footer class="text-center mt-12 py-8">
       <p class="text-cocoa/60">Made with 🍕 by friends, for friends</p>
     </footer>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div id="shortcuts-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="text-xl font-bold text-cocoa">Keyboard Shortcuts</h3>
+        <button
+          type="button"
+          id="close-modal-button"
+          class="modal-close"
+          aria-label="Close modal"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="space-y-3">
+          <div class="shortcut-item">
+            <kbd class="shortcut-key">/</kbd>
+            <span class="shortcut-description">Focus search input</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd class="shortcut-key">Escape</kbd>
+            <span class="shortcut-description">Clear form and results</span>
+          </div>
+          <div class="shortcut-item">
+            <kbd class="shortcut-key">Ctrl+?</kbd>
+            <span class="shortcut-description">Show this help</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="/js/search.js"></script>

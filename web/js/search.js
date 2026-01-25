@@ -15,6 +15,9 @@ let searchNameInput;
 let categorySelect;
 let locationSelect;
 let resultsContainer;
+let helpButton;
+let shortcutsModal;
+let closeModalButton;
 
 /**
  * Initialize the search page
@@ -29,6 +32,9 @@ async function init() {
   categorySelect = document.getElementById('search-category');
   locationSelect = document.getElementById('search-location');
   resultsContainer = document.getElementById('results');
+  helpButton = document.getElementById('help-button');
+  shortcutsModal = document.getElementById('shortcuts-modal');
+  closeModalButton = document.getElementById('close-modal-button');
 
   if (!searchForm || !resultsContainer) {
     console.error('Required elements not found on page');
@@ -43,6 +49,17 @@ async function init() {
 
   // Add keyboard shortcuts
   document.addEventListener('keydown', handleKeyboardShortcuts);
+
+  // Set up modal event listeners
+  if (helpButton) {
+    helpButton.addEventListener('click', openShortcutsModal);
+  }
+  if (closeModalButton) {
+    closeModalButton.addEventListener('click', closeShortcutsModal);
+  }
+  if (shortcutsModal) {
+    shortcutsModal.addEventListener('click', handleModalOverlayClick);
+  }
 
   // Load categories and locations in parallel
   await Promise.all([
@@ -272,11 +289,19 @@ function updateUrl(params) {
  * Handle keyboard shortcuts
  * - '/': Focus on search name input
  * - 'Escape': Clear the form
+ * - 'Ctrl+?': Open shortcuts modal
  * @param {KeyboardEvent} event - Keyboard event
  */
 function handleKeyboardShortcuts(event) {
   // Don't trigger shortcuts when user is typing in inputs
   const isInputElement = event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT';
+
+  // 'Ctrl+?' or 'Cmd+?' - open shortcuts modal
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === '?') {
+    event.preventDefault();
+    openShortcutsModal();
+    return;
+  }
 
   // '/' key - focus search input (unless already in an input)
   if (event.key === '/' && !isInputElement) {
@@ -286,15 +311,58 @@ function handleKeyboardShortcuts(event) {
     }
   }
 
-  // 'Escape' key - clear form
-  if (event.key === 'Escape' && isInputElement) {
-    if (searchForm) {
-      searchForm.reset();
-      resultsContainer.innerHTML = '';
-      if (searchNameInput) {
-        searchNameInput.focus();
+  // 'Escape' key - clear form or close modal
+  if (event.key === 'Escape') {
+    if (shortcutsModal && !shortcutsModal.classList.contains('hidden')) {
+      // Close modal if it's open
+      closeShortcutsModal();
+    } else if (isInputElement) {
+      // Clear form if inside an input
+      if (searchForm) {
+        searchForm.reset();
+        resultsContainer.innerHTML = '';
+        if (searchNameInput) {
+          searchNameInput.focus();
+        }
       }
     }
+  }
+}
+
+/**
+ * Open the keyboard shortcuts modal
+ */
+function openShortcutsModal() {
+  if (shortcutsModal) {
+    shortcutsModal.classList.remove('hidden');
+    // Focus the close button for better accessibility
+    if (closeModalButton) {
+      closeModalButton.focus();
+    }
+  }
+}
+
+/**
+ * Close the keyboard shortcuts modal
+ */
+function closeShortcutsModal() {
+  if (shortcutsModal) {
+    shortcutsModal.classList.add('hidden');
+    // Return focus to help button
+    if (helpButton) {
+      helpButton.focus();
+    }
+  }
+}
+
+/**
+ * Handle clicks on the modal overlay (close when clicking outside content)
+ * @param {MouseEvent} event - Click event
+ */
+function handleModalOverlayClick(event) {
+  // Only close if clicking on the overlay itself, not the content
+  if (event.target === shortcutsModal || event.target === event.currentTarget.querySelector('.modal-overlay')) {
+    closeShortcutsModal();
   }
 }
 

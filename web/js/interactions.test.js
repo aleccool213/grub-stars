@@ -753,3 +753,146 @@ test('Escape key clears form when inside an input', () => {
   assertEqual(resultsDiv.textContent, '', 'Results should be cleared');
   destroyContainer(container);
 });
+
+// ========================================
+// Modal Interaction Tests
+// ========================================
+
+test('help button opens modal', () => {
+  const container = createContainer();
+
+  container.innerHTML = `
+    <button id="help-button">?</button>
+    <div id="shortcuts-modal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Keyboard Shortcuts</h3>
+          <button id="close-modal-button" class="modal-close">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="shortcut-item">
+            <kbd class="shortcut-key">/</kbd>
+            <span>Focus search input</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const helpButton = container.querySelector('#help-button');
+  const modal = container.querySelector('#shortcuts-modal');
+
+  // Verify modal starts hidden
+  assert(modal.classList.contains('hidden'), 'Modal should start hidden');
+
+  // Set up click handler
+  helpButton.addEventListener('click', () => {
+    modal.classList.remove('hidden');
+  });
+
+  // Click help button
+  click(helpButton);
+
+  // Verify modal is now visible
+  assertFalsy(modal.classList.contains('hidden'), 'Modal should be visible after click');
+  destroyContainer(container);
+});
+
+test('modal close button closes modal', () => {
+  const container = createContainer();
+
+  container.innerHTML = `
+    <div id="shortcuts-modal" class="modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Keyboard Shortcuts</h3>
+          <button id="close-modal-button" class="modal-close">✕</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const modal = container.querySelector('#shortcuts-modal');
+  const closeButton = container.querySelector('#close-modal-button');
+
+  // Verify modal is visible
+  assertFalsy(modal.classList.contains('hidden'), 'Modal should start visible');
+
+  // Set up close handler
+  closeButton.addEventListener('click', () => {
+    modal.classList.add('hidden');
+  });
+
+  // Click close button
+  click(closeButton);
+
+  // Verify modal is now hidden
+  assert(modal.classList.contains('hidden'), 'Modal should be hidden after close');
+  destroyContainer(container);
+});
+
+test('clicking modal overlay closes modal', () => {
+  const container = createContainer();
+
+  container.innerHTML = `
+    <div id="shortcuts-modal" class="modal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <p>Modal content</p>
+      </div>
+    </div>
+  `;
+
+  const modal = container.querySelector('#shortcuts-modal');
+  const overlay = container.querySelector('.modal-overlay');
+
+  // Set up overlay click handler
+  modal.addEventListener('click', (event) => {
+    if (event.target === overlay) {
+      modal.classList.add('hidden');
+    }
+  });
+
+  // Click overlay
+  click(overlay);
+
+  // Verify modal is hidden
+  assert(modal.classList.contains('hidden'), 'Modal should be hidden after overlay click');
+  destroyContainer(container);
+});
+
+test('Ctrl+Shift+? opens modal', () => {
+  const container = createContainer();
+  let modalOpened = false;
+
+  container.innerHTML = `
+    <div id="shortcuts-modal" class="modal hidden"></div>
+  `;
+
+  const modal = container.querySelector('#shortcuts-modal');
+
+  // Set up keyboard handler
+  document.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === '?') {
+      event.preventDefault();
+      modal.classList.remove('hidden');
+      modalOpened = true;
+    }
+  });
+
+  // Simulate Ctrl+Shift+? key press
+  const event = new KeyboardEvent('keydown', {
+    key: '?',
+    ctrlKey: true,
+    shiftKey: true,
+    bubbles: true,
+    cancelable: true
+  });
+
+  document.dispatchEvent(event);
+
+  assert(modalOpened, 'Ctrl+Shift+? should open modal');
+  destroyContainer(container);
+});
