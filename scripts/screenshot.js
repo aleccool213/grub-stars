@@ -296,10 +296,14 @@ async function runScenario(scenario, options) {
   const screenshots = [];
 
   // Block external requests (fonts, CDN) that may fail in sandboxed environments
+  // but allow specific APIs needed for functionality
   await page.route('**/*', (route) => {
     const url = route.request().url();
-    // Allow localhost/127.0.0.1 requests, block external CDN/font requests
+    // Allow localhost/127.0.0.1 requests
     if (url.includes('localhost') || url.includes('127.0.0.1')) {
+      route.continue();
+    // Allow Photon geocoding API for address autocomplete
+    } else if (url.includes('photon.komoot.io')) {
       route.continue();
     } else {
       route.abort('blockedbyclient');
