@@ -9,6 +9,12 @@ import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
 import { initBookmarkButtons } from './components/bookmark-button.js';
+import {
+  onboardingBanner,
+  noLocationsEmptyState,
+  isOnboardingDismissed,
+  initOnboardingBanner
+} from './components/onboarding-banner.js';
 
 // DOM elements
 let searchForm;
@@ -18,6 +24,10 @@ let locationSelect;
 let resultsContainer;
 let searchHint;
 let searchHintText;
+let onboardingContainer;
+
+// State
+let hasIndexedLocations = false;
 
 /**
  * Initialize the search page
@@ -34,6 +44,7 @@ async function init() {
   resultsContainer = document.getElementById('results');
   searchHint = document.getElementById('search-hint');
   searchHintText = document.getElementById('search-hint-text');
+  onboardingContainer = document.getElementById('onboarding-container');
 
   if (!searchForm || !resultsContainer) {
     console.error('Required elements not found on page');
@@ -56,6 +67,9 @@ async function init() {
     loadCategories(),
     loadLocations()
   ]);
+
+  // Show onboarding banner if not dismissed
+  showOnboardingIfNeeded();
 
   // Show initial hint
   updateValidationHint();
@@ -97,6 +111,9 @@ async function loadLocations() {
     const response = await getLocations();
     const locations = response.data || [];
 
+    // Track if there are any indexed locations
+    hasIndexedLocations = locations.length > 0;
+
     // Add locations to select
     locations.forEach(location => {
       const option = document.createElement('option');
@@ -107,6 +124,27 @@ async function loadLocations() {
   } catch (error) {
     console.error('Failed to load locations:', error);
     // Non-critical, continue without locations
+    hasIndexedLocations = false;
+  }
+}
+
+/**
+ * Show onboarding banner if not dismissed
+ */
+function showOnboardingIfNeeded() {
+  if (!onboardingContainer) return;
+
+  // If no locations indexed, always show onboarding with prominent CTA
+  if (!hasIndexedLocations) {
+    onboardingContainer.innerHTML = onboardingBanner({ hasLocations: false });
+    initOnboardingBanner();
+    return;
+  }
+
+  // If locations exist but onboarding not dismissed, show it
+  if (!isOnboardingDismissed()) {
+    onboardingContainer.innerHTML = onboardingBanner({ hasLocations: true });
+    initOnboardingBanner();
   }
 }
 
@@ -241,6 +279,12 @@ function showResults(restaurants, meta) {
  * @param {Object} params - Search parameters used
  */
 function showEmptyResults(params) {
+  // If no locations are indexed, show a more helpful message
+  if (!hasIndexedLocations) {
+    resultsContainer.innerHTML = noLocationsEmptyState();
+    return;
+  }
+
   const searchTerms = [];
   if (params.name) searchTerms.push(`name "${params.name}"`);
   if (params.category) searchTerms.push(`category "${params.category}"`);
