@@ -1,5 +1,34 @@
 # Improvements Backlog
 
+## Test Data Expansion
+
+### Critical Priority
+
+- [ ] **Expand mock test data significantly**
+  - Current test data is minimal and insufficient for realistic feature testing
+  - Need hundreds of restaurants per location (not just a handful)
+  - Add comprehensive details for each restaurant: full reviews, varied rating distributions, multiple media items
+  - Include edge cases: restaurants with no photos, no reviews, single-star reviews, restaurants with incomplete data
+  - Add multiple categories per restaurant (e.g., a restaurant that's both "Italian" and "Fine Dining")
+  - Vary review content: long reviews, short reviews, reviews in different styles and tones
+  - Include restaurants from different price ranges ($ to $$$$)
+  - Add phone numbers, websites, hours of operation to more restaurants
+  - Create realistic geographic distribution (clustered downtown, sparse in suburbs)
+
+- [ ] **Enhance mock server data generation**
+  - Mock server should generate detailed, realistic data for testing
+  - Add multiple locations worth of data (barrie, toronto, vancouver, etc.)
+  - Include varied photo counts (0 photos, 1-3 photos, 10+ photos)
+  - Add realistic review counts (10, 50, 200, 1000+)
+  - Ensure rating distributions are realistic (mostly 4-5 stars, some 2-3)
+  - Add temporal variety to review dates (old and recent)
+
+- [ ] **Create distinct test datasets**
+  - Small dataset for quick unit/integration tests
+  - Medium dataset for UI testing and demonstration
+  - Large dataset (1000+ restaurants) for performance testing
+  - Each dataset should exercise different code paths and edge cases
+
 ## UI/UX Improvements for Web Frontend
 
 ### High Priority
