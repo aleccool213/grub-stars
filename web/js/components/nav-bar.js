@@ -96,18 +96,27 @@ export function initNavBar() {
   const mobileMenu = document.getElementById('mobile-menu');
 
   if (menuBtn && mobileMenu) {
+    // Track menu state - starts closed
+    let isMenuOpen = false;
+
+    // Initially hide the menu using inline style
+    // (Twind hashes class names, so classList.toggle('hidden') doesn't work)
+    mobileMenu.style.display = 'none';
+
     const toggleMenu = (event) => {
       // Prevent double-firing on touch devices
       event.preventDefault();
 
-      const isExpanded = menuBtn.getAttribute('aria-expanded') === 'true';
-      menuBtn.setAttribute('aria-expanded', String(!isExpanded));
-      mobileMenu.classList.toggle('hidden');
+      isMenuOpen = !isMenuOpen;
+      menuBtn.setAttribute('aria-expanded', String(isMenuOpen));
+
+      // Toggle visibility using inline style (works with Twind)
+      mobileMenu.style.display = isMenuOpen ? 'block' : 'none';
 
       // Update icon based on state
       const svg = menuBtn.querySelector('svg');
       if (svg) {
-        if (!isExpanded) {
+        if (isMenuOpen) {
           svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>';
         } else {
           svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>';
