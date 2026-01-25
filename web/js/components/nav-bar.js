@@ -15,6 +15,7 @@ export function navBar(options = {}) {
   const navLinks = [
     { href: '/', label: 'Search', icon: '🔍', id: 'search' },
     { href: '/categories.html', label: 'Categories', icon: '📂', id: 'categories' },
+    { href: '/bookmarks.html', label: 'Bookmarks', icon: '💖', id: 'bookmarks' },
     { href: '/index-location.html', label: 'Add Area', icon: '📍', id: 'index' }
   ];
 

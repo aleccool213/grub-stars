@@ -3,6 +3,8 @@
  * Displays a restaurant in search results
  */
 
+import { bookmarkButton } from './bookmark-button.js';
+
 /**
  * Render a restaurant card
  * @param {Object} restaurant - Restaurant data
@@ -41,12 +43,28 @@ export function restaurantCard(restaurant) {
       </span>`
     ).join('');
 
+  // Create bookmark button
+  const bookmarkBtn = bookmarkButton({
+    restaurantId: restaurant.id,
+    name: restaurant.name,
+    size: 'md',
+    variant: 'icon'
+  });
+
   return `
-    <article class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4">
+    <article class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 group">
+      <div class="flex items-start justify-between gap-2 mb-3">
+        <a href="/details.html?id=${restaurant.id}" class="flex-1 block">
+          <h3 class="text-lg font-semibold text-gray-800 hover:text-blue-600 mb-1">
+            ${escapeHtml(restaurant.name)}
+          </h3>
+        </a>
+        <div class="flex-shrink-0">
+          ${bookmarkBtn}
+        </div>
+      </div>
+
       <a href="/details.html?id=${restaurant.id}" class="block">
-        <h3 class="text-lg font-semibold text-gray-800 hover:text-blue-600 mb-1">
-          ${escapeHtml(restaurant.name)}
-        </h3>
         <p class="text-sm text-gray-600 mb-2">
           ${escapeHtml(restaurant.address || 'Address not available')}
         </p>
