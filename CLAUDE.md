@@ -232,6 +232,30 @@ The Web UI uses **Twind** (~58KB), a lightweight Tailwind-in-JS runtime that gen
 
 **Note:** Google Fonts are still loaded externally via `custom.css`. For fully offline operation, consider bundling the fonts locally.
 
+**IMPORTANT - Twind Class Name Hashing:**
+
+Twind hashes CSS class names at runtime for optimization. For example, `class="hidden md:hidden px-4"` becomes something like `class="#zkrgdo #17u01q8 #1r5hoj3"` in the actual DOM.
+
+This means **you cannot use `classList.toggle('hidden')` or `classList.contains('hidden')`** - these will add/check for a literal `"hidden"` string, not Twind's hashed class.
+
+**Solutions for dynamic visibility toggling:**
+
+1. **Use inline styles (recommended):**
+   ```javascript
+   // Instead of: element.classList.toggle('hidden')
+   element.style.display = isVisible ? 'block' : 'none';
+   ```
+
+2. **Use data attributes with CSS:**
+   ```html
+   <div data-visible="false">...</div>
+   ```
+   ```css
+   [data-visible="false"] { display: none; }
+   ```
+
+**Debugging tip:** When inspecting elements in DevTools, you'll see hashed class names. To understand what styles are applied, check the computed styles panel rather than trying to decode the class names.
+
 ## Configuration
 
 API keys are configured via environment variables. Copy the template and add your keys:
