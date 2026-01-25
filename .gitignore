@@ -11,4 +11,5 @@ node_modules/
 .env
 
 # Generated screenshots (for PR documentation)
-screenshots/
+# Only ignore root-level screenshots folder, allow docs/screenshots/
+/screenshots/

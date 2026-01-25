@@ -7,6 +7,7 @@ import { indexLocation } from './api.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
+import { initAddressAutocomplete } from './components/address-autocomplete.js';
 
 // DOM elements
 let indexForm;
@@ -14,6 +15,12 @@ let locationInput;
 let categoryInput;
 let submitButton;
 let resultsContainer;
+
+// Autocomplete instance
+let addressAutocomplete;
+
+// Store selected location data (for future use with coordinates)
+let selectedLocationData = null;
 
 /**
  * Initialize the index form page
@@ -32,6 +39,15 @@ function init() {
   if (!indexForm || !resultsContainer) {
     console.error('Required elements not found on page');
     return;
+  }
+
+  // Initialize address autocomplete on location input
+  if (locationInput) {
+    addressAutocomplete = initAddressAutocomplete(locationInput, {
+      onSelect: (suggestion) => {
+        selectedLocationData = suggestion;
+      },
+    });
   }
 
   // Set up event listeners
@@ -224,6 +240,11 @@ function resetForm() {
   if (resultsContainer) {
     resultsContainer.innerHTML = '';
   }
+  // Clear autocomplete and selected data
+  if (addressAutocomplete) {
+    addressAutocomplete.clear();
+  }
+  selectedLocationData = null;
   if (locationInput) {
     locationInput.focus();
   }
