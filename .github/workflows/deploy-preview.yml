@@ -1,0 +1,243 @@
+name: Deploy PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+
+    steps:
+      - name: Check for Fly.io API token
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "FLY_API_TOKEN is not configured. Skipping preview deployment."
+            exit 0
+          fi
+          echo "FLY_API_TOKEN is configured"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Set app name
+        id: app-name
+        run: echo "name=grub-stars-pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+      - name: Create app if not exists
+        run: |
+          if ! flyctl apps list | grep -q "${{ steps.app-name.outputs.name }}"; then
+            echo "Creating ${{ steps.app-name.outputs.name }} app..."
+            if ! flyctl apps create ${{ steps.app-name.outputs.name }} --org personal 2>&1; then
+              echo ""
+              echo "=============================================="
+              echo "  ERROR: Failed to create Fly.io app"
+              echo "=============================================="
+              echo ""
+              echo "Your FLY_API_TOKEN likely doesn't have permission to create new apps."
+              echo "Deploy tokens can only deploy to existing apps, not create new ones."
+              echo ""
+              echo "To fix this, update FLY_API_TOKEN with a full auth token:"
+              echo ""
+              echo "  1. Run: fly auth token"
+              echo "  2. Copy the token output"
+              echo "  3. Go to: https://github.com/${{ github.repository }}/settings/secrets/actions"
+              echo "  4. Update the FLY_API_TOKEN secret with the new token"
+              echo "  5. Re-run this workflow"
+              echo ""
+              echo "=============================================="
+              exit 1
+            fi
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Create volume if not exists
+        run: |
+          if ! flyctl volumes list --app ${{ steps.app-name.outputs.name }} 2>/dev/null | grep -q "grub_stars_data"; then
+            echo "Creating persistent volume..."
+            if ! flyctl volumes create grub_stars_data --size 1 --region ord --app ${{ steps.app-name.outputs.name }} --yes 2>&1; then
+              echo ""
+              echo "=============================================="
+              echo "  ERROR: Failed to create volume"
+              echo "=============================================="
+              echo ""
+              echo "Could not create volume for app ${{ steps.app-name.outputs.name }}."
+              echo "The app may not exist or your token may lack permissions."
+              echo ""
+              echo "=============================================="
+              exit 1
+            fi
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Generate fly.toml for preview
+        run: |
+          cat > fly.preview.toml << EOF
+          app = "${{ steps.app-name.outputs.name }}"
+          primary_region = "ord"
+
+          [build]
+            dockerfile = "Dockerfile.test"
+
+          [env]
+            RACK_ENV = "production"
+            GRUB_STARS_CONFIG_DIR = "/data"
+            # Mock server URLs (mock runs on port 4567 in same container)
+            YELP_API_BASE_URL = "http://localhost:4567"
+            GOOGLE_API_BASE_URL = "http://localhost:4567"
+            TRIPADVISOR_API_BASE_URL = "http://localhost:4567/api/v1"
+            # Mock API keys (any value works with mock server)
+            YELP_API_KEY = "mock_api_key"
+            GOOGLE_API_KEY = "mock_api_key"
+            TRIPADVISOR_API_KEY = "mock_api_key"
+
+          [http_service]
+            internal_port = 9292
+            force_https = true
+            auto_stop_machines = "stop"
+            auto_start_machines = true
+            min_machines_running = 0
+            processes = ["app"]
+
+          [[vm]]
+            memory = "256mb"
+            cpu_kind = "shared"
+            cpus = 1
+
+          [[mounts]]
+            source = "grub_stars_data"
+            destination = "/data"
+          EOF
+
+      - name: Deploy to Fly.io
+        run: flyctl deploy --config fly.preview.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const appName = '${{ steps.app-name.outputs.name }}';
+            const appUrl = `https://${appName}.fly.dev`;
+
+            // Find existing bot comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Preview Deployment')
+            );
+
+            const body = `## 🚀 Preview Deployment
+
+            | Status | URL |
+            |--------|-----|
+            | ✅ Deployed | [${appUrl}](${appUrl}) |
+
+            *Preview will be destroyed when this PR is closed.*`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+  cleanup-preview:
+    name: Cleanup Preview
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+
+    steps:
+      - name: Check for Fly.io API token
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "FLY_API_TOKEN is not configured. Skipping cleanup."
+            exit 0
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Set app name
+        id: app-name
+        run: echo "name=grub-stars-pr-${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+      - name: Destroy preview app
+        run: |
+          if flyctl apps list | grep -q "${{ steps.app-name.outputs.name }}"; then
+            echo "Destroying ${{ steps.app-name.outputs.name }}..."
+            flyctl apps destroy ${{ steps.app-name.outputs.name }} --yes
+          else
+            echo "App ${{ steps.app-name.outputs.name }} does not exist, skipping."
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const appName = '${{ steps.app-name.outputs.name }}';
+
+            // Find existing bot comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Preview Deployment')
+            );
+
+            const body = `## 🚀 Preview Deployment
+
+            | Status | URL |
+            |--------|-----|
+            | 🗑️ Destroyed | ~https://${appName}.fly.dev~ |
+
+            *Preview was destroyed when this PR was closed.*`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            }

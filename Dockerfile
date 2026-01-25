@@ -8,6 +8,7 @@ RUN apt-get update -qq && \
     build-essential \
     sqlite3 \
     libsqlite3-dev \
+    pkg-config \
     curl && \
     rm -rf /var/lib/apt/lists/*
 
