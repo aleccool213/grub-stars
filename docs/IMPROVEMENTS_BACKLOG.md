@@ -49,6 +49,60 @@
   - Prevents browser from suggesting previously entered values
   - Better UX for app-specific form fields
 
+## Future Adapter Ideas
+
+Potential data sources to add for more comprehensive restaurant information:
+
+### High Potential
+
+- **Foursquare/Swarm**
+  - Ratings, reviews, tips from Foursquare users
+  - Venue photos and venue metrics
+  - Good alternative to Google Maps in some regions
+
+- **OpenStreetMap (OSM)**
+  - Free, community-maintained restaurant data
+  - Basic info: name, address, cuisine type, opening hours
+  - No API key required, fully open source
+  - Good for supplementing missing data or areas with poor Yelp/Google coverage
+
+- **Zomato**
+  - Strong in India/Asia, growing globally
+  - Ratings, reviews, photos, menus
+  - Good for international restaurant discovery
+
+### Medium Potential
+
+- **OpenTable**
+  - Reservation availability and pricing
+  - Tasting menu info from upscale restaurants
+  - Use case: fine dining and reservation-focused search
+
+- **Booking.com**
+  - Restaurant reservations and reviews
+  - Hotel restaurant information
+  - Good for travel-focused restaurant searches
+
+- **DoorDash/UberEats/GrubHub**
+  - Delivery restaurant listings and menus
+  - Delivery availability and fees
+  - Good for "what can I order right now" searches
+
+### Low Priority (Data-only)
+
+- **Instagram/TikTok Food Hashtags**
+  - Already planned - photos and videos only
+  - Extract food photos and restaurant ambiance videos
+  - Hashtag-based restaurant discovery
+
+- **Michelin Guide**
+  - Starred restaurant data (premium, limited coverage)
+  - Use case: high-end fine dining discovery
+
+- **Local Food Blogs/Review Aggregators**
+  - Requires web scraping or partnerships
+  - More niche reviews and local expert opinions
+
 ## Notes
 
 These improvements focus on making the app more discoverable and user-friendly, especially for first-time users who may be unfamiliar with the local-first indexing model.
