@@ -52,6 +52,18 @@ test('navBar includes mobile menu button', () => {
   assertTruthy(html.includes('aria-expanded="false"'), 'Should have aria-expanded attribute');
 });
 
+test('navBar mobile button has type button', () => {
+  const html = navBar();
+
+  assertTruthy(html.includes('type="button"'), 'Mobile button should have type button');
+});
+
+test('navBar mobile button SVG has pointer-events-none', () => {
+  const html = navBar();
+
+  assertTruthy(html.includes('pointer-events-none'), 'SVG should have pointer-events-none for better touch handling');
+});
+
 test('navBar includes mobile navigation', () => {
   const html = navBar();
 
