@@ -99,9 +99,14 @@ jobs:
           [env]
             RACK_ENV = "production"
             GRUB_STARS_CONFIG_DIR = "/data"
-            YELP_API_KEY = "mock"
-            GOOGLE_API_KEY = "mock"
-            TRIPADVISOR_API_KEY = "mock"
+            # Mock server URLs (mock runs on port 4567 in same container)
+            YELP_API_BASE_URL = "http://localhost:4567"
+            GOOGLE_API_BASE_URL = "http://localhost:4567"
+            TRIPADVISOR_API_BASE_URL = "http://localhost:4567/api/v1"
+            # Mock API keys (any value works with mock server)
+            YELP_API_KEY = "mock_api_key"
+            GOOGLE_API_KEY = "mock_api_key"
+            TRIPADVISOR_API_KEY = "mock_api_key"
 
           [http_service]
             internal_port = 9292
