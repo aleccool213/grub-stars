@@ -111,24 +111,28 @@ test('initNavBar attaches click handler to menu button', () => {
   assertTruthy(menuBtn, 'Menu button should exist');
   assertTruthy(mobileMenu, 'Mobile menu should exist');
 
-  // Manually attach click handler (since initNavBar uses document.getElementById)
+  // Manually simulate the initNavBar behavior using inline styles
+  // (since initNavBar uses document.getElementById which won't find elements in the test container)
+  let isMenuOpen = false;
+  mobileMenu.style.display = 'none';
+
   menuBtn.addEventListener('click', () => {
-    const isExpanded = menuBtn.getAttribute('aria-expanded') === 'true';
-    menuBtn.setAttribute('aria-expanded', String(!isExpanded));
-    mobileMenu.classList.toggle('hidden');
+    isMenuOpen = !isMenuOpen;
+    menuBtn.setAttribute('aria-expanded', String(isMenuOpen));
+    mobileMenu.style.display = isMenuOpen ? 'block' : 'none';
   });
 
   // Simulate click
   menuBtn.click();
 
   assertEqual(menuBtn.getAttribute('aria-expanded'), 'true', 'Should toggle aria-expanded to true');
-  assertFalsy(mobileMenu.classList.contains('hidden'), 'Mobile menu should be visible');
+  assertEqual(mobileMenu.style.display, 'block', 'Mobile menu should be visible');
 
   // Click again to close
   menuBtn.click();
 
   assertEqual(menuBtn.getAttribute('aria-expanded'), 'false', 'Should toggle aria-expanded to false');
-  assertTruthy(mobileMenu.classList.contains('hidden'), 'Mobile menu should be hidden');
+  assertEqual(mobileMenu.style.display, 'none', 'Mobile menu should be hidden');
 
   destroyContainer(container);
 });
