@@ -103,7 +103,7 @@ module GrubStars
         json_response(stats, location: location, category: category)
       rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
         halt 503, json_error("NO_ADAPTERS", e.message)
-      rescue Infrastructure::Adapters::Base::APIError => e
+      rescue GrubStars::Adapters::Base::APIError => e
         halt 502, json_error("API_ERROR", e.message)
       end
 
