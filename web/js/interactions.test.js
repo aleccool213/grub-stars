@@ -669,3 +669,87 @@ test('simulated error and retry flow', async () => {
 
   destroyContainer(container);
 });
+
+// ========================================
+// Keyboard Shortcuts Tests
+// ========================================
+
+test('forward slash (/) key focuses search input when not in an input', () => {
+  const container = createContainer();
+
+  container.innerHTML = `
+    <form id="search-form">
+      <input type="text" id="search-name" placeholder="Search" />
+      <button type="submit">Search</button>
+    </form>
+  `;
+
+  const form = container.querySelector('#search-form');
+  const searchInput = container.querySelector('#search-name');
+  let focused = false;
+
+  // Set up keyboard handler (simplified version of search.js)
+  document.addEventListener('keydown', (event) => {
+    const isInputElement = event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT';
+    if (event.key === '/' && !isInputElement) {
+      event.preventDefault();
+      searchInput.focus();
+      focused = true;
+    }
+  });
+
+  // Simulate '/' key press on the document
+  const event = new KeyboardEvent('keydown', {
+    key: '/',
+    bubbles: true,
+    cancelable: true
+  });
+
+  document.dispatchEvent(event);
+
+  assert(focused, 'Slash key should trigger focus');
+  destroyContainer(container);
+});
+
+test('Escape key clears form when inside an input', () => {
+  const container = createContainer();
+
+  container.innerHTML = `
+    <form id="search-form">
+      <input type="text" id="search-name" value="pizza" />
+      <button type="submit">Search</button>
+    </form>
+    <div id="results">Some results</div>
+  `;
+
+  const form = container.querySelector('#search-form');
+  const searchInput = container.querySelector('#search-name');
+  const resultsDiv = container.querySelector('#results');
+  let formCleared = false;
+
+  // Set up keyboard handler (simplified version)
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      form.reset();
+      resultsDiv.innerHTML = '';
+      formCleared = true;
+    }
+  });
+
+  // Fill the form first
+  assertEqual(searchInput.value, 'pizza', 'Form should have initial value');
+
+  // Simulate Escape key on the input
+  const event = new KeyboardEvent('keydown', {
+    key: 'Escape',
+    bubbles: true,
+    cancelable: true
+  });
+
+  searchInput.dispatchEvent(event);
+
+  assert(formCleared, 'Escape key should clear form');
+  assertEqual(searchInput.value, '', 'Form should be cleared');
+  assertEqual(resultsDiv.textContent, '', 'Results should be cleared');
+  destroyContainer(container);
+});

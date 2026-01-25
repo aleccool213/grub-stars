@@ -41,6 +41,9 @@ async function init() {
   // Add retry handler for error messages
   resultsContainer.addEventListener('click', handleRetryClick);
 
+  // Add keyboard shortcuts
+  document.addEventListener('keydown', handleKeyboardShortcuts);
+
   // Load categories and locations in parallel
   await Promise.all([
     loadCategories(),
@@ -263,6 +266,36 @@ function updateUrl(params) {
 
   // Update URL without reload
   window.history.pushState({}, '', url);
+}
+
+/**
+ * Handle keyboard shortcuts
+ * - '/': Focus on search name input
+ * - 'Escape': Clear the form
+ * @param {KeyboardEvent} event - Keyboard event
+ */
+function handleKeyboardShortcuts(event) {
+  // Don't trigger shortcuts when user is typing in inputs
+  const isInputElement = event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT';
+
+  // '/' key - focus search input (unless already in an input)
+  if (event.key === '/' && !isInputElement) {
+    event.preventDefault();
+    if (searchNameInput) {
+      searchNameInput.focus();
+    }
+  }
+
+  // 'Escape' key - clear form
+  if (event.key === 'Escape' && isInputElement) {
+    if (searchForm) {
+      searchForm.reset();
+      resultsContainer.innerHTML = '';
+      if (searchNameInput) {
+        searchNameInput.focus();
+      }
+    }
+  }
 }
 
 /**
