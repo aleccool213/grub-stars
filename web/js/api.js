@@ -3,8 +3,10 @@
  * Handles all communication with the backend API
  */
 
-// API base URL - same origin since Sinatra serves both
-const API_BASE_URL = 'http://localhost:9292';
+// API base URL - use current origin in production, localhost in development
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:9292'
+  : '';
 
 /**
  * Make an API request with error handling
