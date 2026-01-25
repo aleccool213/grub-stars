@@ -49,6 +49,12 @@
   - Prevents browser from suggesting previously entered values
   - Better UX for app-specific form fields
 
+- [ ] **Add "last indexed at" timestamps**
+  - Display when restaurant data was last updated on details pages
+  - Shows data freshness and when re-indexing might be needed
+  - Format: "Last updated 2 days ago" or "Last indexed Jan 23, 2026"
+  - Helps users understand if they should re-index for fresh data
+
 ## Future Adapter Ideas
 
 Potential data sources to add for more comprehensive restaurant information:
