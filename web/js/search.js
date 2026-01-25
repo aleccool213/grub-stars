@@ -8,6 +8,7 @@ import { restaurantList } from './components/restaurant-card.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
+import { initBookmarkButtons } from './components/bookmark-button.js';
 
 // DOM elements
 let searchForm;
@@ -181,6 +182,9 @@ function showResults(restaurants, meta) {
     </div>
     ${restaurantList(restaurants)}
   `;
+
+  // Initialize bookmark buttons
+  initBookmarkButtons(resultsContainer);
 }
 
 /**

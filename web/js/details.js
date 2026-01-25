@@ -7,6 +7,7 @@ import { getRestaurant } from './api.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
+import { bookmarkButton, initBookmarkButtons } from './components/bookmark-button.js';
 
 // DOM elements
 let detailsContainer;
@@ -94,6 +95,14 @@ function showRestaurant(restaurant) {
   const avgRating = calculateAverageRating(ratings);
   const totalReviews = ratings.reduce((sum, r) => sum + (r.review_count || 0), 0);
 
+  // Create bookmark button
+  const bookmarkBtn = bookmarkButton({
+    restaurantId: restaurant.id,
+    name: restaurant.name,
+    size: 'lg',
+    variant: 'button'
+  });
+
   // Update page title
   document.title = `${restaurant.name} - grub stars`;
 
@@ -101,7 +110,12 @@ function showRestaurant(restaurant) {
     <article class="bg-white rounded-lg shadow-lg overflow-hidden">
       <!-- Header Section -->
       <div class="p-6 border-b border-gray-200">
-        <h2 class="text-2xl font-bold text-gray-800 mb-2">${escapeHtml(restaurant.name)}</h2>
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">${escapeHtml(restaurant.name)}</h2>
+          <div class="flex-shrink-0">
+            ${bookmarkBtn}
+          </div>
+        </div>
 
         ${categories.length > 0 ? `
           <div class="mb-3">
@@ -246,6 +260,9 @@ function showRestaurant(restaurant) {
       ` : ''}
     </article>
   `;
+
+  // Initialize bookmark buttons
+  initBookmarkButtons(detailsContainer);
 }
 
 /**
