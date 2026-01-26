@@ -305,6 +305,9 @@ async function runScenario(scenario, options) {
     // Allow Photon geocoding API for address autocomplete
     } else if (url.includes('photon.komoot.io')) {
       route.continue();
+    // Allow Lorem Picsum and placehold.co for stock photos
+    } else if (url.includes('picsum.photos') || url.includes('placehold.co')) {
+      route.continue();
     } else {
       route.abort('blockedbyclient');
     }

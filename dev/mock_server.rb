@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
+# encoding: UTF-8
+
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
 
 # Mock API Server for local development and testing
 # Supports Yelp, Google Places, and TripAdvisor APIs
@@ -23,7 +27,7 @@ FIXTURES_DIR = File.expand_path("fixtures", __dir__)
 
 def load_fixture(name)
   path = File.join(FIXTURES_DIR, "#{name}.json")
-  JSON.parse(File.read(path))
+  JSON.parse(File.read(path, encoding: "UTF-8"))
 end
 
 # Yelp fixtures
@@ -238,8 +242,10 @@ get "/photo" do
     halt 400, { status: "INVALID_REQUEST", error_message: "photoreference is required" }.to_json
   end
 
-  # Return a mock photo URL redirect
-  redirect "https://example.com/photos/#{photo_reference}.jpg", 302
+  # Return a mock photo URL redirect using placehold.co for placeholder images
+  colors = %w[f0e68c ffa07a 98fb98 87ceeb dda0dd f5deb3 ffc0cb e0ffff]
+  color = colors[photo_reference.hash.abs % colors.length]
+  redirect "https://placehold.co/400x400/#{color}/333333?text=Photo", 302
 end
 
 # ============================================
