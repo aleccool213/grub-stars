@@ -202,6 +202,13 @@ export function initNavBar() {
 function initThemeToggle() {
   const themeButtons = document.querySelectorAll('.theme-toggle');
 
+  // Sync button appearance with current theme state on load
+  // This ensures the icon is correct after page navigation
+  const currentlyDark = isDarkMode();
+  themeButtons.forEach(button => {
+    updateThemeButtonAppearance(button, currentlyDark);
+  });
+
   themeButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
