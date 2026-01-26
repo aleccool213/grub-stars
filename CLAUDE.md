@@ -256,6 +256,48 @@ This means **you cannot use `classList.toggle('hidden')` or `classList.contains(
 
 **Debugging tip:** When inspecting elements in DevTools, you'll see hashed class names. To understand what styles are applied, check the computed styles panel rather than trying to decode the class names.
 
+**IMPORTANT - Dark Mode CSS Challenges:**
+
+Because Twind hashes class names, CSS selectors like `.bg-white` or `.text-gray-600` in `custom.css` **will not match** elements in the DOM. This creates significant friction when implementing dark mode.
+
+**What doesn't work:**
+```css
+/* These selectors won't match because Twind hashes the class names */
+html.dark .bg-white { background-color: #1e293b !important; }
+html.dark .text-gray-600 { color: #cbd5e1 !important; }
+```
+
+**Solutions for dark mode styling:**
+
+1. **Target elements by container ID and structure (recommended):**
+   ```css
+   /* Target specific containers and their children */
+   html.dark #restaurant-details article { background-color: #1e293b !important; }
+   html.dark #search-results article { background-color: #1e293b !important; }
+   html.dark #categories-list a { background-color: #334155 !important; }
+   ```
+
+2. **Target semantic HTML elements:**
+   ```css
+   /* article, blockquote, etc. work regardless of class hashing */
+   html.dark article { background-color: #1e293b !important; }
+   html.dark blockquote { background-color: #334155 !important; }
+   ```
+
+3. **Use Twind's dark: prefix in JavaScript components:**
+   ```javascript
+   // In JS components, use Twind's dark mode utilities
+   `<div class="bg-white dark:bg-slate-800">...</div>`
+   ```
+
+4. **For inline styles in JS components, use CSS attribute selectors:**
+   ```css
+   /* Match elements with specific inline style values */
+   html.dark [style*="color: #4b5563"] { color: #cbd5e1 !important; }
+   ```
+
+**Key insight:** When adding dark mode support, you must identify the container IDs (`#restaurant-details`, `#search-results`, `#categories-list`, etc.) and target elements through DOM structure rather than relying on Tailwind class selectors.
+
 ## Configuration
 
 API keys are configured via environment variables. Copy the template and add your keys:

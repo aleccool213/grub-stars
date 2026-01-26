@@ -359,6 +359,494 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* ============================================
+   Dark Mode Styles
+   ============================================ */
+
+/* Body background */
+html.dark body {
+  background-color: #0f172a; /* slate-900 */
+}
+
+/* Card styles - dark mode */
+html.dark .card {
+  background: #1e293b; /* slate-800 */
+  border-color: #3f3f46; /* zinc-700 */
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .card:hover {
+  box-shadow: 0 8px 30px -4px rgba(168, 85, 247, 0.25);
+}
+
+/* Button styles - dark mode */
+html.dark .btn-secondary {
+  background: #27272a; /* zinc-800 */
+  color: #FFFBF5; /* cream */
+  border-color: #FFB347; /* mango */
+}
+
+html.dark .btn-secondary:hover {
+  background: #FFB347;
+  color: #0f172a;
+}
+
+/* Form styles - dark mode */
+html.dark .input-whimsical {
+  background: #1e293b; /* slate-800 */
+  border-color: #3f3f46; /* zinc-700 */
+  color: #FFFBF5; /* cream */
+}
+
+html.dark .input-whimsical:focus {
+  border-color: #A855F7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3);
+}
+
+html.dark .input-whimsical::placeholder {
+  color: rgba(255, 251, 245, 0.4);
+}
+
+/* Alert styles - dark mode */
+html.dark .alert-success {
+  background: rgba(110, 231, 183, 0.15);
+  border-color: rgba(110, 231, 183, 0.5);
+}
+
+html.dark .alert-error {
+  background: rgba(251, 113, 133, 0.15);
+  border-color: rgba(251, 113, 133, 0.5);
+}
+
+html.dark .alert-warning {
+  background: rgba(253, 224, 71, 0.15);
+  border-color: rgba(253, 224, 71, 0.5);
+}
+
+/* Tag styles - dark mode */
+html.dark .tag-category {
+  background: rgba(168, 85, 247, 0.25);
+  color: #c084fc; /* lighter purple for contrast */
+}
+
+html.dark .tag-source {
+  background: rgba(251, 113, 133, 0.25);
+  color: #fda4af; /* lighter coral for contrast */
+}
+
+/* Star rating - dark mode */
+html.dark .star-empty {
+  color: #3f3f46; /* zinc-700 */
+}
+
+/* Spinner - dark mode */
+html.dark .spinner {
+  border-color: #3f3f46;
+  border-top-color: #A855F7;
+}
+
+/* Shimmer loading - dark mode */
+html.dark .shimmer {
+  background: linear-gradient(to right, #1e293b 0%, #334155 20%, #1e293b 40%, #1e293b 100%);
+}
+
+/* Focus styles - dark mode (slightly brighter) */
+html.dark *:focus-visible {
+  outline-color: #c084fc;
+}
+
+/* Text color adjustments for dark mode */
+html.dark .text-cocoa {
+  color: #f8fafc !important; /* slate-50 - much brighter */
+}
+
+html.dark .text-cocoa\/70 {
+  color: rgba(248, 250, 252, 0.85) !important; /* brighter */
+}
+
+html.dark .text-cocoa\/60 {
+  color: rgba(248, 250, 252, 0.75) !important; /* brighter */
+}
+
+html.dark .text-cocoa\/50 {
+  color: rgba(248, 250, 252, 0.7) !important; /* brighter */
+}
+
+html.dark .text-cocoa\/40 {
+  color: rgba(248, 250, 252, 0.6) !important; /* brighter */
+}
+
+/* Background adjustments for dark mode */
+html.dark .bg-cream {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-latte {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-latte\/50 {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+html.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+/* Border adjustments for dark mode */
+html.dark .border-latte {
+  border-color: #3f3f46 !important;
+}
+
+/* Gray colors in dark mode */
+html.dark .bg-gray-50 {
+  background-color: #1e293b !important;
+}
+
+html.dark .border-gray-200 {
+  border-color: #3f3f46 !important;
+}
+
+html.dark .text-gray-600,
+html.dark .text-gray-500,
+html.dark .text-gray-400 {
+  color: rgba(248, 250, 252, 0.75) !important; /* brighter for readability */
+}
+
+html.dark .text-gray-700 {
+  color: rgba(248, 250, 252, 0.9) !important; /* brighter */
+}
+
+/* Heading colors in dark mode - brighter variants */
+html.dark .text-mango {
+  color: #fcd34d !important; /* amber-300 - brighter yellow */
+}
+
+html.dark .text-hotpink {
+  color: #f9a8d4 !important; /* pink-300 - brighter pink */
+}
+
+html.dark .text-coral {
+  color: #fda4af !important; /* rose-300 - brighter coral */
+}
+
+/* Blue tints in dark mode */
+html.dark .bg-blue-50 {
+  background-color: rgba(168, 85, 247, 0.1) !important;
+}
+
+html.dark .border-blue-200 {
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+html.dark .text-blue-700 {
+  color: #c084fc !important;
+}
+
+html.dark .text-blue-600 {
+  color: #A855F7 !important;
+}
+
+/* Amber tints in dark mode */
+html.dark .bg-amber-50 {
+  background-color: rgba(253, 224, 71, 0.1) !important;
+}
+
+html.dark .border-amber-200 {
+  border-color: rgba(253, 224, 71, 0.3) !important;
+}
+
+/* Hover state backgrounds */
+html.dark .hover\:bg-blue-50:hover {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+}
+
+html.dark .hover\:border-blue-300:hover {
+  border-color: rgba(168, 85, 247, 0.5) !important;
+}
+
+html.dark .hover\:text-blue-700:hover {
+  color: #c084fc !important;
+}
+
+/* Error message component dark mode - override inline styles */
+html.dark .bg-red-50,
+html.dark [style*="background-color: #fef2f2"] {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+html.dark .text-red-800,
+html.dark [style*="color: #991b1b"] {
+  color: #fca5a5 !important; /* red-300 */
+}
+
+html.dark .text-red-600,
+html.dark [style*="color: #dc2626"] {
+  color: #f87171 !important; /* red-400 */
+}
+
+/* Warning message dark mode */
+html.dark .bg-yellow-50,
+html.dark [style*="background-color: #fefce8"] {
+  background-color: rgba(234, 179, 8, 0.15) !important;
+  border-color: rgba(234, 179, 8, 0.4) !important;
+}
+
+html.dark .text-yellow-700,
+html.dark [style*="color: #a16207"] {
+  color: #fde047 !important; /* yellow-300 */
+}
+
+html.dark .text-yellow-800,
+html.dark [style*="color: #854d0e"] {
+  color: #fef08a !important; /* yellow-200 */
+}
+
+html.dark .text-yellow-500,
+html.dark [style*="color: #eab308"] {
+  color: #facc15 !important; /* yellow-400 */
+}
+
+/* Success message dark mode (index success card) */
+html.dark .bg-green-50 {
+  background-color: rgba(34, 197, 94, 0.15) !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+html.dark .text-green-600 {
+  color: #4ade80 !important; /* green-400 */
+}
+
+html.dark .text-green-800 {
+  color: #86efac !important; /* green-300 */
+}
+
+html.dark .border-green-200 {
+  border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+/*
+ * Dark mode for JS-rendered content
+ * Twind hashes class names, so we must target elements directly
+ * by their semantic type and container structure
+ */
+
+/* All article elements (restaurant cards, detail pages) */
+html.dark article {
+  background-color: #1e293b !important;
+}
+
+/* Restaurant details page - main container */
+html.dark #restaurant-details article {
+  background-color: #1e293b !important;
+}
+
+html.dark #restaurant-details article > div {
+  border-color: #475569 !important;
+}
+
+/* Rating cards in details page - target divs inside grid */
+html.dark #restaurant-details article div div div {
+  background-color: #334155 !important;
+}
+
+/* Search results container */
+html.dark #search-results article {
+  background-color: #1e293b !important;
+}
+
+/* All blockquotes (reviews) */
+html.dark blockquote {
+  background-color: #334155 !important;
+}
+
+/* Index results container */
+html.dark #index-results > div {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+html.dark #index-results article {
+  background-color: #1e293b !important;
+}
+
+/* Categories list container */
+html.dark #categories-list > div {
+  background-color: #1e293b !important;
+}
+
+html.dark #categories-list a {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark #categories-list a:hover {
+  background-color: #475569 !important;
+  border-color: #6366f1 !important;
+}
+
+/* Bookmarks list container */
+html.dark #bookmarks-list article {
+  background-color: #1e293b !important;
+}
+
+html.dark .shadow,
+html.dark .shadow-lg {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark .hover\:shadow-md:hover {
+  box-shadow: 0 6px 25px -2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Gray text colors for dark mode */
+html.dark .text-gray-800 {
+  color: #f8fafc !important; /* slate-50 */
+}
+
+html.dark .text-gray-700 {
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+html.dark .text-gray-600,
+html.dark [style*="color: #4b5563"] {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+
+html.dark .text-gray-500,
+html.dark [style*="color: #9ca3af"] {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+html.dark .text-gray-400 {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+html.dark .text-gray-300 {
+  color: #64748b !important; /* slate-500 */
+}
+
+/* Gray backgrounds for dark mode */
+html.dark .bg-gray-200 {
+  background-color: #475569 !important; /* slate-600 */
+}
+
+html.dark .bg-gray-100 {
+  background-color: #334155 !important; /* slate-700 */
+}
+
+html.dark .hover\:bg-gray-100:hover {
+  background-color: #475569 !important; /* slate-600 */
+}
+
+html.dark .hover\:bg-gray-300:hover {
+  background-color: #64748b !important; /* slate-500 */
+}
+
+/* Border colors for dark mode */
+html.dark .border-gray-200 {
+  border-color: #475569 !important; /* slate-600 */
+}
+
+html.dark .border-gray-300 {
+  border-color: #64748b !important; /* slate-500 */
+}
+
+/* Blue colors for dark mode (links, buttons, tags) */
+html.dark .bg-blue-100 {
+  background-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+html.dark .text-blue-700 {
+  color: #c084fc !important; /* purple-400 */
+}
+
+html.dark .text-blue-600,
+html.dark [style*="color: #2563eb"] {
+  color: #a78bfa !important; /* violet-400 */
+}
+
+html.dark .hover\:bg-blue-200:hover {
+  background-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+html.dark .bg-blue-600 {
+  background-color: #7c3aed !important; /* violet-600 */
+}
+
+html.dark .hover\:bg-blue-700:hover {
+  background-color: #6d28d9 !important; /* violet-700 */
+}
+
+/* Yellow/rating colors */
+html.dark .text-yellow-600 {
+  color: #fde047 !important; /* yellow-300 */
+}
+
+html.dark .text-yellow-400 {
+  color: #facc15 !important; /* yellow-400 */
+}
+
+/* Onboarding banner dark mode - override inline styles */
+html.dark #onboarding-banner {
+  background: linear-gradient(135deg, rgba(255, 179, 71, 0.15), rgba(168, 85, 247, 0.2)) !important;
+  border-color: rgba(255, 179, 71, 0.4) !important;
+}
+
+html.dark #onboarding-banner h3,
+html.dark #onboarding-banner h4 {
+  color: #f8fafc !important; /* slate-50 */
+}
+
+html.dark #onboarding-banner p {
+  color: rgba(248, 250, 252, 0.85) !important;
+}
+
+html.dark #onboarding-banner strong {
+  color: #fcd34d !important; /* amber-300 */
+}
+
+html.dark #onboarding-banner #dismiss-onboarding {
+  color: rgba(248, 250, 252, 0.6) !important;
+}
+
+html.dark #onboarding-banner #dismiss-onboarding:hover {
+  color: #f8fafc !important;
+}
+
+/* Search card and form headings in dark mode */
+html.dark h2,
+html.dark h3,
+html.dark h4 {
+  color: #f8fafc !important;
+}
+
+/* Input placeholder in dark mode - needs higher contrast */
+html.dark input::placeholder {
+  color: rgba(248, 250, 252, 0.5) !important;
+}
+
+/* Label text in dark mode */
+html.dark label {
+  color: rgba(248, 250, 252, 0.9) !important;
+}
+
+/* Paragraph text in dark mode - ensure good contrast */
+html.dark .card p {
+  color: rgba(248, 250, 252, 0.8) !important;
+}
+
+/* Link colors in dark mode */
+html.dark a:not(.btn-primary):not(.btn-secondary) {
+  color: #c084fc;
+}
+
+html.dark a:not(.btn-primary):not(.btn-secondary):hover {
+  color: #e879f9;
+}
+
+/* ============================================
    Address Autocomplete Styles
    ============================================ */
 
@@ -388,6 +876,12 @@ h1, h2, h3, h4, h5, h6,
   overflow-y: auto;
 }
 
+html.dark .autocomplete-dropdown {
+  background: #1e293b;
+  border-color: #3f3f46;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+
 .autocomplete-item {
   display: flex;
   align-items: center;
@@ -398,6 +892,10 @@ h1, h2, h3, h4, h5, h6,
   transition: all 0.15s ease;
   color: #4A3728;
   font-family: 'Nunito', sans-serif;
+}
+
+html.dark .autocomplete-item {
+  color: #FFFBF5;
 }
 
 .autocomplete-item:hover,
@@ -450,4 +948,17 @@ h1, h2, h3, h4, h5, h6,
   text-align: center;
   color: rgba(74, 55, 40, 0.6);
   font-size: 0.875rem;
+}
+
+html.dark .autocomplete-empty {
+  color: rgba(255, 251, 245, 0.5);
+}
+
+html.dark .autocomplete-loading {
+  color: #c084fc;
+}
+
+html.dark .autocomplete-loading::before {
+  border-color: #3f3f46;
+  border-top-color: #A855F7;
 }
