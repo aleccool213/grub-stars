@@ -242,8 +242,10 @@ get "/photo" do
     halt 400, { status: "INVALID_REQUEST", error_message: "photoreference is required" }.to_json
   end
 
-  # Return a mock photo URL redirect
-  redirect "https://example.com/photos/#{photo_reference}.jpg", 302
+  # Return a mock photo URL redirect using placehold.co for placeholder images
+  colors = %w[f0e68c ffa07a 98fb98 87ceeb dda0dd f5deb3 ffc0cb e0ffff]
+  color = colors[photo_reference.hash.abs % colors.length]
+  redirect "https://placehold.co/400x400/#{color}/333333?text=Photo", 302
 end
 
 # ============================================
