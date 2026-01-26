@@ -625,10 +625,70 @@ html.dark .border-green-200 {
   border-color: rgba(34, 197, 94, 0.4) !important;
 }
 
-/* Restaurant cards and details - white backgrounds */
-html.dark .bg-white,
-html.dark article.bg-white {
-  background-color: #1e293b !important; /* slate-800 */
+/*
+ * Dark mode for JS-rendered content
+ * Twind hashes class names, so we must target elements directly
+ * by their semantic type and container structure
+ */
+
+/* All article elements (restaurant cards, detail pages) */
+html.dark article {
+  background-color: #1e293b !important;
+}
+
+/* Restaurant details page - main container */
+html.dark #restaurant-details article {
+  background-color: #1e293b !important;
+}
+
+html.dark #restaurant-details article > div {
+  border-color: #475569 !important;
+}
+
+/* Rating cards in details page - target divs inside grid */
+html.dark #restaurant-details article div div div {
+  background-color: #334155 !important;
+}
+
+/* Search results container */
+html.dark #search-results article {
+  background-color: #1e293b !important;
+}
+
+/* All blockquotes (reviews) */
+html.dark blockquote {
+  background-color: #334155 !important;
+}
+
+/* Index results container */
+html.dark #index-results > div {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+html.dark #index-results article {
+  background-color: #1e293b !important;
+}
+
+/* Categories list container */
+html.dark #categories-list > div {
+  background-color: #1e293b !important;
+}
+
+html.dark #categories-list a {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark #categories-list a:hover {
+  background-color: #475569 !important;
+  border-color: #6366f1 !important;
+}
+
+/* Bookmarks list container */
+html.dark #bookmarks-list article {
+  background-color: #1e293b !important;
 }
 
 html.dark .shadow,
