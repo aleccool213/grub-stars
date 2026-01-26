@@ -205,9 +205,11 @@ module GrubStars
       def extract_photos(spot)
         return [] unless spot["photos"]
 
-        # Return photo references - would need separate API call to get actual URLs
         spot["photos"].first(5).map do |photo|
-          if photo["photo_reference"]
+          # Use direct URL if available (e.g., from mock server), otherwise build from photo_reference
+          if photo["url"]
+            photo["url"]
+          elsif photo["photo_reference"]
             "#{@base_url}/photo?maxwidth=400&photoreference=#{photo["photo_reference"]}&key=#{@api_key}"
           end
         end.compact
