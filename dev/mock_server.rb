@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
+# encoding: UTF-8
+
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
 
 # Mock API Server for local development and testing
 # Supports Yelp, Google Places, and TripAdvisor APIs
@@ -23,7 +27,7 @@ FIXTURES_DIR = File.expand_path("fixtures", __dir__)
 
 def load_fixture(name)
   path = File.join(FIXTURES_DIR, "#{name}.json")
-  JSON.parse(File.read(path))
+  JSON.parse(File.read(path, encoding: "UTF-8"))
 end
 
 # Yelp fixtures
