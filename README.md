@@ -33,6 +33,24 @@ Stop switching between Yelp, Google Maps, TripAdvisor, Instagram, and TikTok to 
 - 🔗 **Lightweight storage** - Store URLs to media, not the files themselves
 - 🔄 **Smart deduplication** - Automatically merges the same restaurant from different sources
 
+## Live Demo
+
+**Try it now:** [https://grub-stars-test.fly.dev](https://grub-stars-test.fly.dev)
+
+The test environment runs with a mock server that simulates responses from Yelp, Google Maps, and TripAdvisor. You can explore the full functionality without needing any API keys.
+
+**Demo data available for:**
+- Location: "Barrie, Ontario"
+- Various restaurant categories (bakeries, cafes, etc.)
+
+**Features to try:**
+- 🔍 Search for restaurants by name or category
+- 📍 Index the demo location to populate the database
+- 🏷️ Browse restaurants by categories
+- 📱 View detailed restaurant information with photos and reviews
+
+The demo resets periodically, so feel free to experiment!
+
 ## Quick Start
 
 ### Installation
