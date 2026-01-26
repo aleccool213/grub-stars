@@ -971,7 +971,7 @@
     },
     {
       "place_id": "ChIJ216bc75952e7cf7ab5fdfc1d",
-      "name": "Se\u00f1or Tacos - Barrie",
+      "name": "Señor Tacos - Barrie",
       "formatted_address": "572 Granville Road, Barrie, ON L6R 4J9, Canada",
       "geometry": {
         "location": {
@@ -1787,7 +1787,7 @@
     },
     {
       "place_id": "ChIJ512dc0c891ca2fcfeedce05e",
-      "name": "Se\u00f1or Cantina",
+      "name": "Señor Cantina",
       "formatted_address": "396 Bay Street South, Barrie, ON L6N 9A2, Canada",
       "geometry": {
         "location": {
@@ -2357,7 +2357,7 @@
       "formatted_address": "129 Pine Road, Toronto, ON L5M 7E9, Canada",
       "geometry": {
         "location": {
-          "lat": 43.649953,
+          "lat": 43.649952999999996,
           "lng": -79.377775
         }
       },
@@ -2756,7 +2756,7 @@
       "geometry": {
         "location": {
           "lat": 43.64342,
-          "lng": -79.383305
+          "lng": -79.38330499999999
         }
       },
       "rating": 4.7,
@@ -3908,7 +3908,7 @@
     },
     {
       "place_id": "ChIJ5551eea369ea12a38545aaca",
-      "name": "Se\u00f1or Burrito Bar",
+      "name": "Señor Burrito Bar",
       "formatted_address": "383 Robson Drive East, Toronto, ON L4V 3Q1, Canada",
       "geometry": {
         "location": {
@@ -6905,6 +6905,542 @@
       "opening_hours": {
         "open_now": true
       }
+    },
+    {
+      "place_id": "ChIJ0b6257e7bde02246dd01999843be6060",
+      "name": "Rainbow Drive-In",
+      "formatted_address": "3308 Kanaina Avenue, Honolulu, HI 96815, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.2831,
+          "lng": -157.8142
+        }
+      },
+      "rating": 4.5,
+      "user_ratings_total": 850,
+      "types": [
+        "hawaiian",
+        "breakfast_brunch",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_0_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_0_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJc24e7ab00ce773a1002f760ac21f7ed7",
+      "name": "Marukame Udon",
+      "formatted_address": "2310 Kuhio Avenue, Honolulu, HI 96815, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.2793,
+          "lng": -157.8266
+        }
+      },
+      "rating": 4.6,
+      "user_ratings_total": 1200,
+      "types": [
+        "japanese",
+        "udon",
+        "ramen",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 1,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_1_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_1_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJaf545e21ddc79aa71bd34bbc5df42d9c",
+      "name": "Leonard's Bakery",
+      "formatted_address": "933 Kapahulu Avenue, Honolulu, HI 96816, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.2792,
+          "lng": -157.815
+        }
+      },
+      "rating": 4.7,
+      "user_ratings_total": 920,
+      "types": [
+        "bakeries",
+        "desserts",
+        "portuguese",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_2_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_2_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJ970c0d75452f438d8521f5bd222e9ea0",
+      "name": "Ono Seafood",
+      "formatted_address": "747 Kapahulu Avenue #4, Honolulu, HI 96816, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.278,
+          "lng": -157.8165
+        }
+      },
+      "rating": 4.8,
+      "user_ratings_total": 1450,
+      "types": [
+        "poke",
+        "seafood",
+        "hawaiian",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_3_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_3_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJ73430b08a0451e27880b46c76a1cb28a",
+      "name": "Helena's Hawaiian Food",
+      "formatted_address": "1240 North School Street, Honolulu, HI 96817, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.3255,
+          "lng": -157.8598
+        }
+      },
+      "rating": 4.5,
+      "user_ratings_total": 680,
+      "types": [
+        "hawaiian",
+        "traditional",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_4_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_4_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJbcc37efedf085da333f603e78ad748b1",
+      "name": "Koko Head Cafe",
+      "formatted_address": "1145C 12th Avenue, Honolulu, HI 96816, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.2821,
+          "lng": -157.8021
+        }
+      },
+      "rating": 4.6,
+      "user_ratings_total": 780,
+      "types": [
+        "breakfast_brunch",
+        "cafes",
+        "hawaiian",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_5_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_5_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJea4e7bdf459ef71659089d77931d2e5e",
+      "name": "Roy's Waikiki",
+      "formatted_address": "226 Lewers Street, Honolulu, HI 96815, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.2789,
+          "lng": -157.8287
+        }
+      },
+      "rating": 4.4,
+      "user_ratings_total": 920,
+      "types": [
+        "hawaiian",
+        "seafood",
+        "fusion",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 4,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_6_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_6_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJf3dcb6916c1e82616922e3bac275c458",
+      "name": "The Pig and The Lady",
+      "formatted_address": "83 North King Street, Honolulu, HI 96817, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.3078,
+          "lng": -157.8604
+        }
+      },
+      "rating": 4.7,
+      "user_ratings_total": 1100,
+      "types": [
+        "vietnamese",
+        "asian_fusion",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_7_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_7_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJb0eedc493f33e03c0bf2bd5316f167fc",
+      "name": "Haleiwa Joe's Seafood Grill",
+      "formatted_address": "66-011 Kamehameha Highway, Haleiwa, HI 96712, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.5943,
+          "lng": -158.1048
+        }
+      },
+      "rating": 4.5,
+      "user_ratings_total": 650,
+      "types": [
+        "seafood",
+        "american",
+        "hawaiian",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 3,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_8_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_8_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJ9e4af2f30a8b5385373623d72deca2ec",
+      "name": "Giovanni's Shrimp Truck",
+      "formatted_address": "66-472 Kamehameha Highway, Haleiwa, HI 96712, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.5569,
+          "lng": -158.0292
+        }
+      },
+      "rating": 4.3,
+      "user_ratings_total": 1850,
+      "types": [
+        "seafood",
+        "food_trucks",
+        "hawaiian",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_9_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_9_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJ3f4fc229bc588b2dcf56e0b6fd173eb0",
+      "name": "Musubi Cafe Iyasume",
+      "formatted_address": "2427 Kuhio Avenue, Honolulu, HI 96815, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.2782,
+          "lng": -157.8276
+        }
+      },
+      "rating": 4.5,
+      "user_ratings_total": 720,
+      "types": [
+        "japanese",
+        "hawaiian",
+        "breakfast_brunch",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 1,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_10_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_10_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJ0294065bb7bd81e365ab58f809854d0e",
+      "name": "Cinnamon's Restaurant",
+      "formatted_address": "315 Uluniu Street, Kailua, HI 96734, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.3967,
+          "lng": -157.7401
+        }
+      },
+      "rating": 4.6,
+      "user_ratings_total": 890,
+      "types": [
+        "breakfast_brunch",
+        "american",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_11_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_11_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJa98f6a2b2b7e7529b3360874825bd59b",
+      "name": "Ted's Bakery",
+      "formatted_address": "59-024 Kamehameha Highway, Haleiwa, HI 96712, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.6436,
+          "lng": -158.0525
+        }
+      },
+      "rating": 4.4,
+      "user_ratings_total": 1320,
+      "types": [
+        "bakeries",
+        "desserts",
+        "cafes",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_12_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_12_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJ95fefa8c926ff146e6b64d34b712faae",
+      "name": "Nico's Pier 38",
+      "formatted_address": "1129 North Nimitz Highway, Honolulu, HI 96817, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.3093,
+          "lng": -157.8677
+        }
+      },
+      "rating": 4.6,
+      "user_ratings_total": 1180,
+      "types": [
+        "seafood",
+        "poke",
+        "hawaiian",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 2,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_13_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_13_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
+    },
+    {
+      "place_id": "ChIJ60788e478ce63805bcfc80568e26cdc5",
+      "name": "Hula Grill Waikiki",
+      "formatted_address": "2335 Kalakaua Avenue, Honolulu, HI 96815, USA",
+      "geometry": {
+        "location": {
+          "lat": 21.2755,
+          "lng": -157.8255
+        }
+      },
+      "rating": 4.3,
+      "user_ratings_total": 980,
+      "types": [
+        "hawaiian",
+        "seafood",
+        "american",
+        "restaurant",
+        "food",
+        "point_of_interest",
+        "establishment"
+      ],
+      "price_level": 3,
+      "business_status": "OPERATIONAL",
+      "photos": [
+        {
+          "photo_reference": "photo_ref_14_1",
+          "height": 400,
+          "width": 400
+        },
+        {
+          "photo_reference": "photo_ref_14_2",
+          "height": 400,
+          "width": 400
+        }
+      ]
     }
   ]
 }

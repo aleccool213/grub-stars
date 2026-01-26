@@ -157,9 +157,9 @@ get "/textsearch/json" do
   query_lower = query.downcase
 
   # Filter by location (extract city names from formatted_address)
-  # Support common city names: Barrie, Toronto, Vancouver
+  # Support common city names: Barrie, Toronto, Vancouver, Honolulu, Haleiwa, Kailua
   city_filter = nil
-  ["barrie", "toronto", "vancouver"].each do |city|
+  ["barrie", "toronto", "vancouver", "honolulu", "haleiwa", "kailua", "oahu", "hawaii"].each do |city|
     if query_lower.include?(city)
       city_filter = city
       break
@@ -274,7 +274,7 @@ get "/api/v1/location/search" do
 
   # Filter by location (city name in query)
   city_filter = nil
-  ["barrie", "toronto", "vancouver"].each do |city|
+  ["barrie", "toronto", "vancouver", "honolulu", "haleiwa", "kailua", "oahu", "hawaii"].each do |city|
     if query_lower.include?(city)
       city_filter = city
       break
