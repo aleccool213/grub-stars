@@ -16,6 +16,8 @@ if (typeof twind === 'undefined') {
 } else {
   // @twind/cdn already includes presetAutoprefix and presetTailwind
   twind.install({
+    // Enable dark mode via class strategy
+    darkMode: 'class',
     theme: {
       extend: {
         colors: {
@@ -29,10 +31,21 @@ if (typeof twind === 'undefined') {
           sunny: '#FDE047',
           coral: '#FB7185',
 
-          // Neutrals
+          // Neutrals (Light mode)
           cream: '#FFFBF5',
           cocoa: '#4A3728',
           latte: '#F5E6D3',
+
+          // Dark mode palette
+          slate: {
+            800: '#1e293b',
+            900: '#0f172a',
+            950: '#020617',
+          },
+          zinc: {
+            700: '#3f3f46',
+            800: '#27272a',
+          },
         },
         fontFamily: {
           display: ['Fredoka', 'Comic Sans MS', 'cursive'],

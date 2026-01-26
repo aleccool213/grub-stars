@@ -136,3 +136,58 @@ test('initNavBar attaches click handler to menu button', () => {
 
   destroyContainer(container);
 });
+
+// Theme toggle tests
+
+test('navBar includes theme toggle button for desktop', () => {
+  const html = navBar();
+
+  assertTruthy(html.includes('theme-toggle-desktop'), 'Should include desktop theme toggle');
+  assertTruthy(html.includes('theme-toggle'), 'Should have theme-toggle class');
+});
+
+test('navBar includes theme toggle button for mobile', () => {
+  const html = navBar();
+
+  assertTruthy(html.includes('theme-toggle-mobile'), 'Should include mobile theme toggle');
+});
+
+test('navBar theme toggle has accessible label', () => {
+  const html = navBar();
+
+  assertTruthy(
+    html.includes('aria-label="Switch to light mode"') || html.includes('aria-label="Switch to dark mode"'),
+    'Theme toggle should have accessible label'
+  );
+});
+
+test('navBar theme toggle contains sun or moon icon', () => {
+  const html = navBar();
+
+  // Either sun icon (when dark mode is on) or moon icon (when light mode is on)
+  assertTruthy(
+    html.includes('M20.354 15.354') || html.includes('M12 3v1m0 16v1'),
+    'Theme toggle should contain sun or moon SVG path'
+  );
+});
+
+test('navBar includes dark mode classes', () => {
+  const html = navBar();
+
+  assertTruthy(html.includes('dark:'), 'Should include dark mode utility classes');
+  assertTruthy(html.includes('dark:bg-slate-900'), 'Should include dark background class');
+  assertTruthy(html.includes('dark:text-cream'), 'Should include dark text color class');
+});
+
+test('navBar desktop nav includes items-center for theme toggle alignment', () => {
+  const html = navBar();
+
+  assertTruthy(html.includes('md:flex items-center'), 'Desktop nav should align items center');
+});
+
+test('navBar mobile area contains theme toggle and menu button', () => {
+  const html = navBar();
+
+  // Check for the container with both buttons
+  assertTruthy(html.includes('flex items-center gap-2 md:hidden'), 'Should have mobile button container');
+});

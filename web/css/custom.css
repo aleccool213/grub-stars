@@ -359,6 +359,203 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* ============================================
+   Dark Mode Styles
+   ============================================ */
+
+/* Body background */
+html.dark body {
+  background-color: #0f172a; /* slate-900 */
+}
+
+/* Card styles - dark mode */
+html.dark .card {
+  background: #1e293b; /* slate-800 */
+  border-color: #3f3f46; /* zinc-700 */
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .card:hover {
+  box-shadow: 0 8px 30px -4px rgba(168, 85, 247, 0.25);
+}
+
+/* Button styles - dark mode */
+html.dark .btn-secondary {
+  background: #27272a; /* zinc-800 */
+  color: #FFFBF5; /* cream */
+  border-color: #FFB347; /* mango */
+}
+
+html.dark .btn-secondary:hover {
+  background: #FFB347;
+  color: #0f172a;
+}
+
+/* Form styles - dark mode */
+html.dark .input-whimsical {
+  background: #1e293b; /* slate-800 */
+  border-color: #3f3f46; /* zinc-700 */
+  color: #FFFBF5; /* cream */
+}
+
+html.dark .input-whimsical:focus {
+  border-color: #A855F7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3);
+}
+
+html.dark .input-whimsical::placeholder {
+  color: rgba(255, 251, 245, 0.4);
+}
+
+/* Alert styles - dark mode */
+html.dark .alert-success {
+  background: rgba(110, 231, 183, 0.15);
+  border-color: rgba(110, 231, 183, 0.5);
+}
+
+html.dark .alert-error {
+  background: rgba(251, 113, 133, 0.15);
+  border-color: rgba(251, 113, 133, 0.5);
+}
+
+html.dark .alert-warning {
+  background: rgba(253, 224, 71, 0.15);
+  border-color: rgba(253, 224, 71, 0.5);
+}
+
+/* Tag styles - dark mode */
+html.dark .tag-category {
+  background: rgba(168, 85, 247, 0.25);
+  color: #c084fc; /* lighter purple for contrast */
+}
+
+html.dark .tag-source {
+  background: rgba(251, 113, 133, 0.25);
+  color: #fda4af; /* lighter coral for contrast */
+}
+
+/* Star rating - dark mode */
+html.dark .star-empty {
+  color: #3f3f46; /* zinc-700 */
+}
+
+/* Spinner - dark mode */
+html.dark .spinner {
+  border-color: #3f3f46;
+  border-top-color: #A855F7;
+}
+
+/* Shimmer loading - dark mode */
+html.dark .shimmer {
+  background: linear-gradient(to right, #1e293b 0%, #334155 20%, #1e293b 40%, #1e293b 100%);
+}
+
+/* Focus styles - dark mode (slightly brighter) */
+html.dark *:focus-visible {
+  outline-color: #c084fc;
+}
+
+/* Text color adjustments for dark mode */
+html.dark .text-cocoa {
+  color: #FFFBF5 !important;
+}
+
+html.dark .text-cocoa\/70 {
+  color: rgba(255, 251, 245, 0.7) !important;
+}
+
+html.dark .text-cocoa\/60 {
+  color: rgba(255, 251, 245, 0.6) !important;
+}
+
+html.dark .text-cocoa\/50 {
+  color: rgba(255, 251, 245, 0.5) !important;
+}
+
+html.dark .text-cocoa\/40 {
+  color: rgba(255, 251, 245, 0.4) !important;
+}
+
+/* Background adjustments for dark mode */
+html.dark .bg-cream {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-latte {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-latte\/50 {
+  background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+html.dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+/* Border adjustments for dark mode */
+html.dark .border-latte {
+  border-color: #3f3f46 !important;
+}
+
+/* Gray colors in dark mode */
+html.dark .bg-gray-50 {
+  background-color: #1e293b !important;
+}
+
+html.dark .border-gray-200 {
+  border-color: #3f3f46 !important;
+}
+
+html.dark .text-gray-600,
+html.dark .text-gray-500,
+html.dark .text-gray-400 {
+  color: rgba(255, 251, 245, 0.6) !important;
+}
+
+html.dark .text-gray-700 {
+  color: rgba(255, 251, 245, 0.8) !important;
+}
+
+/* Blue tints in dark mode */
+html.dark .bg-blue-50 {
+  background-color: rgba(168, 85, 247, 0.1) !important;
+}
+
+html.dark .border-blue-200 {
+  border-color: rgba(168, 85, 247, 0.3) !important;
+}
+
+html.dark .text-blue-700 {
+  color: #c084fc !important;
+}
+
+html.dark .text-blue-600 {
+  color: #A855F7 !important;
+}
+
+/* Amber tints in dark mode */
+html.dark .bg-amber-50 {
+  background-color: rgba(253, 224, 71, 0.1) !important;
+}
+
+html.dark .border-amber-200 {
+  border-color: rgba(253, 224, 71, 0.3) !important;
+}
+
+/* Hover state backgrounds */
+html.dark .hover\:bg-blue-50:hover {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+}
+
+html.dark .hover\:border-blue-300:hover {
+  border-color: rgba(168, 85, 247, 0.5) !important;
+}
+
+html.dark .hover\:text-blue-700:hover {
+  color: #c084fc !important;
+}
+
+/* ============================================
    Address Autocomplete Styles
    ============================================ */
 
@@ -388,6 +585,12 @@ h1, h2, h3, h4, h5, h6,
   overflow-y: auto;
 }
 
+html.dark .autocomplete-dropdown {
+  background: #1e293b;
+  border-color: #3f3f46;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+
 .autocomplete-item {
   display: flex;
   align-items: center;
@@ -398,6 +601,10 @@ h1, h2, h3, h4, h5, h6,
   transition: all 0.15s ease;
   color: #4A3728;
   font-family: 'Nunito', sans-serif;
+}
+
+html.dark .autocomplete-item {
+  color: #FFFBF5;
 }
 
 .autocomplete-item:hover,
@@ -450,4 +657,17 @@ h1, h2, h3, h4, h5, h6,
   text-align: center;
   color: rgba(74, 55, 40, 0.6);
   font-size: 0.875rem;
+}
+
+html.dark .autocomplete-empty {
+  color: rgba(255, 251, 245, 0.5);
+}
+
+html.dark .autocomplete-loading {
+  color: #c084fc;
+}
+
+html.dark .autocomplete-loading::before {
+  border-color: #3f3f46;
+  border-top-color: #A855F7;
 }

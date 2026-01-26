@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Categories - grub stars</title>
+  <!-- Early dark mode detection to prevent FOUC -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('grub_stars_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
   <script src="/js/vendor/twind.min.js"></script>
   <script src="/js/twind-config.js"></script>
   <link rel="stylesheet" href="/css/custom.css">

@@ -60,13 +60,14 @@
   - Consider reorganizing form layout to reduce confusion
   - Add helper text: "Search your indexed locations" or similar
 
-- [ ] **Add dark mode support**
-  - Implement dark theme for the web UI
-  - Add theme toggle button in header (sun/moon icon)
-  - Persist user preference in localStorage
-  - Use Twind's theme system for consistent styling
-  - Ensure sufficient contrast for accessibility (WCAG AA)
-  - Apply theme to all pages: search, details, categories, index-location
+- [x] **Add dark mode support**
+  - ~~Implement dark theme for the web UI~~
+  - ~~Add theme toggle button in header (sun/moon icon)~~
+  - ~~Persist user preference in localStorage~~
+  - ~~Use Twind's theme system for consistent styling~~
+  - ~~Ensure sufficient contrast for accessibility (WCAG AA)~~
+  - ~~Apply theme to all pages: search, details, categories, index-location~~
+  - **Implemented:** `web/js/dark-mode.js` - theme management module with localStorage persistence, sun/moon toggle in nav-bar
 
 ### Medium Priority
 
