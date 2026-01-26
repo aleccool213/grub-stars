@@ -13,3 +13,6 @@ node_modules/
 # Generated screenshots (for PR documentation)
 # Only ignore root-level screenshots folder, allow docs/screenshots/
 /screenshots/
+
+# SQLite databases (development/test data)
+*.db
