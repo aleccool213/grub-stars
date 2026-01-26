@@ -3299,6 +3299,414 @@
           "localized_name": "Coffee"
         }
       ]
+    },
+    {
+      "location_id": "1234567",
+      "name": "Rainbow Drive-In",
+      "address_obj": {
+        "street1": "3308 Kanaina Avenue",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96815",
+        "address_string": "3308 Kanaina Avenue, Honolulu, HI 96815"
+      },
+      "latitude": "21.2831",
+      "longitude": "-157.8142",
+      "rating": "4.5",
+      "num_reviews": "850",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Hawaiian"
+        },
+        {
+          "name": "Breakfast Brunch"
+        }
+      ]
+    },
+    {
+      "location_id": "1234568",
+      "name": "Marukame Udon",
+      "address_obj": {
+        "street1": "2310 Kuhio Avenue",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96815",
+        "address_string": "2310 Kuhio Avenue, Honolulu, HI 96815"
+      },
+      "latitude": "21.2793",
+      "longitude": "-157.8266",
+      "rating": "4.6",
+      "num_reviews": "1200",
+      "price_level": "$",
+      "subcategory": [
+        {
+          "name": "Japanese"
+        },
+        {
+          "name": "Udon"
+        },
+        {
+          "name": "Ramen"
+        }
+      ]
+    },
+    {
+      "location_id": "1234569",
+      "name": "Leonard's Bakery",
+      "address_obj": {
+        "street1": "933 Kapahulu Avenue",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96816",
+        "address_string": "933 Kapahulu Avenue, Honolulu, HI 96816"
+      },
+      "latitude": "21.2792",
+      "longitude": "-157.815",
+      "rating": "4.7",
+      "num_reviews": "920",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Bakeries"
+        },
+        {
+          "name": "Desserts"
+        },
+        {
+          "name": "Portuguese"
+        }
+      ]
+    },
+    {
+      "location_id": "1234570",
+      "name": "Ono Seafood",
+      "address_obj": {
+        "street1": "747 Kapahulu Avenue #4",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96816",
+        "address_string": "747 Kapahulu Avenue #4, Honolulu, HI 96816"
+      },
+      "latitude": "21.278",
+      "longitude": "-157.8165",
+      "rating": "4.8",
+      "num_reviews": "1450",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Poke"
+        },
+        {
+          "name": "Seafood"
+        },
+        {
+          "name": "Hawaiian"
+        }
+      ]
+    },
+    {
+      "location_id": "1234571",
+      "name": "Helena's Hawaiian Food",
+      "address_obj": {
+        "street1": "1240 North School Street",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96817",
+        "address_string": "1240 North School Street, Honolulu, HI 96817"
+      },
+      "latitude": "21.3255",
+      "longitude": "-157.8598",
+      "rating": "4.5",
+      "num_reviews": "680",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Hawaiian"
+        },
+        {
+          "name": "Traditional"
+        }
+      ]
+    },
+    {
+      "location_id": "1234572",
+      "name": "Koko Head Cafe",
+      "address_obj": {
+        "street1": "1145C 12th Avenue",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96816",
+        "address_string": "1145C 12th Avenue, Honolulu, HI 96816"
+      },
+      "latitude": "21.2821",
+      "longitude": "-157.8021",
+      "rating": "4.6",
+      "num_reviews": "780",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Breakfast Brunch"
+        },
+        {
+          "name": "Cafes"
+        },
+        {
+          "name": "Hawaiian"
+        }
+      ]
+    },
+    {
+      "location_id": "1234573",
+      "name": "Roy's Waikiki",
+      "address_obj": {
+        "street1": "226 Lewers Street",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96815",
+        "address_string": "226 Lewers Street, Honolulu, HI 96815"
+      },
+      "latitude": "21.2789",
+      "longitude": "-157.8287",
+      "rating": "4.4",
+      "num_reviews": "920",
+      "price_level": "$$$$",
+      "subcategory": [
+        {
+          "name": "Hawaiian"
+        },
+        {
+          "name": "Seafood"
+        },
+        {
+          "name": "Fusion"
+        }
+      ]
+    },
+    {
+      "location_id": "1234574",
+      "name": "The Pig and The Lady",
+      "address_obj": {
+        "street1": "83 North King Street",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96817",
+        "address_string": "83 North King Street, Honolulu, HI 96817"
+      },
+      "latitude": "21.3078",
+      "longitude": "-157.8604",
+      "rating": "4.7",
+      "num_reviews": "1100",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Vietnamese"
+        },
+        {
+          "name": "Asian Fusion"
+        }
+      ]
+    },
+    {
+      "location_id": "1234575",
+      "name": "Haleiwa Joe's Seafood Grill",
+      "address_obj": {
+        "street1": "66-011 Kamehameha Highway",
+        "city": "Haleiwa",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96712",
+        "address_string": "66-011 Kamehameha Highway, Haleiwa, HI 96712"
+      },
+      "latitude": "21.5943",
+      "longitude": "-158.1048",
+      "rating": "4.5",
+      "num_reviews": "650",
+      "price_level": "$$$",
+      "subcategory": [
+        {
+          "name": "Seafood"
+        },
+        {
+          "name": "American"
+        },
+        {
+          "name": "Hawaiian"
+        }
+      ]
+    },
+    {
+      "location_id": "1234576",
+      "name": "Giovanni's Shrimp Truck",
+      "address_obj": {
+        "street1": "66-472 Kamehameha Highway",
+        "city": "Haleiwa",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96712",
+        "address_string": "66-472 Kamehameha Highway, Haleiwa, HI 96712"
+      },
+      "latitude": "21.5569",
+      "longitude": "-158.0292",
+      "rating": "4.3",
+      "num_reviews": "1850",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Seafood"
+        },
+        {
+          "name": "Food Trucks"
+        },
+        {
+          "name": "Hawaiian"
+        }
+      ]
+    },
+    {
+      "location_id": "1234577",
+      "name": "Musubi Cafe Iyasume",
+      "address_obj": {
+        "street1": "2427 Kuhio Avenue",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96815",
+        "address_string": "2427 Kuhio Avenue, Honolulu, HI 96815"
+      },
+      "latitude": "21.2782",
+      "longitude": "-157.8276",
+      "rating": "4.5",
+      "num_reviews": "720",
+      "price_level": "$",
+      "subcategory": [
+        {
+          "name": "Japanese"
+        },
+        {
+          "name": "Hawaiian"
+        },
+        {
+          "name": "Breakfast Brunch"
+        }
+      ]
+    },
+    {
+      "location_id": "1234578",
+      "name": "Cinnamon's Restaurant",
+      "address_obj": {
+        "street1": "315 Uluniu Street",
+        "city": "Kailua",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96734",
+        "address_string": "315 Uluniu Street, Kailua, HI 96734"
+      },
+      "latitude": "21.3967",
+      "longitude": "-157.7401",
+      "rating": "4.6",
+      "num_reviews": "890",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Breakfast Brunch"
+        },
+        {
+          "name": "American"
+        }
+      ]
+    },
+    {
+      "location_id": "1234579",
+      "name": "Ted's Bakery",
+      "address_obj": {
+        "street1": "59-024 Kamehameha Highway",
+        "city": "Haleiwa",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96712",
+        "address_string": "59-024 Kamehameha Highway, Haleiwa, HI 96712"
+      },
+      "latitude": "21.6436",
+      "longitude": "-158.0525",
+      "rating": "4.4",
+      "num_reviews": "1320",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Bakeries"
+        },
+        {
+          "name": "Desserts"
+        },
+        {
+          "name": "Cafes"
+        }
+      ]
+    },
+    {
+      "location_id": "1234580",
+      "name": "Nico's Pier 38",
+      "address_obj": {
+        "street1": "1129 North Nimitz Highway",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96817",
+        "address_string": "1129 North Nimitz Highway, Honolulu, HI 96817"
+      },
+      "latitude": "21.3093",
+      "longitude": "-157.8677",
+      "rating": "4.6",
+      "num_reviews": "1180",
+      "price_level": "$$",
+      "subcategory": [
+        {
+          "name": "Seafood"
+        },
+        {
+          "name": "Poke"
+        },
+        {
+          "name": "Hawaiian"
+        }
+      ]
+    },
+    {
+      "location_id": "1234581",
+      "name": "Hula Grill Waikiki",
+      "address_obj": {
+        "street1": "2335 Kalakaua Avenue",
+        "city": "Honolulu",
+        "state": "HI",
+        "country": "United States",
+        "postalcode": "96815",
+        "address_string": "2335 Kalakaua Avenue, Honolulu, HI 96815"
+      },
+      "latitude": "21.2755",
+      "longitude": "-157.8255",
+      "rating": "4.3",
+      "num_reviews": "980",
+      "price_level": "$$$",
+      "subcategory": [
+        {
+          "name": "Hawaiian"
+        },
+        {
+          "name": "Seafood"
+        },
+        {
+          "name": "American"
+        }
+      ]
     }
   ]
 }
