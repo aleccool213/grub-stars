@@ -1,9 +1,9 @@
 /**
  * Restaurant Details Page Controller
- * Handles loading and displaying restaurant details
+ * Enhanced with map, photo lightbox, share, and more
  */
 
-import { getRestaurant } from './api.js';
+import { getRestaurant, searchRestaurants } from './api.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
@@ -11,6 +11,7 @@ import { bookmarkButton, initBookmarkButtons } from './components/bookmark-butto
 
 // DOM elements
 let detailsContainer;
+let currentRestaurant = null;
 
 /**
  * Initialize the details page
@@ -26,8 +27,10 @@ async function init() {
     return;
   }
 
-  // Add retry handler for error messages
+  // Add event handlers
   detailsContainer.addEventListener('click', handleRetryClick);
+  detailsContainer.addEventListener('click', handlePhotoClick);
+  detailsContainer.addEventListener('click', handleShareClick);
 
   // Get restaurant ID from URL
   const id = getRestaurantIdFromUrl();
@@ -67,7 +70,11 @@ async function loadRestaurant(id) {
       return;
     }
 
+    currentRestaurant = restaurant;
     showRestaurant(restaurant);
+
+    // Load similar restaurants in background
+    loadSimilarRestaurants(restaurant);
   } catch (error) {
     console.error('Error loading restaurant:', error);
 
@@ -90,10 +97,14 @@ function showRestaurant(restaurant) {
   const videos = restaurant.videos || [];
   const categories = restaurant.categories || [];
   const sources = restaurant.sources || [];
+  const externalIds = restaurant.external_ids || [];
 
   // Calculate average rating
   const avgRating = calculateAverageRating(ratings);
   const totalReviews = ratings.reduce((sum, r) => sum + (r.review_count || 0), 0);
+
+  // Get last updated timestamp
+  const lastUpdated = getLastUpdated(ratings, reviews, photos);
 
   // Create bookmark button
   const bookmarkBtn = bookmarkButton({
@@ -112,7 +123,13 @@ function showRestaurant(restaurant) {
       <div class="p-6 border-b border-gray-200">
         <div class="flex items-start justify-between gap-4 mb-4">
           <h2 class="text-2xl font-bold text-gray-800">${escapeHtml(restaurant.name)}</h2>
-          <div class="flex-shrink-0">
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Share Button -->
+            <button id="share-btn" class="p-2 rounded-full hover:bg-gray-100 transition-colors" title="Share restaurant" aria-label="Share restaurant" style="padding: 0.5rem; border-radius: 9999px;">
+              <svg class="w-6 h-6 text-gray-600" style="width: 24px; height: 24px; color: #4b5563;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+            </button>
             ${bookmarkBtn}
           </div>
         </div>
@@ -135,7 +152,15 @@ function showRestaurant(restaurant) {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              ${escapeHtml(restaurant.address)}
+              <span>${escapeHtml(restaurant.address)}</span>
+              ${restaurant.latitude && restaurant.longitude ? `
+                <a href="https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}"
+                   target="_blank" rel="noopener noreferrer"
+                   class="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                   style="margin-left: 0.5rem; color: #2563eb; font-size: 0.875rem;">
+                  (Get directions)
+                </a>
+              ` : ''}
             </p>
           ` : ''}
 
@@ -161,10 +186,31 @@ function showRestaurant(restaurant) {
         </div>
       </div>
 
+      <!-- Map Section -->
+      ${restaurant.latitude && restaurant.longitude ? `
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-electric" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #A855F7;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+            </svg>
+            Location
+          </h3>
+          <div id="restaurant-map" class="w-full h-64 rounded-lg overflow-hidden bg-gray-100" style="width: 100%; height: 256px; border-radius: 0.5rem; overflow: hidden; background-color: #f3f4f6;"></div>
+          <p class="text-sm text-gray-500 mt-2" style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+            Click the map to open in Google Maps
+          </p>
+        </div>
+      ` : ''}
+
       <!-- Ratings Section -->
       ${ratings.length > 0 ? `
         <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Ratings</h3>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-yellow-500" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #eab308;" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+            </svg>
+            Ratings
+          </h3>
 
           ${avgRating ? `
             <div class="flex items-center mb-4">
@@ -178,15 +224,19 @@ function showRestaurant(restaurant) {
 
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             ${ratings.map(rating => `
-              <div class="bg-gray-50 rounded-lg p-4">
+              <div class="bg-gray-50 rounded-lg p-4 rating-card">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="font-medium text-gray-700 capitalize">${escapeHtml(rating.source)}</span>
+                  <div class="flex items-center">
+                    ${getSourceIcon(rating.source)}
+                    <span class="font-medium text-gray-700 capitalize ml-2">${escapeHtml(rating.source)}</span>
+                  </div>
                   <span class="text-lg font-bold text-yellow-600">${rating.score.toFixed(1)}</span>
                 </div>
                 <div class="flex items-center text-sm text-gray-500">
                   ${renderStars(rating.score)}
                   <span class="ml-2">(${rating.review_count || 0} reviews)</span>
                 </div>
+                ${getExternalLink(rating.source, externalIds, restaurant.name)}
               </div>
             `).join('')}
           </div>
@@ -196,11 +246,20 @@ function showRestaurant(restaurant) {
       <!-- Photos Section -->
       ${photos.length > 0 ? `
         <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Photos</h3>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-hotpink" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #FF6B9D;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Photos
+            <span class="ml-2 text-sm font-normal text-gray-500">(${photos.length})</span>
+          </h3>
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            ${photos.map(photo => `
-              <a href="${escapeHtml(photo.url)}" target="_blank" rel="noopener noreferrer"
-                 class="photo-link block aspect-square overflow-hidden rounded-lg hover:opacity-90 transition-opacity bg-gray-100">
+            ${photos.map((photo, index) => `
+              <button class="photo-thumb block aspect-square overflow-hidden rounded-lg hover:opacity-90 transition-all hover:ring-2 hover:ring-electric bg-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-electric"
+                      data-photo-index="${index}"
+                      data-photo-url="${escapeHtml(photo.url)}"
+                      data-photo-source="${escapeHtml(photo.source)}"
+                      aria-label="View photo ${index + 1} from ${escapeHtml(photo.source)}">
                 <img src="${escapeHtml(photo.url)}" alt="Photo from ${escapeHtml(photo.source)}"
                      class="w-full h-full object-cover"
                      loading="lazy"
@@ -210,7 +269,7 @@ function showRestaurant(restaurant) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-              </a>
+              </button>
             `).join('')}
           </div>
         </div>
@@ -219,15 +278,26 @@ function showRestaurant(restaurant) {
       <!-- Videos Section -->
       ${videos.length > 0 ? `
         <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Videos</h3>
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-red-500" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #ef4444;" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            Videos
+            <span class="ml-2 text-sm font-normal text-gray-500">(${videos.length})</span>
+          </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             ${videos.map(video => `
               <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer"
-                 class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                <svg class="w-8 h-8 text-red-500 mr-3" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-                <span class="text-gray-700">Video from ${escapeHtml(video.source)}</span>
+                 class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors" style="width: 48px; height: 48px; min-width: 48px;">
+                  <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <span class="text-gray-700 font-medium">Video from ${escapeHtml(video.source)}</span>
+                  <p class="text-sm text-gray-500">Click to watch</p>
+                </div>
               </a>
             `).join('')}
           </div>
@@ -237,37 +307,490 @@ function showRestaurant(restaurant) {
       <!-- Reviews Section -->
       ${reviews.length > 0 ? `
         <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Review Snippets</h3>
-          <div class="space-y-4">
-            ${reviews.map(review => `
-              <blockquote class="bg-gray-50 rounded-lg p-4">
-                <p class="text-gray-700 italic mb-2">"${escapeHtml(review.snippet)}"</p>
-                <footer class="flex items-center justify-between">
-                  <span class="text-sm text-gray-500 capitalize">— ${escapeHtml(review.source)}</span>
-                  ${review.url ? `
-                    <a href="${escapeHtml(review.url)}" target="_blank" rel="noopener noreferrer"
-                       class="text-sm text-blue-600 hover:underline">Read more</a>
-                  ` : ''}
-                </footer>
-              </blockquote>
-            `).join('')}
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-mango" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #FFB347;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Review Snippets
+            <span class="ml-2 text-sm font-normal text-gray-500">(${reviews.length})</span>
+          </h3>
+          <div class="space-y-4" id="reviews-container">
+            ${reviews.slice(0, 3).map((review, index) => renderReview(review, index)).join('')}
+          </div>
+          ${reviews.length > 3 ? `
+            <button id="show-more-reviews" class="mt-4 text-electric hover:text-hotpink font-medium transition-colors" style="color: #A855F7;" data-expanded="false">
+              Show ${reviews.length - 3} more reviews
+            </button>
+            <div id="hidden-reviews" style="display: none;" class="space-y-4 mt-4">
+              ${reviews.slice(3).map((review, index) => renderReview(review, index + 3)).join('')}
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      <!-- External Links Section -->
+      ${externalIds.length > 0 ? `
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-electric" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #A855F7;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            View on Other Sites
+          </h3>
+          <div class="flex flex-wrap gap-3">
+            ${externalIds.map(ext => renderExternalLinkButton(ext, restaurant.name)).join('')}
           </div>
         </div>
       ` : ''}
 
-      <!-- Sources Section -->
-      ${sources.length > 0 ? `
-        <div class="p-6 bg-gray-50">
-          <p class="text-sm text-gray-500">
-            Data sources: ${sources.map(s => `<span class="capitalize">${escapeHtml(s)}</span>`).join(', ')}
-          </p>
+      <!-- Similar Restaurants Section (loaded async) -->
+      <div id="similar-restaurants" class="p-6 border-b border-gray-200" style="display: none;">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-mint" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #6EE7B7;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          Similar Restaurants
+        </h3>
+        <div id="similar-restaurants-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+      </div>
+
+      <!-- Sources & Timestamp Section -->
+      <div class="p-6 bg-gray-50">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          ${sources.length > 0 ? `
+            <p class="text-sm text-gray-500">
+              Data sources: ${sources.map(s => `<span class="capitalize">${escapeHtml(s)}</span>`).join(', ')}
+            </p>
+          ` : ''}
+          ${lastUpdated ? `
+            <p class="text-sm text-gray-400" style="color: #9ca3af;">
+              Last updated: ${formatDate(lastUpdated)}
+            </p>
+          ` : ''}
         </div>
-      ` : ''}
+      </div>
     </article>
+
+    <!-- Photo Lightbox Modal -->
+    <div id="photo-lightbox" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; background-color: rgba(0,0,0,0.9);" role="dialog" aria-modal="true" aria-label="Photo viewer">
+      <button id="lightbox-close" class="absolute top-4 right-4 text-white hover:text-gray-300 p-2" style="position: absolute; top: 16px; right: 16px; color: white; padding: 8px;" aria-label="Close photo viewer">
+        <svg class="w-8 h-8" style="width: 32px; height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <button id="lightbox-prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: white; padding: 8px;" aria-label="Previous photo">
+        <svg class="w-10 h-10" style="width: 40px; height: 40px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button id="lightbox-next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: white; padding: 8px;" aria-label="Next photo">
+        <svg class="w-10 h-10" style="width: 40px; height: 40px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+      <div class="max-w-5xl max-h-full p-4" style="max-width: 80rem; max-height: 100%; padding: 16px;">
+        <img id="lightbox-image" src="" alt="" class="max-w-full max-h-[85vh] object-contain" style="max-width: 100%; max-height: 85vh; object-fit: contain;">
+      </div>
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm" style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); color: white; font-size: 0.875rem;">
+        <span id="lightbox-counter">1 / 1</span>
+        <span id="lightbox-source" class="ml-2 text-gray-400"></span>
+      </div>
+    </div>
+
+    <!-- Share Toast -->
+    <div id="share-toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg transition-opacity duration-300 opacity-0" style="display: none; position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background-color: #1f2937; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; z-index: 60;">
+      Link copied to clipboard!
+    </div>
   `;
 
   // Initialize bookmark buttons
   initBookmarkButtons(detailsContainer);
+
+  // Initialize map if coordinates exist
+  if (restaurant.latitude && restaurant.longitude) {
+    initMap(restaurant);
+  }
+
+  // Setup lightbox handlers
+  setupLightbox(photos);
+
+  // Setup show more reviews
+  setupReviewsToggle();
+}
+
+/**
+ * Render a single review
+ */
+function renderReview(review, index) {
+  return `
+    <blockquote class="bg-gray-50 rounded-lg p-4 review-card">
+      <p class="text-gray-700 italic mb-2">"${escapeHtml(review.snippet)}"</p>
+      <footer class="flex items-center justify-between">
+        <span class="text-sm text-gray-500 flex items-center">
+          ${getSourceIcon(review.source)}
+          <span class="ml-2 capitalize">— ${escapeHtml(review.source)}</span>
+        </span>
+        ${review.url ? `
+          <a href="${escapeHtml(review.url)}" target="_blank" rel="noopener noreferrer"
+             class="text-sm text-blue-600 hover:underline">Read full review</a>
+        ` : ''}
+      </footer>
+    </blockquote>
+  `;
+}
+
+/**
+ * Setup reviews toggle for show more/less
+ */
+function setupReviewsToggle() {
+  const btn = document.getElementById('show-more-reviews');
+  const hiddenReviews = document.getElementById('hidden-reviews');
+
+  if (!btn || !hiddenReviews) return;
+
+  btn.addEventListener('click', () => {
+    const expanded = btn.dataset.expanded === 'true';
+    if (expanded) {
+      hiddenReviews.style.display = 'none';
+      btn.textContent = btn.textContent.replace('Show less', `Show ${hiddenReviews.children.length} more reviews`);
+      btn.dataset.expanded = 'false';
+    } else {
+      hiddenReviews.style.display = 'block';
+      btn.textContent = 'Show less';
+      btn.dataset.expanded = 'true';
+    }
+  });
+}
+
+/**
+ * Get source icon SVG
+ */
+function getSourceIcon(source) {
+  const icons = {
+    yelp: `<svg class="w-4 h-4" style="width: 16px; height: 16px; color: #d32323;" viewBox="0 0 24 24" fill="currentColor"><path d="M12.14 12.78l-3.66 2.27a.73.73 0 01-1.1-.79l1.06-4.17a.73.73 0 011.18-.35l3.05 2.72a.73.73 0 01-.53 1.32zm-.14-5.56V3.73a.73.73 0 00-1.36-.38L7.1 9.52a.73.73 0 00.63 1.1h3.54a.73.73 0 00.73-.73v-2.67zm4.14 5.44l2.27-3.66a.73.73 0 00-.79-1.1l-4.17 1.06a.73.73 0 00-.35 1.18l2.72 3.05a.73.73 0 001.32-.53z"/></svg>`,
+    google: `<svg class="w-4 h-4" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>`,
+    tripadvisor: `<svg class="w-4 h-4" style="width: 16px; height: 16px; color: #00aa6c;" viewBox="0 0 24 24" fill="currentColor"><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="12" r="2.5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-5.5 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm11 0c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>`
+  };
+  return icons[source.toLowerCase()] || `<span class="w-4 h-4 inline-block rounded-full bg-gray-400" style="width: 16px; height: 16px;"></span>`;
+}
+
+/**
+ * Get external link for a source
+ */
+function getExternalLink(source, externalIds, restaurantName) {
+  const extId = externalIds.find(e => e.source === source);
+  if (!extId) return '';
+
+  const url = getSourceUrl(source, extId.external_id, restaurantName);
+  if (!url) return '';
+
+  return `
+    <a href="${url}" target="_blank" rel="noopener noreferrer"
+       class="text-xs text-blue-600 hover:underline mt-2 block" style="font-size: 0.75rem; color: #2563eb; margin-top: 0.5rem; display: block;">
+      View on ${escapeHtml(source)}
+    </a>
+  `;
+}
+
+/**
+ * Render external link button
+ */
+function renderExternalLinkButton(ext, restaurantName) {
+  const url = getSourceUrl(ext.source, ext.external_id, restaurantName);
+  if (!url) return '';
+
+  const colors = {
+    yelp: 'bg-red-100 text-red-700 hover:bg-red-200',
+    google: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+    tripadvisor: 'bg-green-100 text-green-700 hover:bg-green-200'
+  };
+
+  const colorClass = colors[ext.source.toLowerCase()] || 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+
+  return `
+    <a href="${url}" target="_blank" rel="noopener noreferrer"
+       class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-colors ${colorClass}"
+       style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+      ${getSourceIcon(ext.source)}
+      <span class="ml-2 capitalize">${escapeHtml(ext.source)}</span>
+      <svg class="w-4 h-4 ml-1" style="width: 16px; height: 16px; margin-left: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+      </svg>
+    </a>
+  `;
+}
+
+/**
+ * Get URL for a source
+ */
+function getSourceUrl(source, externalId, restaurantName) {
+  const urls = {
+    yelp: `https://www.yelp.com/biz/${externalId}`,
+    google: `https://www.google.com/maps/place/?q=place_id:${externalId}`,
+    tripadvisor: `https://www.tripadvisor.com/${externalId}`
+  };
+  return urls[source.toLowerCase()];
+}
+
+/**
+ * Initialize interactive map
+ */
+function initMap(restaurant) {
+  const mapContainer = document.getElementById('restaurant-map');
+  if (!mapContainer) return;
+
+  // Create a simple static map using OpenStreetMap tiles
+  const lat = restaurant.latitude;
+  const lng = restaurant.longitude;
+  const zoom = 15;
+
+  // Use a static image approach for simplicity (no JS library needed)
+  const staticMapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=${zoom}&size=800x256&markers=${lat},${lng},red`;
+
+  mapContainer.innerHTML = `
+    <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}"
+       target="_blank" rel="noopener noreferrer"
+       class="block w-full h-full relative group">
+      <img src="${staticMapUrl}" alt="Map showing location of ${escapeHtml(restaurant.name)}"
+           class="w-full h-full object-cover"
+           onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-400\\'><p>Map unavailable</p></div>'">
+      <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+        <span class="opacity-0 group-hover:opacity-100 transition-opacity text-white bg-black/50 px-3 py-1 rounded-full text-sm">
+          Open in Google Maps
+        </span>
+      </div>
+    </a>
+  `;
+}
+
+/**
+ * Setup photo lightbox
+ */
+function setupLightbox(photos) {
+  const lightbox = document.getElementById('photo-lightbox');
+  const lightboxImage = document.getElementById('lightbox-image');
+  const lightboxCounter = document.getElementById('lightbox-counter');
+  const lightboxSource = document.getElementById('lightbox-source');
+  const closeBtn = document.getElementById('lightbox-close');
+  const prevBtn = document.getElementById('lightbox-prev');
+  const nextBtn = document.getElementById('lightbox-next');
+
+  if (!lightbox || !photos.length) return;
+
+  let currentIndex = 0;
+
+  const updateLightbox = () => {
+    const photo = photos[currentIndex];
+    lightboxImage.src = photo.url;
+    lightboxImage.alt = `Photo from ${photo.source}`;
+    lightboxCounter.textContent = `${currentIndex + 1} / ${photos.length}`;
+    lightboxSource.textContent = `from ${photo.source}`;
+
+    // Update nav visibility
+    prevBtn.style.visibility = currentIndex === 0 ? 'hidden' : 'visible';
+    nextBtn.style.visibility = currentIndex === photos.length - 1 ? 'hidden' : 'visible';
+  };
+
+  const openLightbox = (index) => {
+    currentIndex = index;
+    updateLightbox();
+    lightbox.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeLightbox = () => {
+    lightbox.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+
+  closeBtn.addEventListener('click', closeLightbox);
+  prevBtn.addEventListener('click', () => {
+    if (currentIndex > 0) {
+      currentIndex--;
+      updateLightbox();
+    }
+  });
+  nextBtn.addEventListener('click', () => {
+    if (currentIndex < photos.length - 1) {
+      currentIndex++;
+      updateLightbox();
+    }
+  });
+
+  // Close on background click
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) {
+      closeLightbox();
+    }
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (lightbox.style.display !== 'flex') return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft' && currentIndex > 0) {
+      currentIndex--;
+      updateLightbox();
+    }
+    if (e.key === 'ArrowRight' && currentIndex < photos.length - 1) {
+      currentIndex++;
+      updateLightbox();
+    }
+  });
+
+  // Store openLightbox function for photo click handler
+  window._openLightbox = openLightbox;
+}
+
+/**
+ * Handle photo thumbnail click
+ */
+function handlePhotoClick(event) {
+  const thumb = event.target.closest('.photo-thumb');
+  if (thumb && window._openLightbox) {
+    const index = parseInt(thumb.dataset.photoIndex, 10);
+    window._openLightbox(index);
+  }
+}
+
+/**
+ * Handle share button click
+ */
+function handleShareClick(event) {
+  const shareBtn = event.target.closest('#share-btn');
+  if (!shareBtn || !currentRestaurant) return;
+
+  const url = window.location.href;
+  const title = `${currentRestaurant.name} - grub stars`;
+  const text = `Check out ${currentRestaurant.name} on grub stars!`;
+
+  // Try native share first (mobile)
+  if (navigator.share) {
+    navigator.share({ title, text, url }).catch(() => {
+      // User cancelled or error - fallback to clipboard
+      copyToClipboard(url);
+    });
+  } else {
+    // Desktop fallback - copy to clipboard
+    copyToClipboard(url);
+  }
+}
+
+/**
+ * Copy text to clipboard and show toast
+ */
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showShareToast();
+  }).catch(() => {
+    // Fallback for older browsers
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showShareToast();
+  });
+}
+
+/**
+ * Show share toast notification
+ */
+function showShareToast() {
+  const toast = document.getElementById('share-toast');
+  if (!toast) return;
+
+  toast.style.display = 'block';
+  toast.style.opacity = '1';
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 300);
+  }, 2000);
+}
+
+/**
+ * Load similar restaurants by category
+ */
+async function loadSimilarRestaurants(restaurant) {
+  const container = document.getElementById('similar-restaurants');
+  const list = document.getElementById('similar-restaurants-list');
+
+  if (!container || !list || !restaurant.categories || !restaurant.categories.length) return;
+
+  try {
+    // Search for restaurants with the same first category
+    const category = restaurant.categories[0];
+    const response = await searchRestaurants({ category, location: restaurant.location });
+
+    // Filter out current restaurant and limit to 4
+    const similar = (response.data || [])
+      .filter(r => r.id !== restaurant.id)
+      .slice(0, 4);
+
+    if (similar.length === 0) return;
+
+    // Show container and render results
+    container.style.display = 'block';
+    list.innerHTML = similar.map(r => `
+      <a href="/details.html?id=${r.id}" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group similar-card">
+        <div class="flex-1 min-w-0">
+          <h4 class="font-medium text-gray-800 truncate group-hover:text-electric" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(r.name)}</h4>
+          <p class="text-sm text-gray-500 truncate">${escapeHtml(r.address || r.location || '')}</p>
+          ${r.ratings && r.ratings.length > 0 ? `
+            <div class="flex items-center mt-1">
+              ${renderStars(r.ratings[0].score)}
+              <span class="ml-1 text-xs text-gray-500">${r.ratings[0].score.toFixed(1)}</span>
+            </div>
+          ` : ''}
+        </div>
+        <svg class="w-5 h-5 text-gray-400 group-hover:text-electric ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading similar restaurants:', error);
+    // Silently fail - this is a nice-to-have feature
+  }
+}
+
+/**
+ * Get the most recent update timestamp
+ */
+function getLastUpdated(ratings, reviews, photos) {
+  const timestamps = [
+    ...ratings.map(r => r.fetched_at),
+    ...reviews.map(r => r.fetched_at),
+    ...photos.map(p => p.fetched_at)
+  ].filter(Boolean);
+
+  if (timestamps.length === 0) return null;
+
+  return timestamps.reduce((latest, current) => {
+    return new Date(current) > new Date(latest) ? current : latest;
+  });
+}
+
+/**
+ * Format a date string for display
+ */
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 /**
@@ -350,12 +873,12 @@ function renderStars(rating) {
   if (hasHalfStar) {
     stars += `<svg class="w-4 h-4 text-yellow-400" style="width: 16px; height: 16px; color: #facc15;" viewBox="0 0 20 20">
       <defs>
-        <linearGradient id="half-star">
+        <linearGradient id="half-star-${Math.random().toString(36).substr(2, 9)}">
           <stop offset="50%" stop-color="currentColor"/>
           <stop offset="50%" stop-color="#D1D5DB"/>
         </linearGradient>
       </defs>
-      <path fill="url(#half-star)" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+      <path fill="url(#half-star-${Math.random().toString(36).substr(2, 9)})" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
     </svg>`;
   }
 

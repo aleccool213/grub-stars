@@ -962,3 +962,269 @@ html.dark .autocomplete-loading::before {
   border-color: #3f3f46;
   border-top-color: #A855F7;
 }
+
+/* ============================================
+   Restaurant Details Page - Enhanced Elements
+   ============================================ */
+
+/* Rating cards in details page */
+.rating-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rating-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+html.dark .rating-card {
+  background-color: #334155 !important;
+}
+
+html.dark .rating-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Review cards */
+.review-card {
+  transition: transform 0.15s ease;
+}
+
+.review-card:hover {
+  transform: translateX(4px);
+}
+
+html.dark .review-card {
+  background-color: #334155 !important;
+}
+
+/* Similar restaurants cards */
+.similar-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.similar-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+html.dark .similar-card {
+  background-color: #334155 !important;
+}
+
+html.dark .similar-card:hover {
+  background-color: #475569 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Photo thumbnails */
+.photo-thumb {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.photo-thumb:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.3);
+}
+
+html.dark .photo-thumb {
+  background-color: #334155 !important;
+}
+
+html.dark .photo-thumb:hover {
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
+}
+
+/* Photo placeholder */
+html.dark .photo-placeholder {
+  background-color: #1e293b !important;
+  color: #64748b !important;
+}
+
+/* Map container */
+#restaurant-map {
+  transition: box-shadow 0.2s ease;
+}
+
+#restaurant-map:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+html.dark #restaurant-map {
+  background-color: #334155 !important;
+}
+
+html.dark #restaurant-map:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* External link buttons dark mode */
+html.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+html.dark .text-red-700 {
+  color: #fca5a5 !important;
+}
+
+html.dark .hover\:bg-red-200:hover {
+  background-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+html.dark .bg-green-100 {
+  background-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+html.dark .text-green-700 {
+  color: #86efac !important;
+}
+
+html.dark .hover\:bg-green-200:hover {
+  background-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+/* Video cards dark mode */
+html.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+html.dark .group-hover\:bg-red-200:hover,
+html.dark .group:hover .group-hover\:bg-red-200 {
+  background-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Share toast */
+#share-toast {
+  backdrop-filter: blur(8px);
+}
+
+html.dark #share-toast {
+  background-color: #334155 !important;
+}
+
+/* Photo lightbox - no dark mode needed as it's already dark */
+#photo-lightbox {
+  backdrop-filter: blur(4px);
+}
+
+#photo-lightbox img {
+  border-radius: 0.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Lightbox navigation buttons */
+#lightbox-prev,
+#lightbox-next,
+#lightbox-close {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+#lightbox-prev:hover,
+#lightbox-next:hover,
+#lightbox-close:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+#lightbox-prev:active,
+#lightbox-next:active,
+#lightbox-close:active {
+  transform: scale(0.95);
+}
+
+/* Show more reviews button */
+#show-more-reviews {
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+#show-more-reviews:hover {
+  transform: translateX(4px);
+}
+
+html.dark #show-more-reviews {
+  color: #c084fc !important;
+}
+
+html.dark #show-more-reviews:hover {
+  color: #e879f9 !important;
+}
+
+/* Share button dark mode */
+html.dark #share-btn {
+  color: #94a3b8 !important;
+}
+
+html.dark #share-btn:hover {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+/* Directions link */
+html.dark a[href*="google.com/maps"] {
+  color: #a78bfa !important;
+}
+
+html.dark a[href*="google.com/maps"]:hover {
+  color: #c4b5fd !important;
+}
+
+/* Similar restaurants section */
+html.dark #similar-restaurants {
+  border-color: #475569 !important;
+}
+
+html.dark #similar-restaurants h3 {
+  color: #f8fafc !important;
+}
+
+html.dark #similar-restaurants-list a {
+  background-color: #334155 !important;
+}
+
+html.dark #similar-restaurants-list a:hover {
+  background-color: #475569 !important;
+}
+
+html.dark #similar-restaurants-list h4 {
+  color: #e2e8f0 !important;
+}
+
+html.dark #similar-restaurants-list p {
+  color: #94a3b8 !important;
+}
+
+/* External links section dark mode */
+html.dark #restaurant-details .flex.flex-wrap.gap-3 a {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Touch-friendly targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .photo-thumb,
+  .rating-card,
+  .similar-card,
+  .review-card {
+    -webkit-tap-highlight-color: rgba(168, 85, 247, 0.2);
+  }
+
+  #lightbox-prev,
+  #lightbox-next {
+    padding: 16px;
+  }
+
+  #lightbox-close {
+    padding: 12px;
+  }
+}
+
+/* Swipe hint animation for lightbox on mobile */
+@keyframes swipe-hint {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-10px); }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  #photo-lightbox[data-show-hint="true"] #lightbox-image {
+    animation: swipe-hint 1s ease-in-out 2;
+  }
+}

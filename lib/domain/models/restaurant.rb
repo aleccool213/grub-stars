@@ -85,7 +85,8 @@ module Domain
           photos: photos.map(&:to_h),
           videos: videos.map(&:to_h),
           categories: category_names,
-          sources: sources
+          sources: sources,
+          external_ids: external_ids.map(&:to_h)
         }
       end
 
