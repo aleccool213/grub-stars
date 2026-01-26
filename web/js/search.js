@@ -134,18 +134,12 @@ async function loadLocations() {
 function showOnboardingIfNeeded() {
   if (!onboardingContainer) return;
 
-  // If no locations indexed, always show onboarding with prominent CTA
-  if (!hasIndexedLocations) {
-    onboardingContainer.innerHTML = onboardingBanner({ hasLocations: false });
-    initOnboardingBanner();
-    return;
-  }
+  // Don't show if user has already dismissed onboarding
+  if (isOnboardingDismissed()) return;
 
-  // If locations exist but onboarding not dismissed, show it
-  if (!isOnboardingDismissed()) {
-    onboardingContainer.innerHTML = onboardingBanner({ hasLocations: true });
-    initOnboardingBanner();
-  }
+  // Show onboarding with appropriate CTA based on whether locations exist
+  onboardingContainer.innerHTML = onboardingBanner({ hasLocations: hasIndexedLocations });
+  initOnboardingBanner();
 }
 
 /**
