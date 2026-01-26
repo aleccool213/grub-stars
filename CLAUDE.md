@@ -814,3 +814,53 @@ https://photon.komoot.io/api/?q=barrie&limit=5
 - LocalStorage has ~5-10MB limit in most browsers - plenty for thousands of restaurant references
 - Consider cleanup if bookmarks grow very large (pagination, archiving old bookmarks)
 - Future: migrate to IndexedDB for more storage if needed
+
+---
+
+## Development Friction & Lessons Learned
+
+This section documents friction points encountered during development to help future contributors.
+
+### Ruby Environment Setup
+
+**Issue:** The project requires Bundler 2.5.23, but it may not be installed by default.
+
+**Solution:** Always run `gem install bundler -v 2.5.23` before `bundle _2.5.23_ install`.
+
+**Workaround for rackup:** If `bundle exec rackup` fails, use:
+```bash
+ruby -I lib -r bundler/setup -e "require 'rack'; Rack::Server.start(config: 'config.ru', Port: 9292, Host: '0.0.0.0')"
+```
+
+### Database Location
+
+**Issue:** The SQLite database is stored in `~/.grub_stars/grub_stars.db` by default (not in the project directory). This can cause confusion when creating test data or debugging.
+
+**Solution:** Check `GrubStars::Config.db_path` to find the actual database location. The path is configurable via `GRUB_STARS_CONFIG_DIR` environment variable or `--db_path` CLI option.
+
+### Frontend API Base URL
+
+**Issue:** The JavaScript API client (`web/js/api.js`) expects the backend on port 9292. Starting the server on a different port causes "Unable to connect to API server" errors.
+
+**Solution:** Always start the server on port 9292, or modify `API_BASE_URL` in `api.js` for development.
+
+### Playwright Screenshot Limitations
+
+**Issue:** Playwright crashes when using very tall viewports (e.g., `height: 2000`) for full-page screenshots.
+
+**Solution:** Use scroll-based screenshots instead:
+```bash
+node scripts/screenshot.js --url "http://localhost:9292/page" --name "section" --actions '[{"action":"scroll","y":600}]'
+```
+
+### Static Map Service
+
+**Issue:** The OpenStreetMap static map service (`staticmap.openstreetmap.de`) may be unavailable or blocked in some environments.
+
+**Fallback:** The details page gracefully shows "Map unavailable" when the static map fails to load. Users can still click "Get directions" to open Google Maps directly.
+
+### External Image Loading
+
+**Issue:** Restaurant photos from external URLs (Unsplash, Yelp CDN, etc.) may fail to load due to network restrictions or CORS policies in development/CI environments.
+
+**Solution:** Photo thumbnails include a fallback placeholder icon that displays when image loading fails. The lightbox also handles missing images gracefully.
