@@ -195,7 +195,7 @@ function renderResultCard(result, index) {
               class="index-btn px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
               data-result-index="${index}"
             >
-              + Add to Database
+              Index Restaurant
             </button>
             ${result.url ? `
               <a
@@ -232,7 +232,7 @@ function initIndexButtons(results, adapter, location) {
 
       // Update button state
       btn.disabled = true;
-      btn.textContent = 'Adding...';
+      btn.textContent = 'Indexing...';
       btn.classList.remove('bg-green-600', 'hover:bg-green-700');
       btn.classList.add('bg-gray-400');
 
@@ -240,7 +240,7 @@ function initIndexButtons(results, adapter, location) {
         const response = await indexSingleRestaurant(result, adapter, location || null);
 
         // Update button to success state
-        btn.textContent = '✓ Added';
+        btn.textContent = '✓ Indexed';
         btn.classList.remove('bg-gray-400');
         btn.classList.add('bg-green-500');
 

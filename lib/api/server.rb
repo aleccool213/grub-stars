@@ -172,6 +172,7 @@ module GrubStars
       end
 
       # Index a single restaurant from external search results
+      # This will search ALL configured adapters for the restaurant and merge data
       post "/restaurants/index-single" do
         body = parse_json_body
         business_data = body["business_data"]
@@ -190,20 +191,60 @@ module GrubStars
         normalized_data = normalize_business_data(business_data)
 
         service = Services::IndexRestaurantsService.new
+
+        # Index from the original source first
         result = service.index_restaurant(
           business_data: normalized_data,
           source: source,
           location: location
         )
 
-        # Find the newly indexed restaurant to return its ID
+        # Track sources indexed
+        sources_indexed = [source]
+
+        # Search and index from all OTHER configured adapters
+        restaurant_name = normalized_data[:name]
+        search_location = location || normalized_data[:address]
+
+        available_adapters.each do |adapter|
+          next unless adapter.configured?
+          next if adapter.source_name == source
+
+          begin
+            # Search for the same restaurant in this adapter
+            results = adapter.search_by_name(
+              name: restaurant_name,
+              location: search_location,
+              limit: 5
+            )
+
+            # Find the best match by comparing name and coordinates
+            best_match = find_best_match(results, normalized_data)
+
+            if best_match
+              # Index the match - it will merge with existing restaurant
+              service.index_restaurant(
+                business_data: best_match,
+                source: adapter.source_name,
+                location: location
+              )
+              sources_indexed << adapter.source_name
+            end
+          rescue StandardError => e
+            # Log but don't fail if one adapter errors
+            GrubStars.logger.warn("Failed to search #{adapter.source_name}: #{e.message}")
+          end
+        end
+
+        # Find the indexed restaurant to return its ID
         repo = Infrastructure::Repositories::RestaurantRepository.new
         restaurant = repo.find_by_external_id(source, normalized_data[:external_id])
 
         json_response({
           result: result.to_s,
           restaurant_id: restaurant&.id,
-          message: result_message(result)
+          sources_indexed: sources_indexed,
+          message: "Restaurant indexed from #{sources_indexed.length} source(s)"
         })
       end
 
@@ -303,11 +344,96 @@ module GrubStars
 
       def result_message(result)
         case result
-        when :created then "Restaurant added to your local database"
-        when :updated then "Restaurant information updated"
+        when :created then "Restaurant indexed"
+        when :updated then "Restaurant updated"
         when :merged then "Restaurant merged with existing entry"
         else "Restaurant processed"
         end
+      end
+
+      # Find the best matching restaurant from search results
+      # Uses name similarity and geographic proximity
+      def find_best_match(results, original)
+        return nil if results.nil? || results.empty?
+
+        original_name = original[:name]&.downcase&.strip
+        original_lat = original[:latitude]
+        original_lng = original[:longitude]
+
+        best_match = nil
+        best_score = 0
+
+        results.each do |result|
+          result_name = result[:name]&.downcase&.strip
+          next unless result_name
+
+          # Calculate name similarity (simple approach)
+          name_score = calculate_name_similarity(original_name, result_name)
+
+          # Calculate distance score if coordinates available
+          distance_score = 0
+          if original_lat && original_lng && result[:latitude] && result[:longitude]
+            distance_km = haversine_distance(
+              original_lat, original_lng,
+              result[:latitude], result[:longitude]
+            )
+            # Full points if within 200m, decreasing to 0 at 2km
+            distance_score = distance_km < 0.2 ? 30 : [30 - (distance_km * 15), 0].max
+          end
+
+          total_score = name_score + distance_score
+
+          # Require at least 50% name match and reasonable proximity
+          if total_score > best_score && name_score >= 25
+            best_score = total_score
+            best_match = result
+          end
+        end
+
+        # Require minimum total score to consider it a match
+        best_score >= 40 ? best_match : nil
+      end
+
+      # Calculate name similarity score (0-50)
+      def calculate_name_similarity(name1, name2)
+        return 0 unless name1 && name2
+
+        # Normalize names
+        n1 = name1.gsub(/[^a-z0-9\s]/, '').squeeze(' ')
+        n2 = name2.gsub(/[^a-z0-9\s]/, '').squeeze(' ')
+
+        # Exact match
+        return 50 if n1 == n2
+
+        # One contains the other
+        return 45 if n1.include?(n2) || n2.include?(n1)
+
+        # Word overlap
+        words1 = n1.split
+        words2 = n2.split
+        common_words = words1 & words2
+        total_words = (words1 | words2).length
+
+        return 0 if total_words == 0
+
+        overlap_ratio = common_words.length.to_f / total_words
+        (overlap_ratio * 40).round
+      end
+
+      # Calculate distance between two points using Haversine formula
+      def haversine_distance(lat1, lng1, lat2, lng2)
+        rad_per_deg = Math::PI / 180
+        earth_radius_km = 6371
+
+        dlat = (lat2 - lat1) * rad_per_deg
+        dlng = (lng2 - lng1) * rad_per_deg
+
+        a = Math.sin(dlat / 2)**2 +
+            Math.cos(lat1 * rad_per_deg) * Math.cos(lat2 * rad_per_deg) *
+            Math.sin(dlng / 2)**2
+        c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+        earth_radius_km * c
       end
     end
   end

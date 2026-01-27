@@ -43,12 +43,12 @@ function escapeHtml(text) {
  */
 function renderDropdown(suggestions, query = '') {
   if (!suggestions.length) {
-    const addUrl = query ? `/add-restaurant.html?name=${encodeURIComponent(query)}` : '/add-restaurant.html';
+    const indexUrl = query ? `/add-restaurant.html?name=${encodeURIComponent(query)}` : '/add-restaurant.html';
     return `
       <div class="autocomplete-dropdown">
         <div class="autocomplete-empty">
           <span>No restaurants found</span>
-          <a href="${addUrl}" class="autocomplete-add-link">+ Add a restaurant</a>
+          <a href="${indexUrl}" class="autocomplete-add-link">+ Index a restaurant</a>
         </div>
       </div>
     `;

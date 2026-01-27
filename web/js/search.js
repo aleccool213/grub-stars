@@ -262,7 +262,7 @@ function showEmptyResults(params) {
       <p class="text-sm text-gray-500">
         Try a different category,
         <a href="/index-location.html" class="text-blue-600 hover:underline">index a new location</a>,
-        or <a href="/add-restaurant.html" class="text-blue-600 hover:underline">add a specific restaurant</a>.
+        or <a href="/add-restaurant.html" class="text-blue-600 hover:underline">index a specific restaurant</a>.
       </p>
     </div>
   `;
