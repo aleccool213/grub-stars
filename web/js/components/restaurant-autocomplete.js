@@ -38,13 +38,18 @@ function escapeHtml(text) {
 /**
  * Render the autocomplete dropdown HTML
  * @param {Array} suggestions - Array of restaurant objects
+ * @param {string} query - Current search query (for linking to add page)
  * @returns {string} - HTML string
  */
-function renderDropdown(suggestions) {
+function renderDropdown(suggestions, query = '') {
   if (!suggestions.length) {
+    const addUrl = query ? `/add-restaurant.html?name=${encodeURIComponent(query)}` : '/add-restaurant.html';
     return `
       <div class="autocomplete-dropdown">
-        <div class="autocomplete-empty">No restaurants found</div>
+        <div class="autocomplete-empty">
+          <span>No restaurants found</span>
+          <a href="${addUrl}" class="autocomplete-add-link">+ Add a restaurant</a>
+        </div>
       </div>
     `;
   }
@@ -101,6 +106,7 @@ export function initRestaurantAutocomplete(input, options = {}) {
   let dropdownContainer = null;
   let isOpen = false;
   let isLoading = false;
+  let currentQuery = '';
 
   // Create wrapper if needed
   const wrapper = document.createElement('div');
@@ -138,7 +144,7 @@ export function initRestaurantAutocomplete(input, options = {}) {
    * Show the dropdown with current suggestions
    */
   function showDropdown() {
-    dropdownContainer.innerHTML = renderDropdown(suggestions);
+    dropdownContainer.innerHTML = renderDropdown(suggestions, currentQuery);
     isOpen = true;
     isLoading = false;
     activeIndex = -1;
@@ -210,6 +216,7 @@ export function initRestaurantAutocomplete(input, options = {}) {
    */
   const handleInput = debounce(async () => {
     const query = input.value.trim();
+    currentQuery = query;
 
     if (query.length < MIN_QUERY_LENGTH) {
       suggestions = [];

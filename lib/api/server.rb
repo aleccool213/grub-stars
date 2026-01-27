@@ -122,6 +122,90 @@ module GrubStars
         halt 502, json_error("API_ERROR", e.message)
       end
 
+      # List available adapters
+      get "/adapters" do
+        adapters = available_adapters.map do |adapter|
+          {
+            name: adapter.source_name,
+            configured: adapter.configured?
+          }
+        end
+
+        json_response(adapters, count: adapters.length)
+      end
+
+      # Search external APIs by restaurant name
+      get "/restaurants/search-external" do
+        name = params[:name]&.strip
+        adapter_name = params[:adapter]&.strip&.downcase
+        location = params[:location]&.strip
+        limit = [(params[:limit] || 10).to_i, 20].min
+
+        unless name && name.length >= 2
+          halt 400, json_error("INVALID_REQUEST", "Parameter 'name' must be at least 2 characters")
+        end
+
+        unless adapter_name
+          halt 400, json_error("INVALID_REQUEST", "Parameter 'adapter' is required (yelp, google, or tripadvisor)")
+        end
+
+        adapter = find_adapter(adapter_name)
+        unless adapter
+          halt 400, json_error("INVALID_ADAPTER", "Unknown adapter: #{adapter_name}. Use yelp, google, or tripadvisor")
+        end
+
+        unless adapter.configured?
+          halt 503, json_error("ADAPTER_NOT_CONFIGURED", "Adapter '#{adapter_name}' is not configured. Set the API key in .env file")
+        end
+
+        results = adapter.search_by_name(name: name, location: location, limit: limit)
+
+        json_response(
+          results.map { |r| serialize_external_result(r, adapter_name) },
+          count: results.length,
+          adapter: adapter_name,
+          query: name
+        )
+      rescue GrubStars::Adapters::Base::APIError => e
+        halt 502, json_error("API_ERROR", e.message)
+      end
+
+      # Index a single restaurant from external search results
+      post "/restaurants/index-single" do
+        body = parse_json_body
+        business_data = body["business_data"]
+        source = body["source"]&.strip&.downcase
+        location = body["location"]&.strip
+
+        unless business_data
+          halt 400, json_error("INVALID_REQUEST", "business_data is required")
+        end
+
+        unless source
+          halt 400, json_error("INVALID_REQUEST", "source is required (yelp, google, or tripadvisor)")
+        end
+
+        # Normalize business_data keys to symbols
+        normalized_data = normalize_business_data(business_data)
+
+        service = Services::IndexRestaurantsService.new
+        result = service.index_restaurant(
+          business_data: normalized_data,
+          source: source,
+          location: location
+        )
+
+        # Find the newly indexed restaurant to return its ID
+        repo = Infrastructure::Repositories::RestaurantRepository.new
+        restaurant = repo.find_by_external_id(source, normalized_data[:external_id])
+
+        json_response({
+          result: result.to_s,
+          restaurant_id: restaurant&.id,
+          message: result_message(result)
+        })
+      end
+
       # Error handlers
       error JSON::ParserError do
         halt 400, json_error("INVALID_JSON", "Request body is not valid JSON")
@@ -169,6 +253,60 @@ module GrubStars
           categories: restaurant.category_names,
           sources: restaurant.sources
         }
+      end
+
+      def serialize_external_result(result, source)
+        {
+          external_id: result[:external_id],
+          source: source,
+          name: result[:name],
+          address: result[:address],
+          latitude: result[:latitude],
+          longitude: result[:longitude],
+          phone: result[:phone],
+          rating: result[:rating],
+          review_count: result[:review_count],
+          categories: result[:categories] || [],
+          photos: result[:photos] || [],
+          url: result[:url]
+        }
+      end
+
+      def available_adapters
+        @available_adapters ||= [
+          GrubStars::Adapters::Yelp.new,
+          GrubStars::Adapters::Google.new,
+          GrubStars::Adapters::TripAdvisor.new
+        ]
+      end
+
+      def find_adapter(name)
+        available_adapters.find { |a| a.source_name == name }
+      end
+
+      def normalize_business_data(data)
+        {
+          external_id: data["external_id"],
+          name: data["name"],
+          address: data["address"],
+          latitude: data["latitude"]&.to_f,
+          longitude: data["longitude"]&.to_f,
+          phone: data["phone"],
+          rating: data["rating"]&.to_f,
+          review_count: data["review_count"]&.to_i,
+          categories: data["categories"] || [],
+          photos: data["photos"] || [],
+          url: data["url"]
+        }
+      end
+
+      def result_message(result)
+        case result
+        when :created then "Restaurant added to your local database"
+        when :updated then "Restaurant information updated"
+        when :merged then "Restaurant merged with existing entry"
+        else "Restaurant processed"
+        end
       end
     end
   end

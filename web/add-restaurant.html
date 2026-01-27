@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Restaurant - grub stars</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://grubstars.com/">
+  <meta property="og:title" content="grub stars - Add Restaurant">
+  <meta property="og:description" content="Add a specific restaurant to your local database by searching external APIs.">
+  <meta property="og:image" content="https://grubstars.com/images/og-image.svg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://grubstars.com/">
+  <meta property="twitter:title" content="grub stars - Add Restaurant">
+  <meta property="twitter:description" content="Add a specific restaurant to your local database by searching external APIs.">
+  <meta property="twitter:image" content="https://grubstars.com/images/og-image.svg">
+  <!-- Early dark mode detection to prevent FOUC -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('grub_stars_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
+  <script src="/js/vendor/twind.min.js"></script>
+  <script src="/js/twind-config.js"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-cream min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <main>
+      <div class="max-w-2xl mx-auto card p-6">
+        <h2 class="text-2xl font-bold text-cocoa mb-2 flex items-center gap-2">
+          <span>🍽️</span> Add a Restaurant
+        </h2>
+        <p class="text-cocoa/70 mb-6">
+          Search for a specific restaurant using Yelp, Google Maps, or TripAdvisor and add it to your local database.
+        </p>
+
+        <form id="add-restaurant-form" class="space-y-4">
+          <div>
+            <label for="restaurant-name" class="block text-sm font-medium text-cocoa mb-1">
+              Restaurant Name *
+            </label>
+            <input
+              type="text"
+              id="restaurant-name"
+              name="name"
+              placeholder="e.g., Joe's Pizza"
+              required
+              minlength="2"
+              autocomplete="off"
+              class="input-whimsical"
+            >
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="search-adapter" class="block text-sm font-medium text-cocoa mb-1">
+                Search With *
+              </label>
+              <select
+                id="search-adapter"
+                name="adapter"
+                required
+                class="input-whimsical"
+              >
+                <option value="">Loading...</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="search-location" class="block text-sm font-medium text-cocoa mb-1">
+                Location <span class="text-cocoa/50 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                id="search-location"
+                name="location"
+                placeholder="e.g., New York, NY"
+                autocomplete="off"
+                class="input-whimsical"
+              >
+              <p class="text-xs text-cocoa/50 mt-1">
+                Helps narrow down results
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            id="search-btn"
+            class="w-full btn-primary text-lg"
+          >
+            Search External APIs
+          </button>
+        </form>
+
+        <!-- Results area -->
+        <div id="search-results" class="mt-6"></div>
+      </div>
+
+      <!-- Info box -->
+      <div class="max-w-2xl mx-auto mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex gap-3">
+          <div class="text-blue-500 text-xl">💡</div>
+          <div class="text-sm text-blue-800">
+            <p class="font-medium mb-1">How it works</p>
+            <p class="text-blue-700">
+              This searches external APIs (Yelp, Google, etc.) in real-time. Once you find the restaurant,
+              click "Add to Database" to save it locally. After that, you can search for it instantly
+              without making any more API calls.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Link to location indexing -->
+      <div class="max-w-2xl mx-auto mt-4 text-center">
+        <p class="text-sm text-cocoa/60">
+          Want to add all restaurants in an area?
+          <a href="/index-location.html" class="text-electric hover:underline">Index a location instead</a>
+        </p>
+      </div>
+    </main>
+
+    <footer class="text-center mt-12 py-8">
+      <p class="text-cocoa/60">Made with 🍕 by friends, for friends</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/js/add-restaurant.js"></script>
+</body>
+</html>

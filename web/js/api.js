@@ -124,3 +124,50 @@ export async function autocompleteRestaurants(query, limit = 10) {
   const queryParams = new URLSearchParams({ q: query, limit: limit.toString() });
   return apiRequest(`/restaurants/autocomplete?${queryParams}`);
 }
+
+/**
+ * Get list of available adapters
+ * @returns {Promise<Object>} - Adapters list with configured status
+ */
+export async function getAdapters() {
+  return apiRequest('/adapters');
+}
+
+/**
+ * Search external APIs by restaurant name
+ * @param {Object} params - Search parameters
+ * @param {string} params.name - Restaurant name to search (min 2 characters)
+ * @param {string} params.adapter - Adapter to use (yelp, google, or tripadvisor)
+ * @param {string} params.location - Optional location to narrow results
+ * @param {number} params.limit - Maximum results (default 10, max 20)
+ * @returns {Promise<Object>} - External search results with data and meta
+ */
+export async function searchExternal(params) {
+  const queryParams = new URLSearchParams();
+  queryParams.append('name', params.name);
+  queryParams.append('adapter', params.adapter);
+  if (params.location) queryParams.append('location', params.location);
+  if (params.limit) queryParams.append('limit', params.limit.toString());
+
+  return apiRequest(`/restaurants/search-external?${queryParams}`);
+}
+
+/**
+ * Index a single restaurant from external search results
+ * @param {Object} businessData - The restaurant data from external search
+ * @param {string} source - The adapter source (yelp, google, or tripadvisor)
+ * @param {string} location - Optional location to associate with the restaurant
+ * @returns {Promise<Object>} - Indexing result with restaurant_id
+ */
+export async function indexSingleRestaurant(businessData, source, location = null) {
+  const body = {
+    business_data: businessData,
+    source: source
+  };
+  if (location) body.location = location;
+
+  return apiRequest('/restaurants/index-single', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
