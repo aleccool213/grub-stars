@@ -1,0 +1,180 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    name: Deploy to Fly.io Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate required secrets
+        run: |
+          echo "Validating required secrets for production deployment..."
+          MISSING_SECRETS=""
+
+          if [ -z "$FLY_API_TOKEN" ]; then
+            MISSING_SECRETS="$MISSING_SECRETS FLY_API_TOKEN"
+          fi
+
+          if [ -z "$YELP_API_KEY" ]; then
+            MISSING_SECRETS="$MISSING_SECRETS YELP_API_KEY"
+          fi
+
+          if [ -z "$GOOGLE_API_KEY" ]; then
+            MISSING_SECRETS="$MISSING_SECRETS GOOGLE_API_KEY"
+          fi
+
+          if [ -z "$TRIPADVISOR_API_KEY" ]; then
+            MISSING_SECRETS="$MISSING_SECRETS TRIPADVISOR_API_KEY"
+          fi
+
+          if [ -n "$MISSING_SECRETS" ]; then
+            echo "=============================================="
+            echo "  MISSING REQUIRED SECRETS FOR PRODUCTION"
+            echo "=============================================="
+            echo ""
+            echo "The following secrets are not configured:"
+            echo " $MISSING_SECRETS"
+            echo ""
+            echo "To configure secrets:"
+            echo "  1. Go to: https://github.com/${{ github.repository }}/settings/secrets/actions"
+            echo "  2. Add each missing secret"
+            echo ""
+            echo "For FLY_API_TOKEN:"
+            echo "  - Install Fly.io CLI: curl -L https://fly.io/install.sh | sh"
+            echo "  - Login: fly auth login"
+            echo "  - Create token: fly tokens create deploy -x 999999h"
+            echo ""
+            echo "For API keys:"
+            echo "  - YELP_API_KEY: https://www.yelp.com/developers"
+            echo "  - GOOGLE_API_KEY: https://console.cloud.google.com"
+            echo "  - TRIPADVISOR_API_KEY: https://tripadvisor-content-api.readme.io"
+            echo ""
+            echo "=============================================="
+            exit 1
+          fi
+
+          echo "All required secrets are configured"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          YELP_API_KEY: ${{ secrets.YELP_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          TRIPADVISOR_API_KEY: ${{ secrets.TRIPADVISOR_API_KEY }}
+
+      - name: Validate secrets are not mock values
+        run: |
+          echo "Validating secrets are not mock/test values..."
+          INVALID_SECRETS=""
+
+          # Check for mock API keys
+          if echo "$YELP_API_KEY" | grep -qi "mock"; then
+            INVALID_SECRETS="$INVALID_SECRETS YELP_API_KEY(contains 'mock')"
+          fi
+
+          if echo "$GOOGLE_API_KEY" | grep -qi "mock"; then
+            INVALID_SECRETS="$INVALID_SECRETS GOOGLE_API_KEY(contains 'mock')"
+          fi
+
+          if echo "$TRIPADVISOR_API_KEY" | grep -qi "mock"; then
+            INVALID_SECRETS="$INVALID_SECRETS TRIPADVISOR_API_KEY(contains 'mock')"
+          fi
+
+          # Check for localhost URLs in base URL overrides (if set)
+          if [ -n "$YELP_API_BASE_URL" ] && echo "$YELP_API_BASE_URL" | grep -qiE "(localhost|127\.0\.0\.1)"; then
+            INVALID_SECRETS="$INVALID_SECRETS YELP_API_BASE_URL(points to localhost)"
+          fi
+
+          if [ -n "$GOOGLE_API_BASE_URL" ] && echo "$GOOGLE_API_BASE_URL" | grep -qiE "(localhost|127\.0\.0\.1)"; then
+            INVALID_SECRETS="$INVALID_SECRETS GOOGLE_API_BASE_URL(points to localhost)"
+          fi
+
+          if [ -n "$TRIPADVISOR_API_BASE_URL" ] && echo "$TRIPADVISOR_API_BASE_URL" | grep -qiE "(localhost|127\.0\.0\.1)"; then
+            INVALID_SECRETS="$INVALID_SECRETS TRIPADVISOR_API_BASE_URL(points to localhost)"
+          fi
+
+          if [ -n "$INVALID_SECRETS" ]; then
+            echo "=============================================="
+            echo "  INVALID SECRETS FOR PRODUCTION DEPLOYMENT"
+            echo "=============================================="
+            echo ""
+            echo "Production deployment cannot use mock or test values."
+            echo ""
+            echo "Invalid secrets detected:"
+            echo " $INVALID_SECRETS"
+            echo ""
+            echo "Please update these secrets with real production API keys."
+            echo "Go to: https://github.com/${{ github.repository }}/settings/secrets/actions"
+            echo ""
+            echo "=============================================="
+            exit 1
+          fi
+
+          echo "All secrets validated for production use"
+        env:
+          YELP_API_KEY: ${{ secrets.YELP_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          TRIPADVISOR_API_KEY: ${{ secrets.TRIPADVISOR_API_KEY }}
+          YELP_API_BASE_URL: ${{ secrets.YELP_API_BASE_URL }}
+          GOOGLE_API_BASE_URL: ${{ secrets.GOOGLE_API_BASE_URL }}
+          TRIPADVISOR_API_BASE_URL: ${{ secrets.TRIPADVISOR_API_BASE_URL }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Create app if not exists
+        run: |
+          if ! flyctl apps list | grep -q "grub-stars-prod"; then
+            echo "Creating grub-stars-prod app..."
+            flyctl apps create grub-stars-prod --org personal || true
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Create volume if not exists
+        run: |
+          if ! flyctl volumes list --config fly.prod.toml 2>/dev/null | grep -q "grub_stars_prod_data"; then
+            echo "Creating persistent volume..."
+            flyctl volumes create grub_stars_prod_data --size 1 --region ord --config fly.prod.toml --yes || true
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Set API secrets in Fly.io
+        run: |
+          echo "Setting API secrets in Fly.io..."
+          flyctl secrets set \
+            YELP_API_KEY="$YELP_API_KEY" \
+            GOOGLE_API_KEY="$GOOGLE_API_KEY" \
+            TRIPADVISOR_API_KEY="$TRIPADVISOR_API_KEY" \
+            --config fly.prod.toml
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          YELP_API_KEY: ${{ secrets.YELP_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          TRIPADVISOR_API_KEY: ${{ secrets.TRIPADVISOR_API_KEY }}
+
+      - name: Deploy to Fly.io
+        run: flyctl deploy --config fly.prod.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Show deployment URL
+        run: |
+          echo "=============================================="
+          echo "  PRODUCTION DEPLOYMENT COMPLETE"
+          echo "=============================================="
+          echo ""
+          echo "App URL: https://grub-stars-prod.fly.dev"
+          echo ""
+          echo "Useful commands:"
+          echo "  fly logs --config fly.prod.toml"
+          echo "  fly status --config fly.prod.toml"
+          echo ""
