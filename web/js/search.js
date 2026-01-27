@@ -156,7 +156,16 @@ async function handleUrlParams() {
   // If browse params exist, populate form and search
   if (category || location) {
     if (category && categorySelect) categorySelect.value = category;
-    if (location && locationSelect) locationSelect.value = location;
+    if (location && locationSelect) {
+      // Find matching option case-insensitively (API returns lowercase locations)
+      const locationLower = location.toLowerCase();
+      const matchingOption = Array.from(locationSelect.options).find(
+        opt => opt.value.toLowerCase() === locationLower
+      );
+      if (matchingOption) {
+        locationSelect.value = matchingOption.value;
+      }
+    }
 
     await performSearch({ category, location });
   }
