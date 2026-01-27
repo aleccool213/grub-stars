@@ -346,6 +346,375 @@ class APITest < GrubStars::IntegrationTest
     assert_equal "application/json", last_response.content_type
   end
 
+  # Adapters endpoint tests
+  def test_adapters_returns_list
+    get "/adapters"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert body["data"].is_a?(Array)
+    assert body["meta"]["count"].is_a?(Integer)
+
+    # Each adapter should have name and configured fields
+    body["data"].each do |adapter|
+      assert adapter.key?("name"), "Adapter should have name"
+      assert [true, false].include?(adapter["configured"]), "Adapter should have configured boolean"
+    end
+  end
+
+  def test_adapters_includes_all_sources
+    get "/adapters"
+
+    body = JSON.parse(last_response.body)
+    names = body["data"].map { |a| a["name"] }
+
+    assert_includes names, "yelp"
+    assert_includes names, "google"
+    assert_includes names, "tripadvisor"
+  end
+
+  # Search external API endpoint tests
+  def test_search_external_requires_name
+    get "/restaurants/search-external", adapter: "yelp"
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/name.*2 characters/i, body["error"]["message"])
+  end
+
+  def test_search_external_requires_adapter
+    get "/restaurants/search-external", name: "pizza"
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/adapter.*required/i, body["error"]["message"])
+  end
+
+  def test_search_external_rejects_short_name
+    get "/restaurants/search-external", name: "a", adapter: "yelp"
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/2 characters/i, body["error"]["message"])
+  end
+
+  def test_search_external_rejects_unknown_adapter
+    get "/restaurants/search-external", name: "pizza", adapter: "unknown"
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_ADAPTER", body["error"]["code"]
+    assert_match(/unknown/i, body["error"]["message"])
+  end
+
+  def test_search_external_returns_503_when_adapter_not_configured
+    # Without setting YELP_API_KEY, the adapter is not configured
+    get "/restaurants/search-external", name: "pizza", adapter: "yelp"
+
+    assert_equal 503, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "ADAPTER_NOT_CONFIGURED", body["error"]["code"]
+    assert_match(/yelp.*not configured/i, body["error"]["message"])
+  end
+
+  def test_search_external_success
+    stub_yelp_search_by_name("pizza")
+
+    with_env("YELP_API_KEY" => "test_key") do
+      get "/restaurants/search-external", name: "pizza", adapter: "yelp"
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert body["data"].is_a?(Array)
+    assert_equal 1, body["data"].length
+    assert_equal "yelp:pizza-place-123", body["data"][0]["external_id"]
+    assert_equal "yelp", body["data"][0]["source"]
+    assert_equal "Pizza Palace", body["data"][0]["name"]
+    assert_equal "123 Main St, Barrie, ON", body["data"][0]["address"]
+    assert_equal 4.5, body["data"][0]["rating"]
+    assert_equal 100, body["data"][0]["review_count"]
+    assert_equal "yelp", body["meta"]["adapter"]
+    assert_equal "pizza", body["meta"]["query"]
+  end
+
+  def test_search_external_with_location
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .with(query: hash_including(term: "pizza", location: "barrie, ontario"))
+      .to_return(
+        status: 200,
+        body: {
+          total: 1,
+          businesses: [yelp_business_data("pizza-place-123", "Pizza Palace")]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    with_env("YELP_API_KEY" => "test_key") do
+      get "/restaurants/search-external", name: "pizza", adapter: "yelp", location: "barrie, ontario"
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["data"].length
+  end
+
+  def test_search_external_handles_api_error
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .to_return(status: 500, body: { error: { code: "INTERNAL_ERROR" } }.to_json)
+
+    with_env("YELP_API_KEY" => "test_key") do
+      get "/restaurants/search-external", name: "pizza", adapter: "yelp"
+    end
+
+    assert_equal 502, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "API_ERROR", body["error"]["code"]
+  end
+
+  # Index single restaurant endpoint tests
+  def test_index_single_requires_business_data
+    post "/restaurants/index-single",
+         { source: "yelp" }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/business_data.*required/i, body["error"]["message"])
+  end
+
+  def test_index_single_requires_source
+    post "/restaurants/index-single",
+         { business_data: { name: "Test" } }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/source.*required/i, body["error"]["message"])
+  end
+
+  def test_index_single_success
+    business_data = {
+      "external_id" => "test-restaurant-123",
+      "name" => "Test Restaurant",
+      "address" => "456 Oak St",
+      "latitude" => 44.389,
+      "longitude" => -79.690,
+      "phone" => "+15559876543",
+      "rating" => 4.2,
+      "review_count" => 50,
+      "categories" => ["italian", "pizza"],
+      "photos" => ["https://example.com/photo.jpg"]
+    }
+
+    post "/restaurants/index-single",
+         { business_data: business_data, source: "yelp" }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?, "Expected 200 OK but got #{last_response.status}: #{last_response.body}"
+    body = JSON.parse(last_response.body)
+
+    assert body["data"]["restaurant_id"], "Should return restaurant_id"
+    assert_includes body["data"]["sources_indexed"], "yelp"
+    assert_match(/indexed.*1 source/i, body["data"]["message"])
+
+    # Verify restaurant was created in database
+    assert_equal 1, GrubStars.db[:restaurants].count
+    restaurant = GrubStars.db[:restaurants].first
+    assert_equal "Test Restaurant", restaurant[:name]
+    assert_equal "456 Oak St", restaurant[:address]
+    assert_in_delta 44.389, restaurant[:latitude], 0.001
+    assert_in_delta(-79.690, restaurant[:longitude], 0.001)
+  end
+
+  def test_index_single_with_location
+    business_data = {
+      "external_id" => "test-restaurant-456",
+      "name" => "Another Restaurant",
+      "address" => "789 Pine St",
+      "latitude" => 44.400,
+      "longitude" => -79.700,
+      "rating" => 4.0,
+      "review_count" => 30
+    }
+
+    post "/restaurants/index-single",
+         { business_data: business_data, source: "google", location: "barrie, ontario" }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert body["data"]["restaurant_id"]
+
+    # Verify location was stored
+    restaurant = GrubStars.db[:restaurants].first
+    assert_equal "barrie, ontario", restaurant[:location]
+  end
+
+  def test_index_single_creates_external_id
+    business_data = {
+      "external_id" => "ext-id-789",
+      "name" => "External ID Test",
+      "address" => "123 Test St",
+      "latitude" => 44.389,
+      "longitude" => -79.690
+    }
+
+    post "/restaurants/index-single",
+         { business_data: business_data, source: "tripadvisor" }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+
+    # Verify external_id was created
+    external_id = GrubStars.db[:external_ids].first
+    assert_equal "tripadvisor", external_id[:source]
+    assert_equal "ext-id-789", external_id[:external_id]
+  end
+
+  def test_index_single_creates_rating
+    business_data = {
+      "external_id" => "rating-test-123",
+      "name" => "Rating Test Restaurant",
+      "address" => "123 Rating St",
+      "latitude" => 44.389,
+      "longitude" => -79.690,
+      "rating" => 4.7,
+      "review_count" => 200
+    }
+
+    post "/restaurants/index-single",
+         { business_data: business_data, source: "yelp" }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+
+    # Verify rating was created
+    rating = GrubStars.db[:ratings].first
+    assert_equal "yelp", rating[:source]
+    assert_in_delta 4.7, rating[:score], 0.01
+    assert_equal 200, rating[:review_count]
+  end
+
+  def test_index_single_creates_categories
+    business_data = {
+      "external_id" => "category-test-123",
+      "name" => "Category Test Restaurant",
+      "address" => "123 Category St",
+      "latitude" => 44.389,
+      "longitude" => -79.690,
+      "categories" => ["mexican", "tacos", "burritos"]
+    }
+
+    post "/restaurants/index-single",
+         { business_data: business_data, source: "yelp" }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+
+    # Verify categories were created and linked
+    categories = GrubStars.db[:categories].select_map(:name)
+    assert_includes categories, "mexican"
+    assert_includes categories, "tacos"
+    assert_includes categories, "burritos"
+
+    # Verify links
+    assert_equal 3, GrubStars.db[:restaurant_categories].count
+  end
+
+  def test_index_single_searches_other_adapters
+    # First, set up stubs for other adapters to return matching results
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .to_return(
+        status: 200,
+        body: {
+          total: 1,
+          businesses: [yelp_business_data("yelp-match-123", "Multi Source Restaurant")]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+    stub_yelp_business("yelp-match-123")
+
+    # Original business data from google
+    business_data = {
+      "external_id" => "google-123",
+      "name" => "Multi Source Restaurant",
+      "address" => "100 Multi St",
+      "latitude" => 44.3894,
+      "longitude" => -79.6903,
+      "rating" => 4.0,
+      "review_count" => 50
+    }
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/restaurants/index-single",
+           { business_data: business_data, source: "google", location: "barrie" }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Should have indexed from google and found match in yelp
+    assert_includes body["data"]["sources_indexed"], "google"
+    assert_includes body["data"]["sources_indexed"], "yelp"
+  end
+
+  def test_index_single_updates_existing_restaurant
+    # First index a restaurant
+    business_data = {
+      "external_id" => "existing-123",
+      "name" => "Existing Restaurant",
+      "address" => "Original Address",
+      "latitude" => 44.389,
+      "longitude" => -79.690,
+      "rating" => 4.0,
+      "review_count" => 50
+    }
+
+    post "/restaurants/index-single",
+         { business_data: business_data, source: "yelp" }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+    first_response = JSON.parse(last_response.body)
+    first_id = first_response["data"]["restaurant_id"]
+
+    # Index again with updated data (same external_id)
+    updated_data = {
+      "external_id" => "existing-123",
+      "name" => "Existing Restaurant Updated",
+      "address" => "Updated Address",
+      "latitude" => 44.389,
+      "longitude" => -79.690,
+      "rating" => 4.5,
+      "review_count" => 75
+    }
+
+    post "/restaurants/index-single",
+         { business_data: updated_data, source: "yelp" }.to_json,
+         { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+    second_response = JSON.parse(last_response.body)
+
+    # Should be the same restaurant (updated, not created new)
+    assert_equal first_id, second_response["data"]["restaurant_id"]
+    assert_equal 1, GrubStars.db[:restaurants].count
+
+    # Verify data was updated
+    restaurant = GrubStars.db[:restaurants].first
+    assert_equal "Existing Restaurant Updated", restaurant[:name]
+    assert_equal "Updated Address", restaurant[:address]
+  end
+
   private
 
   def seed_restaurant
@@ -523,5 +892,33 @@ class APITest < GrubStars::IntegrationTest
       "photos" => ["https://example.com/photo1.jpg"],
       "phone" => "+17055551234"
     }
+  end
+
+  def stub_yelp_search_by_name(term)
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .with(query: hash_including(term: term))
+      .to_return(
+        status: 200,
+        body: {
+          total: 1,
+          businesses: [{
+            "id" => "pizza-place-123",
+            "name" => "Pizza Palace",
+            "rating" => 4.5,
+            "review_count" => 100,
+            "coordinates" => { "latitude" => 44.3894, "longitude" => -79.6903 },
+            "location" => {
+              "address1" => "123 Main St",
+              "city" => "Barrie",
+              "state" => "ON"
+            },
+            "categories" => [{ "alias" => "pizza", "title" => "Pizza" }],
+            "photos" => ["https://example.com/pizza.jpg"],
+            "phone" => "+17055551234",
+            "url" => "https://yelp.com/biz/pizza-palace"
+          }]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
   end
 end
