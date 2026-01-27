@@ -744,6 +744,51 @@ https://photon.komoot.io/api/?q=barrie&limit=5
 
 ---
 
+### No Search Results Empty State with Index CTA
+
+**Problem:** When a user searches for a restaurant name that has no results in the local database, they see an empty state with no clear next action. Users may not understand that they need to index a location first, or may not know how to add the restaurant they're looking for.
+
+**Solution:** Display a helpful empty state message when search returns no results, with a clickable link to the location indexing page.
+
+**Implementation:**
+
+1. **Search Results Empty State Component:**
+   - Detect when search returns 0 results
+   - Display a friendly message explaining the situation
+   - Example message: "No restaurants found for '[search term]'. Have you indexed this area yet?"
+   - Include context about which location(s) are currently indexed
+   - Show a prominent "Index a location" button/link
+
+2. **UI Changes:**
+   - Update `web/search.js` to detect empty results
+   - Add conditional rendering in search results container
+   - Display empty state instead of results grid when count is 0
+   - Style empty state with icon, message, and CTA button
+
+3. **Empty State Content Options:**
+   - **If no locations indexed:** "No locations indexed yet. Start by indexing an area to search restaurants."
+   - **If locations indexed but no results:** "No restaurants match '[term]'. Try a different location or search term."
+   - **Link text:** "Index a location" or "Add more data"
+
+4. **Link Target:**
+   - Button/link navigates to `/index-location.html`
+   - Optionally pre-fill the location field if one is already indexed (can retry searching there)
+   - Use standard navigation: `window.location.href = '/index-location.html'`
+
+**Benefits:**
+
+- **Reduces friction** - Users understand what to do when search finds nothing
+- **Guides user journey** - Clearly shows the local-first workflow (index → search → browse)
+- **Improves engagement** - Users who see an empty state are directed to take action rather than leaving
+- **Minimal implementation** - Only requires UI changes to empty state handling, no backend changes
+
+**Related to existing improvements:**
+- Works alongside "Onboarding Hints & Empty State Guidance" for the initial experience
+- Complements "Restaurant Name Search with Autocomplete" once that feature is implemented
+- Part of the overall empty state strategy across the application
+
+---
+
 ### Restaurant Bookmarks (Browser-based, Local Storage)
 
 **Problem:** Users discover and browse restaurants in grub stars, but have no way to save their favorites for easy access later. Currently, there's no mechanism to maintain a personal collection of bookmarked restaurants across sessions.
