@@ -90,6 +90,43 @@ module GrubStars
         halt 400, json_error("LOCATION_NOT_INDEXED", e.message)
       end
 
+      # Search external APIs by restaurant name
+      # NOTE: This route MUST be defined before /restaurants/:id to avoid the :id capturing "search-external"
+      get "/restaurants/search-external" do
+        name = params[:name]&.strip
+        adapter_name = params[:adapter]&.strip&.downcase
+        location = params[:location]&.strip
+        limit = [(params[:limit] || 10).to_i, 20].min
+
+        unless name && name.length >= 2
+          halt 400, json_error("INVALID_REQUEST", "Parameter 'name' must be at least 2 characters")
+        end
+
+        unless adapter_name
+          halt 400, json_error("INVALID_REQUEST", "Parameter 'adapter' is required (yelp, google, or tripadvisor)")
+        end
+
+        adapter = find_adapter(adapter_name)
+        unless adapter
+          halt 400, json_error("INVALID_ADAPTER", "Unknown adapter: #{adapter_name}. Use yelp, google, or tripadvisor")
+        end
+
+        unless adapter.configured?
+          halt 503, json_error("ADAPTER_NOT_CONFIGURED", "Adapter '#{adapter_name}' is not configured. Set the API key in .env file")
+        end
+
+        results = adapter.search_by_name(name: name, location: location, limit: limit)
+
+        json_response(
+          results.map { |r| serialize_external_result(r, adapter_name) },
+          count: results.length,
+          adapter: adapter_name,
+          query: name
+        )
+      rescue GrubStars::Adapters::Base::APIError => e
+        halt 502, json_error("API_ERROR", e.message)
+      end
+
       # Get restaurant by ID
       get "/restaurants/:id" do
         service = Services::RestaurantDetailsService.new
@@ -132,42 +169,6 @@ module GrubStars
         end
 
         json_response(adapters, count: adapters.length)
-      end
-
-      # Search external APIs by restaurant name
-      get "/restaurants/search-external" do
-        name = params[:name]&.strip
-        adapter_name = params[:adapter]&.strip&.downcase
-        location = params[:location]&.strip
-        limit = [(params[:limit] || 10).to_i, 20].min
-
-        unless name && name.length >= 2
-          halt 400, json_error("INVALID_REQUEST", "Parameter 'name' must be at least 2 characters")
-        end
-
-        unless adapter_name
-          halt 400, json_error("INVALID_REQUEST", "Parameter 'adapter' is required (yelp, google, or tripadvisor)")
-        end
-
-        adapter = find_adapter(adapter_name)
-        unless adapter
-          halt 400, json_error("INVALID_ADAPTER", "Unknown adapter: #{adapter_name}. Use yelp, google, or tripadvisor")
-        end
-
-        unless adapter.configured?
-          halt 503, json_error("ADAPTER_NOT_CONFIGURED", "Adapter '#{adapter_name}' is not configured. Set the API key in .env file")
-        end
-
-        results = adapter.search_by_name(name: name, location: location, limit: limit)
-
-        json_response(
-          results.map { |r| serialize_external_result(r, adapter_name) },
-          count: results.length,
-          adapter: adapter_name,
-          query: name
-        )
-      rescue GrubStars::Adapters::Base::APIError => e
-        halt 502, json_error("API_ERROR", e.message)
       end
 
       # Index a single restaurant from external search results

@@ -19,7 +19,7 @@ let searchBtn;
  */
 async function init() {
   // Insert navigation bar
-  insertNavBar();
+  insertNavBar({ currentPage: 'add-restaurant' });
 
   // Get DOM elements
   form = document.getElementById('add-restaurant-form');
