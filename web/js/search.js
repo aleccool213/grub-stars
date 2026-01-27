@@ -1,6 +1,8 @@
 /**
  * Search Page Controller
- * Handles the main search page functionality
+ * Handles the main search page functionality with two distinct search paths:
+ * 1. Find a Restaurant - autocomplete by name, navigates directly to details
+ * 2. Browse by Category - search by category with optional location filter
  */
 
 import { searchRestaurants, getCategories, getLocations } from './api.js';
@@ -15,15 +17,14 @@ import {
   isOnboardingDismissed,
   initOnboardingBanner
 } from './components/onboarding-banner.js';
+import { initRestaurantAutocomplete } from './components/restaurant-autocomplete.js';
 
 // DOM elements
-let searchForm;
+let browseForm;
 let searchNameInput;
 let categorySelect;
 let locationSelect;
 let resultsContainer;
-let searchHint;
-let searchHintText;
 let onboardingContainer;
 
 // State
@@ -37,30 +38,35 @@ async function init() {
   insertNavBar({ currentPage: 'search' });
 
   // Get DOM elements
-  searchForm = document.getElementById('search-form');
+  browseForm = document.getElementById('browse-form');
   searchNameInput = document.getElementById('search-name');
   categorySelect = document.getElementById('search-category');
   locationSelect = document.getElementById('search-location');
   resultsContainer = document.getElementById('results');
-  searchHint = document.getElementById('search-hint');
-  searchHintText = document.getElementById('search-hint-text');
   onboardingContainer = document.getElementById('onboarding-container');
 
-  if (!searchForm || !resultsContainer) {
+  if (!resultsContainer) {
     console.error('Required elements not found on page');
     return;
   }
 
-  // Set up event listeners
-  searchForm.addEventListener('submit', handleSearch);
+  // Set up browse form submission
+  if (browseForm) {
+    browseForm.addEventListener('submit', handleBrowse);
+  }
 
   // Add retry handler for error messages
   resultsContainer.addEventListener('click', handleRetryClick);
 
-  // Add input listeners for dynamic validation hints
-  if (searchNameInput) searchNameInput.addEventListener('input', updateValidationHint);
-  if (categorySelect) categorySelect.addEventListener('change', updateValidationHint);
-  if (locationSelect) locationSelect.addEventListener('change', updateValidationHint);
+  // Initialize restaurant name autocomplete
+  // When user selects a restaurant, navigate directly to its details page
+  if (searchNameInput) {
+    initRestaurantAutocomplete(searchNameInput, {
+      onSelect: (restaurant) => {
+        window.location.href = `/details.html?id=${restaurant.id}`;
+      }
+    });
+  }
 
   // Load categories and locations in parallel
   await Promise.all([
@@ -70,9 +76,6 @@ async function init() {
 
   // Show onboarding banner if not dismissed
   showOnboardingIfNeeded();
-
-  // Show initial hint
-  updateValidationHint();
 
   // Check URL for initial search parameters
   await handleUrlParams();
@@ -147,33 +150,36 @@ function showOnboardingIfNeeded() {
  */
 async function handleUrlParams() {
   const params = new URLSearchParams(window.location.search);
-  const name = params.get('name');
   const category = params.get('category');
   const location = params.get('location');
 
-  // If any search params exist, populate form and search
-  if (name || category || location) {
-    if (name && searchNameInput) searchNameInput.value = name;
+  // If browse params exist, populate form and search
+  if (category || location) {
     if (category && categorySelect) categorySelect.value = category;
     if (location && locationSelect) locationSelect.value = location;
 
-    await performSearch({ name, category, location });
+    await performSearch({ category, location });
   }
 }
 
 /**
- * Handle search form submission
+ * Handle browse form submission (category + location search)
  * @param {Event} event - Form submit event
  */
-async function handleSearch(event) {
+async function handleBrowse(event) {
   event.preventDefault();
 
-  const formData = new FormData(searchForm);
+  const formData = new FormData(browseForm);
   const params = {
-    name: formData.get('name')?.trim() || '',
     category: formData.get('category') || '',
     location: formData.get('location') || ''
   };
+
+  // Validate: category is required
+  if (!params.category) {
+    showEmptyState('Please select a category to browse restaurants.');
+    return;
+  }
 
   // Update URL with search params
   updateUrl(params);
@@ -182,53 +188,10 @@ async function handleSearch(event) {
 }
 
 /**
- * Update the validation hint based on current form state
- */
-function updateValidationHint() {
-  if (!searchHint || !searchHintText) return;
-
-  const name = searchNameInput?.value?.trim() || '';
-  const category = categorySelect?.value || '';
-  const location = locationSelect?.value || '';
-
-  // Determine what's filled in
-  const hasName = name.length > 0;
-  const hasCategory = category.length > 0;
-  const hasLocation = location.length > 0;
-
-  // Valid combinations:
-  // - name (with or without location)
-  // - category (with or without location)
-  // - name + category (with or without location)
-  const isValid = hasName || hasCategory;
-
-  if (!hasName && !hasCategory && !hasLocation) {
-    // Nothing filled in - show helpful hint
-    searchHint.style.display = 'block';
-    searchHint.className = 'text-sm rounded-lg p-3 transition-all bg-blue-50 border border-blue-200';
-    searchHintText.innerHTML = '💡 <strong>Search by name or category</strong> (location is optional to filter results)';
-  } else if (!isValid && hasLocation) {
-    // Only location filled - show error hint
-    searchHint.style.display = 'block';
-    searchHint.className = 'text-sm rounded-lg p-3 transition-all bg-amber-50 border border-amber-200';
-    searchHintText.innerHTML = '⚠️ Please enter a <strong>name</strong> or select a <strong>category</strong> to search. Location alone is not enough.';
-  } else {
-    // Valid combination - hide hint
-    searchHint.style.display = 'none';
-  }
-}
-
-/**
  * Perform the search and display results
  * @param {Object} params - Search parameters
  */
 async function performSearch(params) {
-  // Validate: name or category required (location is just a filter)
-  if (!params.name && !params.category) {
-    showEmptyState('Please enter a restaurant name or select a category to search. Location is optional to filter results.');
-    return;
-  }
-
   // Show loading state
   resultsContainer.innerHTML = loadingSpinner('Searching restaurants...');
 
@@ -280,11 +243,10 @@ function showEmptyResults(params) {
   }
 
   const searchTerms = [];
-  if (params.name) searchTerms.push(`name "${params.name}"`);
   if (params.category) searchTerms.push(`category "${params.category}"`);
   if (params.location) searchTerms.push(`location "${params.location}"`);
 
-  const searchDescription = searchTerms.join(', ');
+  const searchDescription = searchTerms.join(' in ');
 
   resultsContainer.innerHTML = `
     <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
@@ -298,7 +260,7 @@ function showEmptyResults(params) {
         No results for ${escapeHtml(searchDescription)}.
       </p>
       <p class="text-sm text-gray-500">
-        Try adjusting your search terms or
+        Try a different category or
         <a href="/index-location.html" class="text-blue-600 hover:underline">index a new location</a>.
       </p>
     </div>
@@ -331,7 +293,7 @@ function showError(message) {
  */
 function handleRetryClick(event) {
   if (event.target.dataset.action === 'retry') {
-    handleSearch(new Event('submit'));
+    handleBrowse(new Event('submit'));
   }
 }
 
@@ -343,12 +305,10 @@ function updateUrl(params) {
   const url = new URL(window.location);
 
   // Clear existing params
-  url.searchParams.delete('name');
   url.searchParams.delete('category');
   url.searchParams.delete('location');
 
   // Add non-empty params
-  if (params.name) url.searchParams.set('name', params.name);
   if (params.category) url.searchParams.set('category', params.category);
   if (params.location) url.searchParams.set('location', params.location);
 

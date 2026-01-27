@@ -96,6 +96,54 @@ module Infrastructure
           .map { |row| to_domain_model_with_basic_associations(row) }
       end
 
+      # Autocomplete search for restaurant names
+      # Returns lightweight results for typeahead suggestions
+      # @param query [String] Partial name to search for (minimum 2 characters)
+      # @param limit [Integer] Maximum results to return (default 10)
+      # @return [Array<Hash>] Array of restaurant summaries for autocomplete
+      def autocomplete(query, limit: 10)
+        return [] if query.nil? || query.strip.length < 2
+
+        query = query.strip
+
+        # Use prefix matching first (faster), then fallback to contains
+        @db[:restaurants]
+          .left_join(:restaurant_categories, restaurant_id: :id)
+          .left_join(:categories, id: Sequel[:restaurant_categories][:category_id])
+          .select(
+            Sequel[:restaurants][:id],
+            Sequel[:restaurants][:name],
+            Sequel[:restaurants][:address],
+            Sequel[:restaurants][:location]
+          )
+          .select_append(
+            Sequel.function(:group_concat, Sequel[:categories][:name], ", ").as(:category_names)
+          )
+          .where(
+            Sequel.|(
+              Sequel.ilike(Sequel[:restaurants][:name], "#{query}%"),
+              Sequel.ilike(Sequel[:restaurants][:name], "%#{query}%")
+            )
+          )
+          .group(Sequel[:restaurants][:id])
+          .order(
+            # Prioritize prefix matches
+            Sequel.case([[Sequel.ilike(Sequel[:restaurants][:name], "#{query}%"), 0]], 1),
+            Sequel[:restaurants][:name]
+          )
+          .limit(limit)
+          .all
+          .map do |row|
+            {
+              id: row[:id],
+              name: row[:name],
+              address: row[:address],
+              location: row[:location],
+              primary_category: row[:category_names]&.split(", ")&.first
+            }
+          end
+      end
+
       # Get all unique indexed locations
       # @return [Array<String>] List of unique locations (normalized to lowercase)
       def all_indexed_locations

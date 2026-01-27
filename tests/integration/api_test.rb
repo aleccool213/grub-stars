@@ -144,6 +144,104 @@ class APITest < GrubStars::IntegrationTest
     assert_equal "LOCATION_NOT_INDEXED", body["error"]["code"]
   end
 
+  # Autocomplete endpoint tests
+  def test_autocomplete_requires_query_parameter
+    get "/restaurants/autocomplete"
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/2 characters/i, body["error"]["message"])
+  end
+
+  def test_autocomplete_requires_minimum_length
+    get "/restaurants/autocomplete", q: "a"
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/2 characters/i, body["error"]["message"])
+  end
+
+  def test_autocomplete_empty_database
+    get "/restaurants/autocomplete", q: "test"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal [], body["data"]
+    assert_equal 0, body["meta"]["count"]
+  end
+
+  def test_autocomplete_returns_matching_restaurants
+    seed_restaurant_with_location
+
+    get "/restaurants/autocomplete", q: "test"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["data"].length
+    assert_equal "Test Bakery", body["data"][0]["name"]
+    assert_equal "123 Main St", body["data"][0]["address"]
+    assert_equal "barrie, ontario", body["data"][0]["location"]
+    assert_equal "bakeries", body["data"][0]["primary_category"]
+  end
+
+  def test_autocomplete_case_insensitive
+    seed_restaurant_with_location
+
+    get "/restaurants/autocomplete", q: "TEST"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["data"].length
+    assert_equal "Test Bakery", body["data"][0]["name"]
+  end
+
+  def test_autocomplete_partial_match
+    seed_restaurant_with_location
+
+    get "/restaurants/autocomplete", q: "bake"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["data"].length
+    assert_equal "Test Bakery", body["data"][0]["name"]
+  end
+
+  def test_autocomplete_respects_limit
+    seed_multiple_restaurants
+
+    get "/restaurants/autocomplete", q: "rest", limit: "2"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 2, body["data"].length
+    assert_equal 2, body["meta"]["count"]
+  end
+
+  def test_autocomplete_prioritizes_prefix_matches
+    seed_multiple_restaurants
+
+    get "/restaurants/autocomplete", q: "rest"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    # "Restaurant A" should come before "Best Restaurant" (prefix match first)
+    first_name = body["data"][0]["name"]
+    assert first_name.downcase.start_with?("rest"), "Expected prefix match first, got: #{first_name}"
+  end
+
+  def test_autocomplete_no_match
+    seed_restaurant_with_location
+
+    get "/restaurants/autocomplete", q: "pizza"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal [], body["data"]
+    assert_equal 0, body["meta"]["count"]
+  end
+
   # Restaurant detail endpoint tests
   def test_restaurant_not_found
     get "/restaurants/999"
@@ -311,6 +409,62 @@ class APITest < GrubStars::IntegrationTest
       restaurant_id: restaurant_id,
       category_id: category_id
     )
+  end
+
+  def seed_multiple_restaurants
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    # Create category
+    category_id = db[:categories].insert(name: "restaurants")
+
+    # Restaurant A - prefix match for "rest"
+    r1_id = db[:restaurants].insert(
+      name: "Restaurant A",
+      address: "100 First St",
+      latitude: 44.389,
+      longitude: -79.690,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    db[:restaurant_categories].insert(restaurant_id: r1_id, category_id: category_id)
+
+    # Restaurant B - prefix match for "rest"
+    r2_id = db[:restaurants].insert(
+      name: "Restaurant B",
+      address: "200 Second St",
+      latitude: 44.390,
+      longitude: -79.691,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    db[:restaurant_categories].insert(restaurant_id: r2_id, category_id: category_id)
+
+    # Best Restaurant - contains "rest" but not prefix
+    r3_id = db[:restaurants].insert(
+      name: "Best Restaurant",
+      address: "300 Third St",
+      latitude: 44.391,
+      longitude: -79.692,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    db[:restaurant_categories].insert(restaurant_id: r3_id, category_id: category_id)
+
+    # Another Place - no match
+    r4_id = db[:restaurants].insert(
+      name: "Another Place",
+      address: "400 Fourth St",
+      latitude: 44.392,
+      longitude: -79.693,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    db[:restaurant_categories].insert(restaurant_id: r4_id, category_id: category_id)
   end
 
   def with_env(env_vars)

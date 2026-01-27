@@ -950,7 +950,27 @@ html.dark .autocomplete-item {
   font-size: 0.875rem;
 }
 
+/* Autocomplete content with details */
+.autocomplete-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.autocomplete-details {
+  font-size: 0.75rem;
+  color: rgba(74, 55, 40, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
 html.dark .autocomplete-empty {
+  color: rgba(255, 251, 245, 0.5);
+}
+
+html.dark .autocomplete-details {
   color: rgba(255, 251, 245, 0.5);
 }
 

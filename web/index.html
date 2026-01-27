@@ -26,28 +26,43 @@
       <!-- Onboarding banner (inserted by JS) -->
       <div id="onboarding-container" class="max-w-2xl mx-auto"></div>
 
+      <!-- Card 1: Find a specific restaurant -->
       <div class="max-w-2xl mx-auto card p-6 mb-6">
-        <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
-          <span>🔍</span> Search Restaurants
+        <h2 class="text-2xl font-bold text-cocoa mb-2 flex items-center gap-2">
+          <span>🔍</span> Find a Restaurant
         </h2>
         <p class="text-sm text-cocoa/70 mb-4">
-          Search by name or category. Location is optional to filter results.
+          Know where you want to eat? Search by name.
         </p>
-        <form id="search-form" class="space-y-4">
-          <div>
-            <label for="search-name" class="block text-sm font-medium text-cocoa mb-1">
-              What are you craving?
-            </label>
-            <input
-              type="text"
-              id="search-name"
-              name="name"
-              placeholder="Pizza, sushi, burgers..."
-              autocomplete="off"
-              class="input-whimsical"
-            >
-          </div>
+        <div>
+          <label for="search-name" class="sr-only">Restaurant name</label>
+          <input
+            type="text"
+            id="search-name"
+            name="name"
+            placeholder="Start typing a restaurant name..."
+            autocomplete="off"
+            class="input-whimsical"
+          >
+        </div>
+      </div>
 
+      <!-- Divider -->
+      <div class="max-w-2xl mx-auto flex items-center gap-4 my-6">
+        <div class="flex-1 h-px bg-latte"></div>
+        <span class="text-cocoa/50 text-sm font-medium">or</span>
+        <div class="flex-1 h-px bg-latte"></div>
+      </div>
+
+      <!-- Card 2: Browse by category -->
+      <div class="max-w-2xl mx-auto card p-6 mb-6">
+        <h2 class="text-2xl font-bold text-cocoa mb-2 flex items-center gap-2">
+          <span>🍽️</span> Browse by Category
+        </h2>
+        <p class="text-sm text-cocoa/70 mb-4">
+          Explore restaurants by what you're craving.
+        </p>
+        <form id="browse-form" class="space-y-4">
           <div>
             <label for="search-category" class="block text-sm font-medium text-cocoa mb-1">
               Category
@@ -57,13 +72,13 @@
               name="category"
               class="input-whimsical"
             >
-              <option value="">All categories</option>
+              <option value="">Select a category...</option>
             </select>
           </div>
 
           <div>
             <label for="search-location" class="block text-sm font-medium text-cocoa mb-1">
-              Location <span class="text-cocoa/50 font-normal">(filter)</span>
+              Location <span class="text-cocoa/50 font-normal">(optional)</span>
             </label>
             <select
               id="search-location"
@@ -74,16 +89,11 @@
             </select>
           </div>
 
-          <!-- Dynamic validation hint -->
-          <div id="search-hint" class="text-sm rounded-lg p-3 transition-all" style="display: none;">
-            <p id="search-hint-text"></p>
-          </div>
-
           <button
             type="submit"
             class="w-full btn-primary text-lg"
           >
-            Find Food! 🍕
+            Browse Restaurants 🍕
           </button>
         </form>
       </div>

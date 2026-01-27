@@ -54,6 +54,21 @@ module GrubStars
         json_response(locations, count: locations.length)
       end
 
+      # Autocomplete restaurant names
+      get "/restaurants/autocomplete" do
+        query = params[:q]&.strip
+        limit = [(params[:limit] || 10).to_i, 20].min
+
+        unless query && query.length >= 2
+          halt 400, json_error("INVALID_REQUEST", "Query 'q' must be at least 2 characters")
+        end
+
+        repo = Infrastructure::Repositories::RestaurantRepository.new
+        results = repo.autocomplete(query, limit: limit)
+
+        json_response(results, count: results.length)
+      end
+
       # Search restaurants
       get "/restaurants/search" do
         service = Services::SearchRestaurantsService.new
