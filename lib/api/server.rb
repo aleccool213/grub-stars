@@ -2,16 +2,35 @@
 
 require "sinatra/base"
 require "json"
+require "securerandom"
 require_relative "../grub_stars"
 
 module GrubStars
   module API
     class Server < Sinatra::Base
+      # Auth password from environment (if not set, auth is disabled)
+      AUTH_PASSWORD = ENV["GRUB_STARS_AUTH_PASSWORD"]
+
       configure do
         set :show_exceptions, false
         set :raise_errors, false
         # Serve static files from web directory
         set :public_folder, File.expand_path("../../../web", __FILE__)
+
+        # Enable sessions with 30-day expiry for persistent login
+        enable :sessions
+        set :session_secret, ENV.fetch("SESSION_SECRET") { SecureRandom.hex(32) }
+        set :sessions, expire_after: 30 * 24 * 60 * 60 # 30 days
+      end
+
+      helpers do
+        def auth_enabled?
+          !!(AUTH_PASSWORD && !AUTH_PASSWORD.empty?)
+        end
+
+        def logged_in?
+          !auth_enabled? || !!session[:authenticated]
+        end
       end
 
       before do
@@ -22,6 +41,13 @@ module GrubStars
 
         # Only set JSON content type for API routes
         content_type :json unless request.path_info.start_with?("/js", "/css") || request.path_info.end_with?(".html")
+      end
+
+      # Protect write operations (POST /index)
+      before "/index" do
+        if request.post? && auth_enabled? && !logged_in?
+          halt 401, json_error("UNAUTHORIZED", "Please log in to index locations")
+        end
       end
 
       # Handle CORS preflight requests
@@ -38,6 +64,36 @@ module GrubStars
       # Health check
       get "/health" do
         json_response({ status: "ok" })
+      end
+
+      # Auth status - check if user is logged in
+      get "/auth/status" do
+        json_response({
+          authenticated: logged_in?,
+          auth_required: auth_enabled?
+        })
+      end
+
+      # Login endpoint
+      post "/login" do
+        body = parse_json_body
+        password = body["password"]
+
+        if !auth_enabled?
+          # Auth is disabled, always succeed
+          json_response({ success: true, message: "Auth is disabled" })
+        elsif password == AUTH_PASSWORD
+          session[:authenticated] = true
+          json_response({ success: true })
+        else
+          halt 401, json_error("INVALID_PASSWORD", "Invalid password")
+        end
+      end
+
+      # Logout endpoint
+      post "/logout" do
+        session.clear
+        json_response({ success: true })
       end
 
       # List all categories

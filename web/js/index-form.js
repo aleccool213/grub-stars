@@ -8,6 +8,7 @@ import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
 import { initAddressAutocomplete } from './components/address-autocomplete.js';
+import { requireAuth } from './auth.js';
 
 // DOM elements
 let indexForm;
@@ -25,7 +26,14 @@ let selectedLocationData = null;
 /**
  * Initialize the index form page
  */
-function init() {
+async function init() {
+  // Check authentication before showing the page
+  // This will redirect to login if auth is required and user is not logged in
+  const isAuthed = await requireAuth('/index-location.html');
+  if (!isAuthed) {
+    return; // Redirecting to login
+  }
+
   // Insert navigation bar
   insertNavBar({ currentPage: 'index' });
 
@@ -95,6 +103,13 @@ async function performIndexing(location, category) {
     showResults(stats, meta.location || location, meta.category || category);
   } catch (error) {
     console.error('Indexing error:', error);
+
+    // Handle auth errors by redirecting to login
+    if (error.requiresAuth || error.code === 'UNAUTHORIZED') {
+      window.location.href = `/login.html?redirect=${encodeURIComponent('/index-location.html')}`;
+      return;
+    }
+
     showError(error.message, error.code);
   } finally {
     // Re-enable form
