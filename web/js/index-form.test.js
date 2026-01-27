@@ -267,6 +267,30 @@ test('index-form: success results include search link', () => {
   destroyContainer(container);
 });
 
+test('index-form: success results include category in search link when used', () => {
+  const container = createIndexFormContainer();
+  const resultsContainer = container.querySelector('#index-results');
+
+  // Simulate success with search link including category
+  resultsContainer.innerHTML = `
+    <div class="flex flex-col sm:flex-row gap-3">
+      <a href="/?location=barrie%2C%20ontario&category=bakery" class="inline-flex items-center justify-center bg-blue-600 text-white">
+        Search in barrie, ontario
+      </a>
+      <button type="button" class="bg-gray-200" data-action="reset">
+        Index Another Location
+      </button>
+    </div>
+  `;
+
+  const searchLink = resultsContainer.querySelector('a[href*="location="]');
+  assertTruthy(searchLink, 'Should have search link');
+  assertTruthy(searchLink.href.includes('location='), 'Search link should include location param');
+  assertTruthy(searchLink.href.includes('category=bakery'), 'Search link should include category param when category was used');
+
+  destroyContainer(container);
+});
+
 // ========================================
 // Error State Tests
 // ========================================

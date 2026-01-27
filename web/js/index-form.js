@@ -152,7 +152,7 @@ function showResults(stats, location, category) {
 
       <div class="flex flex-col sm:flex-row gap-3">
         <a
-          href="/?location=${encodeURIComponent(location)}"
+          href="/?location=${encodeURIComponent(location)}${category ? `&category=${encodeURIComponent(category)}` : ''}"
           class="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
         >
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
