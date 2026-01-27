@@ -7,12 +7,20 @@ import { getAdapters, searchExternal, indexSingleRestaurant } from './api.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
+import { initAddressAutocomplete } from './components/address-autocomplete.js';
 
 // DOM elements
 let form;
 let adapterSelect;
+let locationInput;
 let resultsContainer;
 let searchBtn;
+
+// Autocomplete instance
+let addressAutocomplete;
+
+// Store selected location data
+let selectedLocationData = null;
 
 /**
  * Initialize the page
@@ -24,8 +32,18 @@ async function init() {
   // Get DOM elements
   form = document.getElementById('add-restaurant-form');
   adapterSelect = document.getElementById('search-adapter');
+  locationInput = document.getElementById('search-location');
   resultsContainer = document.getElementById('search-results');
   searchBtn = document.getElementById('search-btn');
+
+  // Initialize address autocomplete on location input
+  if (locationInput) {
+    addressAutocomplete = initAddressAutocomplete(locationInput, {
+      onSelect: (suggestion) => {
+        selectedLocationData = suggestion;
+      },
+    });
+  }
 
   // Load available adapters
   await loadAdapters();
