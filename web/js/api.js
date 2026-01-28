@@ -20,6 +20,7 @@ async function apiRequest(endpoint, options = {}) {
   try {
     const response = await fetch(url, {
       ...options,
+      credentials: 'include', // Include cookies for session-based auth
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -29,6 +30,15 @@ async function apiRequest(endpoint, options = {}) {
     const data = await response.json();
 
     if (!response.ok) {
+      // Handle 401 Unauthorized specially
+      if (response.status === 401) {
+        const error = new Error(data.error?.message || 'Please log in to continue');
+        error.code = data.error?.code || 'UNAUTHORIZED';
+        error.status = 401;
+        error.requiresAuth = true;
+        throw error;
+      }
+
       // API returned an error
       const errorMessage = data.error?.message || 'API request failed';
       const error = new Error(errorMessage);

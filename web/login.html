@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - grub stars</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://grubstars.com/">
+  <meta property="og:title" content="grub stars - Find Delicious Food">
+  <meta property="og:description" content="Search and discover restaurants from multiple sources. Browse by category, search by name, and explore local favorites.">
+  <meta property="og:image" content="https://grubstars.com/images/og-image.svg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://grubstars.com/">
+  <meta property="twitter:title" content="grub stars - Find Delicious Food">
+  <meta property="twitter:description" content="Search and discover restaurants from multiple sources. Browse by category, search by name, and explore local favorites.">
+  <meta property="twitter:image" content="https://grubstars.com/images/og-image.svg">
+  <!-- Early dark mode detection to prevent FOUC -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('grub_stars_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
+  <script src="/js/vendor/twind.min.js"></script>
+  <script src="/js/twind-config.js"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-cream min-h-screen flex items-center justify-center">
+  <div class="container mx-auto px-4 py-8">
+    <main>
+      <div class="max-w-md mx-auto">
+        <!-- Logo/Title -->
+        <div class="text-center mb-8">
+          <a href="/" class="inline-block">
+            <h1 class="text-4xl font-display font-bold text-cocoa">
+              grub <span class="text-mango">stars</span>
+            </h1>
+          </a>
+          <p class="text-cocoa/60 mt-2">For friends & family</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="card p-6">
+          <h2 class="text-2xl font-bold text-cocoa mb-2 flex items-center gap-2">
+            <span>🔐</span> Welcome Back
+          </h2>
+          <p class="text-cocoa/70 mb-6">
+            Enter the family password to continue.
+          </p>
+
+          <form id="login-form" class="space-y-4">
+            <div>
+              <label for="password" class="block text-sm font-medium text-cocoa mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter password"
+                required
+                autocomplete="current-password"
+                class="input-whimsical"
+              >
+            </div>
+
+            <!-- Error message (hidden by default) -->
+            <div id="login-error" class="hidden bg-red-50 border border-red-200 rounded-lg p-3">
+              <p class="text-red-700 text-sm"></p>
+            </div>
+
+            <button
+              type="submit"
+              id="login-button"
+              class="w-full btn-primary text-lg"
+            >
+              Log In
+            </button>
+          </form>
+        </div>
+
+        <!-- Back to home -->
+        <div class="text-center mt-6">
+          <a href="/" class="text-cocoa/60 hover:text-cocoa text-sm">
+            ← Back to browsing
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <footer class="text-center mt-12 py-8">
+      <p class="text-cocoa/60">Made with 🍕 by friends, for friends</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/js/login.js"></script>
+</body>
+</html>

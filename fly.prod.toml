@@ -3,7 +3,11 @@
 #
 # Deploy: fly deploy --config fly.prod.toml
 #
-# Set secrets before first deploy:
+# REQUIRED secrets (deploy will fail without these):
+#   fly secrets set GRUB_STARS_AUTH_PASSWORD=your_password --config fly.prod.toml
+#   fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --config fly.prod.toml
+#
+# API keys:
 #   fly secrets set YELP_API_KEY=your_key --config fly.prod.toml
 #   fly secrets set GOOGLE_API_KEY=your_key --config fly.prod.toml
 #   fly secrets set TRIPADVISOR_API_KEY=your_key --config fly.prod.toml

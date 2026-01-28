@@ -20,6 +20,9 @@ primary_region = 'ord'  # Chicago - change to your preferred region
   YELP_API_KEY = 'mock_api_key'
   GOOGLE_API_KEY = 'mock_api_key'
   TRIPADVISOR_API_KEY = 'mock_api_key'
+  # Auth (dummy password for test environment)
+  GRUB_STARS_AUTH_PASSWORD = 'password'
+  SESSION_SECRET = 'test-session-secret-not-for-production'
 
 [http_service]
   internal_port = 9292
