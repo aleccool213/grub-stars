@@ -167,6 +167,15 @@ module GrubStars
         DateTime :fetched_at
       end
 
+      # Track API request counts for rate limiting
+      db.create_table? :api_requests do
+        primary_key :id
+        String :adapter, null: false, unique: true  # yelp, google, tripadvisor
+        Integer :request_count, null: false, default: 0
+        DateTime :reset_at  # Optional: for future monthly reset feature
+        DateTime :updated_at
+      end
+
       db
     end
   end

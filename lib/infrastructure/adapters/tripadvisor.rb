@@ -9,7 +9,11 @@ module GrubStars
     class TripAdvisor < Base
       DEFAULT_BASE_URL = "https://api.content.tripadvisor.com/api/v1"
 
-      def initialize(api_key: nil, base_url: nil)
+      # Free tier limit: 5000 requests
+      REQUEST_LIMIT = 5000
+
+      def initialize(api_key: nil, base_url: nil, api_request_repository: nil)
+        super(api_request_repository: api_request_repository)
         @api_key = api_key || ENV["TRIPADVISOR_API_KEY"]
         @base_url = base_url || ENV["TRIPADVISOR_API_BASE_URL"] || DEFAULT_BASE_URL
       end
@@ -26,6 +30,7 @@ module GrubStars
       # Returns array of business hashes with normalized fields
       def search_businesses(location:, categories: nil, limit: 10, offset: 0)
         ensure_configured!
+        track_request!
 
         query = build_search_query(location, categories)
         params = {
@@ -49,6 +54,7 @@ module GrubStars
       # Returns array of business hashes with normalized fields
       def search_by_name(name:, location: nil, limit: 10)
         ensure_configured!
+        track_request!
 
         query = location ? "#{name} in #{location}" : name
         params = {
@@ -72,6 +78,7 @@ module GrubStars
       # Returns normalized business hash with additional details
       def get_business(id)
         ensure_configured!
+        track_request!
 
         # Extract location_id from external_id format "tripadvisor:123456"
         location_id = id.to_s.sub(/^tripadvisor:/, "")
@@ -92,6 +99,7 @@ module GrubStars
       # Returns array of normalized review hashes
       def get_reviews(id)
         ensure_configured!
+        track_request!
 
         # Extract location_id from external_id format "tripadvisor:123456"
         location_id = id.to_s.sub(/^tripadvisor:/, "")
@@ -113,6 +121,7 @@ module GrubStars
       # Yields businesses array and progress hash { current:, total:, percent: }
       def search_all_businesses(location:, categories: nil, &block)
         ensure_configured!
+        track_request!
 
         query = build_search_query(location, categories)
         params = {
@@ -145,6 +154,7 @@ module GrubStars
       # Returns array of photo URLs
       def get_photos(id)
         ensure_configured!
+        track_request!
 
         # Extract location_id from external_id format "tripadvisor:123456"
         location_id = id.to_s.sub(/^tripadvisor:/, "")
