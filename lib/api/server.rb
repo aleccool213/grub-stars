@@ -123,6 +123,8 @@ module GrubStars
           adapter: adapter_name,
           query: name
         )
+      rescue GrubStars::Adapters::Base::RateLimitError => e
+        halt 429, json_error("RATE_LIMIT_EXCEEDED", e.message)
       rescue GrubStars::Adapters::Base::APIError => e
         halt 502, json_error("API_ERROR", e.message)
       end
@@ -155,6 +157,8 @@ module GrubStars
         json_response(stats, location: location, category: category)
       rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
         halt 503, json_error("NO_ADAPTERS", e.message)
+      rescue GrubStars::Adapters::Base::RateLimitError => e
+        halt 429, json_error("RATE_LIMIT_EXCEEDED", e.message)
       rescue GrubStars::Adapters::Base::APIError => e
         halt 502, json_error("API_ERROR", e.message)
       end

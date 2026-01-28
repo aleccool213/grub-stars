@@ -715,6 +715,48 @@ class APITest < GrubStars::IntegrationTest
     assert_equal "Updated Address", restaurant[:address]
   end
 
+  # Rate limit error tests
+  def test_search_external_returns_429_when_rate_limit_exceeded
+    # Set API request count to the Yelp limit
+    db = GrubStars.db
+    db[:api_requests].insert(
+      adapter: "yelp",
+      request_count: 5000,
+      reset_at: DateTime.now,
+      updated_at: DateTime.now
+    )
+
+    with_env("YELP_API_KEY" => "test_key") do
+      get "/restaurants/search-external", name: "pizza", adapter: "yelp"
+    end
+
+    assert_equal 429, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "RATE_LIMIT_EXCEEDED", body["error"]["code"]
+    assert_match(/rate limit exceeded/i, body["error"]["message"])
+    assert_match(/yelp/i, body["error"]["message"])
+  end
+
+  def test_index_returns_429_when_rate_limit_exceeded
+    # Set API request count to the Yelp limit
+    db = GrubStars.db
+    db[:api_requests].insert(
+      adapter: "yelp",
+      request_count: 5000,
+      reset_at: DateTime.now,
+      updated_at: DateTime.now
+    )
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index", { location: "barrie, ontario" }.to_json, { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert_equal 429, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "RATE_LIMIT_EXCEEDED", body["error"]["code"]
+    assert_match(/rate limit exceeded/i, body["error"]["message"])
+  end
+
   private
 
   def seed_restaurant
