@@ -10,6 +10,8 @@
 #      - YELP_API_KEY
 #      - GOOGLE_API_KEY
 #      - TRIPADVISOR_API_KEY
+#      - GRUB_STARS_AUTH_PASSWORD (required - protects indexing feature)
+#      - SESSION_SECRET (generate with: openssl rand -hex 32)
 #
 # The script uses stable 1Password references (op://vault/item/field)
 # Configure your vault and item names in the variables below.
@@ -23,6 +25,9 @@ OP_ITEM="grub-stars"                  # Item name containing all credentials
 
 # API key fields in 1Password
 OP_API_FIELDS=("YELP_API_KEY" "GOOGLE_API_KEY" "TRIPADVISOR_API_KEY")
+
+# Auth fields in 1Password (REQUIRED for production security)
+OP_AUTH_FIELDS=("GRUB_STARS_AUTH_PASSWORD" "SESSION_SECRET")
 
 echo "=== Deploying grub-stars PRODUCTION environment ==="
 echo ""
@@ -41,6 +46,7 @@ if ! command -v op &> /dev/null; then
   echo ""
   echo "Or deploy manually:"
   echo "  fly auth login"
+  echo "  fly secrets set GRUB_STARS_AUTH_PASSWORD=xxx SESSION_SECRET=\$(openssl rand -hex 32) --config fly.prod.toml"
   echo "  fly secrets set YELP_API_KEY=xxx GOOGLE_API_KEY=xxx TRIPADVISOR_API_KEY=xxx --config fly.prod.toml"
   echo "  fly deploy --config fly.prod.toml"
   exit 1
@@ -88,11 +94,30 @@ if ! fly volumes list --config fly.prod.toml 2>/dev/null | grep -q "grub_stars_p
   fly volumes create grub_stars_prod_data --size 1 --region ord --config fly.prod.toml --yes
 fi
 
-# Fetch API secrets from 1Password and set them in Fly.io
+# Fetch secrets from 1Password and set them in Fly.io
 echo ""
-echo "Fetching API keys from 1Password..."
+echo "Fetching secrets from 1Password..."
 SECRETS_ARGS=""
 
+# Fetch auth secrets (REQUIRED)
+echo "Reading auth secrets (required for production)..."
+for field in "${OP_AUTH_FIELDS[@]}"; do
+  echo "  Reading $field..."
+  value=$(op read "op://$OP_VAULT/$OP_ITEM/$field" 2>/dev/null) || {
+    echo "ERROR: Could not read $field from 1Password"
+    echo ""
+    echo "This field is REQUIRED for production security."
+    if [ "$field" = "SESSION_SECRET" ]; then
+      echo "Generate one with: openssl rand -hex 32"
+    fi
+    echo "Add it to 1Password item '$OP_ITEM' in vault '$OP_VAULT'"
+    exit 1
+  }
+  SECRETS_ARGS="$SECRETS_ARGS $field=$value"
+done
+
+# Fetch API keys
+echo "Reading API keys..."
 for field in "${OP_API_FIELDS[@]}"; do
   echo "  Reading $field..."
   value=$(op read "op://$OP_VAULT/$OP_ITEM/$field" 2>/dev/null) || {

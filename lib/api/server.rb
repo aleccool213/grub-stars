@@ -23,6 +23,15 @@ module GrubStars
         set :sessions, expire_after: 30 * 24 * 60 * 60 # 30 days
       end
 
+      # Production safety check: require auth password to be set
+      # This runs at server startup and will crash if auth is not configured
+      configure :production do
+        unless AUTH_PASSWORD && !AUTH_PASSWORD.empty?
+          raise "FATAL: GRUB_STARS_AUTH_PASSWORD must be set in production! " \
+                "Set it via: fly secrets set GRUB_STARS_AUTH_PASSWORD=your-password --config fly.prod.toml"
+        end
+      end
+
       helpers do
         def auth_enabled?
           !!(AUTH_PASSWORD && !AUTH_PASSWORD.empty?)
