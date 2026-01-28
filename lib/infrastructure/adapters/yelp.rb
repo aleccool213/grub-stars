@@ -9,7 +9,11 @@ module GrubStars
     class Yelp < Base
       DEFAULT_BASE_URL = "https://api.yelp.com/v3"
 
-      def initialize(api_key: nil, base_url: nil)
+      # Free tier limit: 5000 requests
+      REQUEST_LIMIT = 5000
+
+      def initialize(api_key: nil, base_url: nil, api_request_repository: nil)
+        super(api_request_repository: api_request_repository)
         @api_key = api_key || ENV["YELP_API_KEY"]
         @base_url = base_url || ENV["YELP_API_BASE_URL"] || DEFAULT_BASE_URL
       end
@@ -26,6 +30,7 @@ module GrubStars
       # Returns array of business hashes with normalized fields
       def search_businesses(location:, categories: nil, limit: 50, offset: 0)
         ensure_configured!
+        track_request!
 
         params = {
           location: location,
@@ -45,6 +50,7 @@ module GrubStars
       # Returns array of business hashes with normalized fields
       def search_by_name(name:, location: nil, limit: 10)
         ensure_configured!
+        track_request!
 
         params = {
           term: name,
@@ -63,6 +69,7 @@ module GrubStars
       # Returns normalized business hash with additional details
       def get_business(id)
         ensure_configured!
+        track_request!
 
         response = connection.get("businesses/#{id}")
         handle_response(response)
@@ -75,6 +82,7 @@ module GrubStars
       # Returns array of normalized review hashes
       def get_reviews(id)
         ensure_configured!
+        track_request!
 
         response = connection.get("businesses/#{id}/reviews")
         handle_response(response)
@@ -94,6 +102,8 @@ module GrubStars
         processed = 0
 
         loop do
+          track_request!
+
           params = {
             location: location,
             limit: limit,

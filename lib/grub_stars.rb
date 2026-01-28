@@ -27,6 +27,7 @@ require_relative "infrastructure/repositories/review_repository"
 require_relative "infrastructure/repositories/media_repository"
 require_relative "infrastructure/repositories/category_repository"
 require_relative "infrastructure/repositories/external_id_repository"
+require_relative "infrastructure/repositories/api_request_repository"
 
 # Service Layer
 require_relative "services/index_restaurants_service"

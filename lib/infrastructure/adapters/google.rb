@@ -9,7 +9,11 @@ module GrubStars
     class Google < Base
       DEFAULT_BASE_URL = "https://maps.googleapis.com/maps/api/place"
 
-      def initialize(api_key: nil, base_url: nil)
+      # Free tier limit: 10000 requests
+      REQUEST_LIMIT = 10_000
+
+      def initialize(api_key: nil, base_url: nil, api_request_repository: nil)
+        super(api_request_repository: api_request_repository)
         @api_key = api_key || ENV["GOOGLE_API_KEY"]
         @base_url = base_url || ENV["GOOGLE_API_BASE_URL"] || DEFAULT_BASE_URL
       end
@@ -26,6 +30,7 @@ module GrubStars
       # Returns array of business hashes with normalized fields
       def search_businesses(location:, categories: nil, limit: 20, offset: 0)
         ensure_configured!
+        track_request!
 
         query = build_query(location, categories)
         response = connection.get("textsearch/json", query: query, key: @api_key)
@@ -43,6 +48,7 @@ module GrubStars
       # Returns array of business hashes with normalized fields
       def search_by_name(name:, location: nil, limit: 10)
         ensure_configured!
+        track_request!
 
         query = location ? "#{name} in #{location}" : name
         response = connection.get("textsearch/json", query: query, key: @api_key)
@@ -60,6 +66,7 @@ module GrubStars
       # Returns normalized business hash with additional details
       def get_business(place_id)
         ensure_configured!
+        track_request!
 
         fields = "place_id,name,formatted_address,formatted_phone_number,geometry,rating,user_ratings_total,types,url,photos,permanently_closed"
         response = connection.get("details/json", placeid: place_id, fields: fields, key: @api_key)
@@ -73,6 +80,7 @@ module GrubStars
       # Note: Google Places API returns up to 5 reviews
       def get_reviews(place_id)
         ensure_configured!
+        track_request!
 
         fields = "reviews"
         response = connection.get("details/json", placeid: place_id, fields: fields, key: @api_key)
@@ -95,6 +103,8 @@ module GrubStars
         next_page_token = nil
 
         loop do
+          track_request!
+
           params = { query: query, key: @api_key }
           params[:pagetoken] = next_page_token if next_page_token
 
