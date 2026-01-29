@@ -40,31 +40,6 @@ Both pages should use the same restaurant card component with consistent:
 
 ## Feature Improvements
 
-### Location Autocomplete with Geocoding
-
-**Problem:** Users can create duplicate locations with different spellings (e.g., "barrie, on" vs "barrie, ontario" vs "Barrie, Ontario, Canada"). The current free-text input has poor UX and leads to data fragmentation.
-
-**Solution:** Integrate a geocoding/autocomplete service for the location input field.
-
-**Open Source Options:**
-
-| Service | Pros | Cons |
-|---------|------|------|
-| **Photon** (photon.komoot.io) | Free API, fast autocomplete, OSM data, no API key | Rate limited, best for low-medium traffic |
-| **Nominatim** (OSM) | Free, comprehensive, no API key for low volume | Strict usage policy, slower than Photon |
-| **Pelias** | Self-hosted, full control, OSM/other data sources | Requires infrastructure to host |
-| **OpenCage** | Clean API, good free tier (2,500/day) | Requires API key, commercial |
-
-**Recommendation:** Start with **Photon** - free, fast, designed for typeahead.
-
-**Implementation:**
-- Replace free-text input with autocomplete dropdown
-- Store normalized location data (lat/lng + formatted name)
-- Use coordinates as canonical identifier to prevent duplicates
-- Display formatted address from geocoder response
-
----
-
 ### Restaurant Name Search with Autocomplete
 
 **Problem:** The current search form has a "What are you craving?" field that searches by food type/category. Users may also want to search for a specific restaurant by name from the local database.
