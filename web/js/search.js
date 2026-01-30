@@ -231,7 +231,7 @@ function showResults(restaurants, meta) {
 
   resultsContainer.innerHTML = `
     <div class="mb-4">
-      <p class="text-gray-600">${countText}</p>
+      <p class="text-gray-600 dark:text-slate-400">${countText}</p>
     </div>
     ${restaurantList(restaurants)}
   `;
@@ -258,20 +258,20 @@ function showEmptyResults(params) {
   const searchDescription = searchTerms.join(' in ');
 
   resultsContainer.innerHTML = `
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-      <div class="text-gray-400 mb-4">
+    <div class="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-8 text-center">
+      <div class="text-gray-400 dark:text-slate-500 mb-4">
         <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-gray-700 mb-2">No restaurants found</h3>
-      <p class="text-gray-500 mb-4">
+      <h3 class="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-2">No restaurants found</h3>
+      <p class="text-gray-500 dark:text-slate-400 mb-4">
         No results for ${escapeHtml(searchDescription)}.
       </p>
-      <p class="text-sm text-gray-500">
+      <p class="text-sm text-gray-500 dark:text-slate-400">
         Try a different category,
-        <a href="/index-location.html" class="text-blue-600 hover:underline">index a new location</a>,
-        or <a href="/add-restaurant.html" class="text-blue-600 hover:underline">index a specific restaurant</a>.
+        <a href="/index-location.html" class="text-blue-600 dark:text-blue-400 hover:underline">index a new location</a>,
+        or <a href="/add-restaurant.html" class="text-blue-600 dark:text-blue-400 hover:underline">index a specific restaurant</a>.
       </p>
     </div>
   `;
@@ -283,8 +283,8 @@ function showEmptyResults(params) {
  */
 function showEmptyState(message) {
   resultsContainer.innerHTML = `
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-      <p class="text-blue-700">${escapeHtml(message)}</p>
+    <div class="bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-slate-700 rounded-lg p-6 text-center">
+      <p class="text-blue-700 dark:text-blue-400">${escapeHtml(message)}</p>
     </div>
   `;
 }

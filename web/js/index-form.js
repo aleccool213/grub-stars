@@ -112,29 +112,29 @@ function showResults(stats, location, category) {
   const { total = 0, created = 0, updated = 0, merged = 0 } = stats;
 
   const categoryText = category
-    ? `<span class="text-gray-500">(filtered by: ${escapeHtml(category)})</span>`
+    ? `<span class="text-gray-500 dark:text-slate-400">(filtered by: ${escapeHtml(category)})</span>`
     : '';
 
   resultsContainer.innerHTML = `
-    <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+    <div class="bg-green-50 dark:bg-slate-800 border border-green-200 dark:border-green-800/50 rounded-lg p-6">
       <div class="flex items-center mb-4">
-        <div class="text-green-600 mr-3">
+        <div class="text-green-600 dark:text-green-400 mr-3">
           <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-green-800">Indexing Complete</h3>
+        <h3 class="text-lg font-semibold text-green-800 dark:text-green-300">Indexing Complete</h3>
       </div>
 
       <div class="mb-4">
-        <p class="text-gray-700">
+        <p class="text-gray-700 dark:text-slate-200">
           <strong>Location:</strong> ${escapeHtml(location)} ${categoryText}
         </p>
       </div>
 
-      <div class="bg-white rounded-lg p-4 mb-4">
-        <p class="text-2xl font-bold text-gray-800 mb-2">${total} restaurants found</p>
-        <ul class="text-gray-600 space-y-1">
+      <div class="bg-white dark:bg-slate-900 rounded-lg p-4 mb-4">
+        <p class="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-2">${total} restaurants found</p>
+        <ul class="text-gray-600 dark:text-slate-300 space-y-1">
           <li class="flex items-center">
             <span class="w-4 h-4 bg-green-500 rounded-full mr-2"></span>
             ${created} created (new)
@@ -162,7 +162,7 @@ function showResults(stats, location, category) {
         </a>
         <button
           type="button"
-          class="inline-flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors"
+          class="inline-flex items-center justify-center bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-200 font-medium py-2 px-4 rounded-lg transition-colors"
           data-action="reset"
         >
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,8 +190,8 @@ function showError(message, code) {
   // Provide helpful context for known error codes
   if (code === 'NO_ADAPTERS') {
     additionalInfo = `
-      <p class="text-sm text-red-500 mt-2">
-        Configure API keys in your <code class="bg-red-100 px-1 rounded">.env</code> file to enable indexing.
+      <p class="text-sm text-red-500 dark:text-red-400 mt-2">
+        Configure API keys in your <code class="bg-red-100 dark:bg-red-900/30 px-1 rounded">.env</code> file to enable indexing.
       </p>
     `;
   } else if (code === 'API_ERROR') {
@@ -214,8 +214,8 @@ function showError(message, code) {
  */
 function showValidationError(message) {
   resultsContainer.innerHTML = `
-    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-      <p class="text-yellow-700">${escapeHtml(message)}</p>
+    <div class="bg-yellow-50 dark:bg-slate-800 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-4">
+      <p class="text-yellow-700 dark:text-yellow-300">${escapeHtml(message)}</p>
     </div>
   `;
 }
