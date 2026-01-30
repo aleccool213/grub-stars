@@ -127,6 +127,28 @@ module GrubStars
         halt 502, json_error("API_ERROR", e.message)
       end
 
+      # Re-index a single restaurant by fetching fresh data from all known sources
+      # This updates the existing restaurant without creating a new one
+      post "/restaurants/:id/reindex" do
+        restaurant_id = params[:id].to_i
+
+        service = Services::IndexRestaurantsService.new
+        result = service.reindex_restaurant(restaurant_id)
+
+        # Fetch the updated restaurant data to return
+        details_service = Services::RestaurantDetailsService.new
+        restaurant = details_service.get_by_id(restaurant_id)
+
+        json_response({
+          result: result,
+          restaurant: restaurant&.to_h
+        })
+      rescue ArgumentError => e
+        halt 404, json_error("NOT_FOUND", e.message)
+      rescue GrubStars::Adapters::Base::APIError => e
+        halt 502, json_error("API_ERROR", e.message)
+      end
+
       # Get restaurant by ID
       get "/restaurants/:id" do
         service = Services::RestaurantDetailsService.new

@@ -68,7 +68,157 @@ module Services
       store_business(business_data, source, location)
     end
 
+    # Re-index a single restaurant by fetching fresh data from all known sources
+    # This updates the existing restaurant without creating a new one
+    # @param restaurant_id [Integer] Restaurant ID to re-index
+    # @return [Hash] Result with sources_updated, sources_failed, and changes
+    def reindex_restaurant(restaurant_id)
+      restaurant = @restaurant_repo.find_by_id_with_associations(restaurant_id)
+      raise ArgumentError, "Restaurant with ID #{restaurant_id} not found" unless restaurant
+
+      external_ids = restaurant.external_ids || []
+      if external_ids.empty?
+        return { sources_updated: [], sources_failed: [], changes: {}, message: "No external sources to refresh" }
+      end
+
+      # Store old values for comparison
+      old_data = capture_restaurant_state(restaurant)
+
+      sources_updated = []
+      sources_failed = []
+
+      external_ids.each do |ext_id|
+        adapter = find_adapter_by_name(ext_id.source)
+        next unless adapter&.configured?
+
+        begin
+          # Strip source prefix from external_id if present (e.g., "yelp:abc123" -> "abc123")
+          # because adapters use the raw ID for API calls but return prefixed external_ids
+          raw_external_id = strip_source_prefix(ext_id.external_id, ext_id.source)
+
+          # Fetch fresh data from the adapter
+          fresh_data = adapter.get_business(raw_external_id)
+          next unless fresh_data
+
+          # Update using existing index_restaurant logic (will update, not create)
+          store_business(fresh_data, ext_id.source, restaurant.location)
+          sources_updated << ext_id.source
+        rescue StandardError => e
+          @logger.warn("Failed to refresh from #{ext_id.source}: #{e.message}")
+          sources_failed << { source: ext_id.source, error: e.message }
+        end
+      end
+
+      # Reload restaurant to get updated data
+      updated_restaurant = @restaurant_repo.find_by_id_with_associations(restaurant_id)
+      new_data = capture_restaurant_state(updated_restaurant)
+
+      # Calculate what changed
+      changes = calculate_changes(old_data, new_data)
+
+      {
+        sources_updated: sources_updated,
+        sources_failed: sources_failed,
+        changes: changes,
+        message: build_result_message(sources_updated, sources_failed, changes)
+      }
+    end
+
     private
+
+    def find_adapter_by_name(name)
+      @adapters.find { |a| a.source_name == name }
+    end
+
+    def strip_source_prefix(external_id, source)
+      return external_id unless external_id
+      # Remove source prefix if present (e.g., "yelp:abc123" -> "abc123")
+      prefix = "#{source}:"
+      external_id.start_with?(prefix) ? external_id[prefix.length..] : external_id
+    end
+
+    def capture_restaurant_state(restaurant)
+      {
+        name: restaurant.name,
+        address: restaurant.address,
+        phone: restaurant.phone,
+        ratings: restaurant.ratings.map { |r| { source: r.source, score: r.score, review_count: r.review_count } },
+        photos_count: restaurant.photos.size,
+        reviews_count: restaurant.reviews.size
+      }
+    end
+
+    def calculate_changes(old_data, new_data)
+      changes = {}
+
+      # Check basic fields
+      %i[name address phone].each do |field|
+        if old_data[field] != new_data[field]
+          changes[field] = { old: old_data[field], new: new_data[field] }
+        end
+      end
+
+      # Check rating changes
+      old_data[:ratings].each do |old_rating|
+        new_rating = new_data[:ratings].find { |r| r[:source] == old_rating[:source] }
+        next unless new_rating
+
+        if old_rating[:score] != new_rating[:score]
+          changes["#{old_rating[:source]}_rating"] = {
+            old: old_rating[:score],
+            new: new_rating[:score]
+          }
+        end
+        if old_rating[:review_count] != new_rating[:review_count]
+          changes["#{old_rating[:source]}_review_count"] = {
+            old: old_rating[:review_count],
+            new: new_rating[:review_count]
+          }
+        end
+      end
+
+      # Check photo count
+      if old_data[:photos_count] != new_data[:photos_count]
+        changes[:photos] = { old: old_data[:photos_count], new: new_data[:photos_count] }
+      end
+
+      changes
+    end
+
+    def build_result_message(sources_updated, sources_failed, changes)
+      parts = []
+
+      if sources_updated.any?
+        parts << "Updated from #{sources_updated.join(', ')}"
+      end
+
+      if sources_failed.any?
+        parts << "Failed: #{sources_failed.map { |f| f[:source] }.join(', ')}"
+      end
+
+      if changes.any?
+        change_descriptions = changes.map do |key, val|
+          case key
+          when :photos
+            diff = val[:new] - val[:old]
+            diff > 0 ? "#{diff} new photos" : "#{-diff} photos removed"
+          when /_rating$/
+            source = key.to_s.sub('_rating', '')
+            "#{source} rating: #{val[:old]} → #{val[:new]}"
+          when /_review_count$/
+            source = key.to_s.sub('_review_count', '')
+            diff = val[:new] - val[:old]
+            diff > 0 ? "#{diff} new #{source} reviews" : nil
+          else
+            nil
+          end
+        end.compact
+
+        parts << change_descriptions.join(', ') if change_descriptions.any?
+      end
+
+      parts.empty? ? "Data refreshed (no changes detected)" : parts.join('. ')
+    end
 
     def default_adapters
       [

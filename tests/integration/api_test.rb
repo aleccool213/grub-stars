@@ -715,6 +715,225 @@ class APITest < GrubStars::IntegrationTest
     assert_equal "Updated Address", restaurant[:address]
   end
 
+  # Reindex endpoint tests
+  def test_reindex_returns_404_for_nonexistent_restaurant
+    post "/restaurants/999/reindex"
+
+    assert_equal 404, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "NOT_FOUND", body["error"]["code"]
+    assert_match(/999/, body["error"]["message"])
+  end
+
+  def test_reindex_returns_success_with_no_external_sources
+    # Seed a restaurant without external IDs
+    db = GrubStars.db
+    restaurant_id = db[:restaurants].insert(
+      name: "No External Sources",
+      address: "123 Main St",
+      latitude: 44.389,
+      longitude: -79.690,
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    post "/restaurants/#{restaurant_id}/reindex"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal [], body["data"]["result"]["sources_updated"]
+    assert_match(/No external sources/i, body["data"]["result"]["message"])
+  end
+
+  def test_reindex_fetches_fresh_data_from_yelp
+    # Seed a restaurant with yelp external ID
+    seed_restaurant_with_external_id("yelp", "test-bakery-yelp-123")
+
+    # Stub the Yelp API to return updated data
+    stub_request(:get, /api\.yelp\.com.*businesses\/test-bakery-yelp-123/)
+      .to_return(
+        status: 200,
+        body: {
+          "id" => "test-bakery-yelp-123",
+          "name" => "Test Bakery Updated",
+          "rating" => 4.8,
+          "review_count" => 150,
+          "coordinates" => { "latitude" => 44.3894, "longitude" => -79.6903 },
+          "location" => {
+            "address1" => "123 Main St Updated",
+            "city" => "Barrie",
+            "state" => "ON"
+          },
+          "categories" => [{ "alias" => "bakeries", "title" => "Bakeries" }],
+          "photos" => ["https://example.com/new-photo.jpg"],
+          "phone" => "+17055551234"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/restaurants/1/reindex"
+    end
+
+    assert last_response.ok?, "Expected 200 OK but got #{last_response.status}: #{last_response.body}"
+    body = JSON.parse(last_response.body)
+
+    # Check result structure
+    assert body["data"]["result"]["sources_updated"].include?("yelp")
+    assert_equal [], body["data"]["result"]["sources_failed"]
+    assert body["data"]["result"]["message"]
+
+    # Check that updated restaurant is returned
+    assert body["data"]["restaurant"]
+    assert_equal "Test Bakery Updated", body["data"]["restaurant"]["name"]
+    assert_equal "123 Main St Updated, Barrie, ON", body["data"]["restaurant"]["address"]
+
+    # Verify database was updated
+    restaurant = GrubStars.db[:restaurants].first
+    assert_equal "Test Bakery Updated", restaurant[:name]
+
+    # Verify rating was updated
+    rating = GrubStars.db[:ratings].where(source: "yelp").first
+    assert_in_delta 4.8, rating[:score], 0.01
+    assert_equal 150, rating[:review_count]
+  end
+
+  def test_reindex_does_not_create_new_restaurant
+    seed_restaurant_with_external_id("yelp", "test-bakery-yelp-456")
+
+    initial_count = GrubStars.db[:restaurants].count
+
+    # Stub the Yelp API
+    stub_request(:get, /api\.yelp\.com.*businesses\/test-bakery-yelp-456/)
+      .to_return(
+        status: 200,
+        body: yelp_business_data("test-bakery-yelp-456", "Updated Name").to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/restaurants/1/reindex"
+    end
+
+    assert last_response.ok?
+
+    # Should NOT create a new restaurant
+    assert_equal initial_count, GrubStars.db[:restaurants].count
+  end
+
+  def test_reindex_handles_api_failure_gracefully
+    seed_restaurant_with_external_id("yelp", "test-bakery-yelp-789")
+
+    # Stub the Yelp API to return an error
+    stub_request(:get, /api\.yelp\.com.*businesses\/test-bakery-yelp-789/)
+      .to_return(status: 500, body: { error: { code: "INTERNAL_ERROR" } }.to_json)
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/restaurants/1/reindex"
+    end
+
+    # Should still succeed, but report the failure
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert_equal [], body["data"]["result"]["sources_updated"]
+    assert_equal 1, body["data"]["result"]["sources_failed"].length
+    assert_equal "yelp", body["data"]["result"]["sources_failed"][0]["source"]
+  end
+
+  def test_reindex_reports_changes_in_result
+    seed_restaurant_with_external_id("yelp", "changes-test-123")
+
+    # Update rating from 4.5 to 4.8
+    stub_request(:get, /api\.yelp\.com.*businesses\/changes-test-123/)
+      .to_return(
+        status: 200,
+        body: {
+          "id" => "changes-test-123",
+          "name" => "Test Bakery",
+          "rating" => 4.8,
+          "review_count" => 200,
+          "coordinates" => { "latitude" => 44.389, "longitude" => -79.690 },
+          "location" => { "address1" => "123 Main St", "city" => "Barrie", "state" => "ON" },
+          "categories" => [{ "alias" => "bakeries", "title" => "Bakeries" }],
+          "photos" => ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/restaurants/1/reindex"
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Check that changes are reported
+    changes = body["data"]["result"]["changes"]
+    assert changes["yelp_rating"], "Expected rating change to be reported"
+    assert_in_delta 4.5, changes["yelp_rating"]["old"], 0.01
+    assert_in_delta 4.8, changes["yelp_rating"]["new"], 0.01
+  end
+
+  def test_reindex_with_multiple_sources
+    GrubStars.reset_db!
+    # Seed a restaurant with both yelp and google external IDs
+    db = GrubStars.db
+    restaurant_id = db[:restaurants].insert(
+      name: "Multi Source Restaurant",
+      address: "123 Main St",
+      latitude: 44.389,
+      longitude: -79.690,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Store external_ids with source prefix (as adapters return them)
+    db[:external_ids].insert(restaurant_id: restaurant_id, source: "yelp", external_id: "yelp:multi-yelp-123")
+    db[:external_ids].insert(restaurant_id: restaurant_id, source: "google", external_id: "google:multi-google-456")
+    db[:ratings].insert(restaurant_id: restaurant_id, source: "yelp", score: 4.0, review_count: 50, fetched_at: Time.now)
+    db[:ratings].insert(restaurant_id: restaurant_id, source: "google", score: 4.2, review_count: 30, fetched_at: Time.now)
+
+    # Stub both APIs
+    stub_request(:get, /api\.yelp\.com.*businesses\/multi-yelp-123/)
+      .to_return(
+        status: 200,
+        body: yelp_business_data("multi-yelp-123", "Multi Source Restaurant").to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    stub_request(:get, /maps\.googleapis\.com.*place\/details/)
+      .to_return(
+        status: 200,
+        body: {
+          result: {
+            place_id: "multi-google-456",
+            name: "Multi Source Restaurant",
+            rating: 4.5,
+            user_ratings_total: 100,
+            geometry: { location: { lat: 44.389, lng: -79.690 } },
+            formatted_address: "123 Main St, Barrie, ON",
+            formatted_phone_number: "+1 705-555-1234"
+          },
+          status: "OK"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    with_env("YELP_API_KEY" => "test_key", "GOOGLE_API_KEY" => "test_key") do
+      post "/restaurants/#{restaurant_id}/reindex"
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Both sources should be updated
+    sources_updated = body["data"]["result"]["sources_updated"]
+    assert_includes sources_updated, "yelp"
+    assert_includes sources_updated, "google"
+  end
+
   private
 
   def seed_restaurant
@@ -778,6 +997,55 @@ class APITest < GrubStars::IntegrationTest
       restaurant_id: restaurant_id,
       category_id: category_id
     )
+  end
+
+  def seed_restaurant_with_external_id(source, external_id)
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    restaurant_id = db[:restaurants].insert(
+      name: "Test Bakery",
+      address: "123 Main St",
+      latitude: 44.389,
+      longitude: -79.690,
+      phone: "+15551234567",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Store the external_id with the source prefix (as adapters return it)
+    prefixed_external_id = external_id.start_with?("#{source}:") ? external_id : "#{source}:#{external_id}"
+
+    db[:external_ids].insert(
+      restaurant_id: restaurant_id,
+      source: source,
+      external_id: prefixed_external_id
+    )
+
+    category_id = db[:categories].insert(name: "bakeries")
+    db[:restaurant_categories].insert(
+      restaurant_id: restaurant_id,
+      category_id: category_id
+    )
+
+    db[:ratings].insert(
+      restaurant_id: restaurant_id,
+      source: source,
+      score: 4.5,
+      review_count: 100,
+      fetched_at: Time.now
+    )
+
+    db[:media].insert(
+      restaurant_id: restaurant_id,
+      source: source,
+      media_type: "photo",
+      url: "https://example.com/original-photo.jpg",
+      fetched_at: Time.now
+    )
+
+    restaurant_id
   end
 
   def seed_multiple_restaurants
