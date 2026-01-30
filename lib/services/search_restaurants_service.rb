@@ -51,13 +51,11 @@ module Services
     private
 
     # Validate that a location has been indexed
-    # @param location [String] Location to validate (case insensitive)
+    # @param location [String] Location to validate
     # @raise [LocationNotIndexedError] if location hasn't been indexed
     def validate_location(location)
       indexed_locations = all_indexed_locations
-      normalized_location = location.downcase
-
-      unless indexed_locations.include?(normalized_location)
+      unless indexed_locations.include?(location.downcase)
         raise LocationNotIndexedError,
               "Location '#{location}' has not been indexed. Available locations: #{indexed_locations.join(', ')}"
       end
