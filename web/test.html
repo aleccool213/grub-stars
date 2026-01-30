@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>grub stars - Test Suite</title>
 
+  <!-- Early dark mode detection to prevent FOUC -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('grub_stars_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
+
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
   <link rel="icon" type="image/png" href="/images/favicon.png">
@@ -18,7 +30,13 @@
       --coral: #FB7185;
       --latte: #F5E6D3;
     }
-    body {
+    /* Dark mode overrides */
+    html.dark {
+      --cream: #0f172a;
+      --cocoa: #f8fafc;
+      --latte: #1e293b;
+    }
+    html.dark body {
       font-family: system-ui, sans-serif;
       background: var(--cream);
       color: var(--cocoa);
@@ -37,6 +55,11 @@
     pre { background: var(--latte); padding: 1rem; border-radius: 0.5rem; overflow: auto; font-size: 0.875rem; }
     code { background: var(--latte); padding: 0.125rem 0.25rem; border-radius: 0.25rem; }
     footer { text-align: center; margin-top: 2rem; color: rgba(74, 55, 40, 0.6); }
+    /* Dark mode element styles */
+    html.dark .card { background: #1e293b; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4); }
+    html.dark .test-result.pass { background: rgba(110, 231, 183, 0.15); }
+    html.dark .test-result.fail { background: rgba(251, 113, 133, 0.15); }
+    html.dark footer { color: rgba(248, 250, 252, 0.6); }
   </style>
 </head>
 <body>

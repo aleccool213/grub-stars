@@ -29,9 +29,9 @@ module Services
       @media_repo = media_repo || Infrastructure::Repositories::MediaRepository.new
       @category_repo = category_repo || Infrastructure::Repositories::CategoryRepository.new
       @external_id_repo = external_id_repo || Infrastructure::Repositories::ExternalIdRepository.new
-      @matcher = matcher || Domain::Matcher.new
-      @adapters = adapters || default_adapters
       @logger = logger || GrubStars::Logger.new
+      @matcher = matcher || Domain::Matcher.new(logger: @logger)
+      @adapters = adapters || default_adapters
     end
 
     # Index restaurants from all configured adapters
