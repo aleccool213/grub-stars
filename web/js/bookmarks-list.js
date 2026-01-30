@@ -19,7 +19,7 @@ function bookmarkItem(bookmark) {
         <a href="/details.html?id=${bookmark.restaurantId}" class="text-lg font-semibold text-electric hover:text-blue-700 transition-colors">
           ${escapeHtml(bookmark.name)}
         </a>
-        <p class="text-xs text-gray-500 mt-1">
+        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">
           Bookmarked on ${formatDate(new Date(bookmark.bookmarkedAt))}
         </p>
       </div>

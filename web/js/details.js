@@ -118,15 +118,15 @@ function showRestaurant(restaurant) {
   document.title = `${restaurant.name} - grub stars`;
 
   detailsContainer.innerHTML = `
-    <article class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <article class="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
       <!-- Header Section -->
-      <div class="p-6 border-b border-gray-200">
+      <div class="p-6 border-b border-gray-200 dark:border-slate-700">
         <div class="flex items-start justify-between gap-4 mb-4">
-          <h2 class="text-2xl font-bold text-gray-800">${escapeHtml(restaurant.name)}</h2>
+          <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100">${escapeHtml(restaurant.name)}</h2>
           <div class="flex items-center gap-2 flex-shrink-0">
             <!-- Share Button -->
-            <button id="share-btn" class="p-2 rounded-full hover:bg-gray-100 transition-colors" title="Share restaurant" aria-label="Share restaurant" style="padding: 0.5rem; border-radius: 9999px;">
-              <svg class="w-6 h-6 text-gray-600" style="width: 24px; height: 24px; color: #4b5563;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button id="share-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Share restaurant" aria-label="Share restaurant">
+              <svg class="w-6 h-6 text-gray-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
             </button>
@@ -138,17 +138,17 @@ function showRestaurant(restaurant) {
           <div class="mb-3">
             ${categories.map(cat => `
               <a href="/?category=${encodeURIComponent(cat)}"
-                 class="inline-block bg-blue-100 text-blue-700 text-sm px-2 py-1 rounded mr-1 mb-1 hover:bg-blue-200 transition-colors">
+                 class="inline-block bg-blue-100 dark:bg-slate-700 text-blue-700 dark:text-slate-300 text-sm px-2 py-1 rounded mr-1 mb-1 hover:bg-blue-200 dark:hover:bg-slate-600 transition-colors">
                 ${escapeHtml(cat)}
               </a>
             `).join('')}
           </div>
         ` : ''}
 
-        <div class="text-gray-600 space-y-1" style="color: #4b5563;">
+        <div class="text-gray-600 dark:text-slate-300 space-y-1">
           ${restaurant.address ? `
-            <p class="flex items-center" style="display: flex; align-items: center;">
-              <svg class="w-5 h-5 mr-2 text-gray-400" style="width: 20px; height: 20px; min-width: 20px; margin-right: 0.5rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p class="flex items-center">
+              <svg class="w-5 h-5 mr-2 text-gray-400 dark:text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -156,8 +156,7 @@ function showRestaurant(restaurant) {
               ${restaurant.latitude && restaurant.longitude ? `
                 <a href="https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}"
                    target="_blank" rel="noopener noreferrer"
-                   class="ml-2 text-blue-600 hover:text-blue-800 text-sm"
-                   style="margin-left: 0.5rem; color: #2563eb; font-size: 0.875rem;">
+                   class="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm">
                   (Get directions)
                 </a>
               ` : ''}
@@ -165,22 +164,22 @@ function showRestaurant(restaurant) {
           ` : ''}
 
           ${restaurant.phone ? `
-            <p class="flex items-center" style="display: flex; align-items: center;">
-              <svg class="w-5 h-5 mr-2 text-gray-400" style="width: 20px; height: 20px; min-width: 20px; margin-right: 0.5rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p class="flex items-center">
+              <svg class="w-5 h-5 mr-2 text-gray-400 dark:text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
-              <a href="tel:${escapeHtml(restaurant.phone)}" class="text-blue-600 hover:underline" style="color: #2563eb;">
+              <a href="tel:${escapeHtml(restaurant.phone)}" class="text-blue-600 dark:text-blue-400 hover:underline">
                 ${escapeHtml(restaurant.phone)}
               </a>
             </p>
           ` : ''}
 
           ${restaurant.location ? `
-            <p class="flex items-center" style="display: flex; align-items: center;">
-              <svg class="w-5 h-5 mr-2 text-gray-400" style="width: 20px; height: 20px; min-width: 20px; margin-right: 0.5rem; color: #9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p class="flex items-center">
+              <svg class="w-5 h-5 mr-2 text-gray-400 dark:text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              ${escapeHtml(restaurant.location)}
+              <span class="text-gray-600 dark:text-slate-300">${escapeHtml(restaurant.location)}</span>
             </p>
           ` : ''}
         </div>
@@ -188,15 +187,15 @@ function showRestaurant(restaurant) {
 
       <!-- Map Section -->
       ${restaurant.latitude && restaurant.longitude ? `
-        <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-electric" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #A855F7;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-electric" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
             </svg>
             Location
           </h3>
-          <div id="restaurant-map" class="w-full h-64 rounded-lg overflow-hidden bg-gray-100" style="width: 100%; height: 256px; border-radius: 0.5rem; overflow: hidden; background-color: #f3f4f6;"></div>
-          <p class="text-sm text-gray-500 mt-2" style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;">
+          <div id="restaurant-map" class="w-full h-64 rounded-lg overflow-hidden bg-gray-100 dark:bg-slate-700"></div>
+          <p class="text-sm text-gray-500 dark:text-slate-400 mt-2">
             Click the map to open in Google Maps
           </p>
         </div>
@@ -204,9 +203,9 @@ function showRestaurant(restaurant) {
 
       <!-- Ratings Section -->
       ${ratings.length > 0 ? `
-        <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-yellow-500" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #eab308;" fill="currentColor" viewBox="0 0 20 20">
+        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
             </svg>
             Ratings
@@ -217,22 +216,22 @@ function showRestaurant(restaurant) {
               <span class="text-3xl font-bold text-yellow-500">${avgRating.toFixed(1)}</span>
               <div class="ml-2">
                 <div class="flex">${renderStars(avgRating)}</div>
-                <p class="text-sm text-gray-500">${totalReviews} ${totalReviews === 1 ? 'review' : 'reviews'} total</p>
+                <p class="text-sm text-gray-500 dark:text-slate-400">${totalReviews} ${totalReviews === 1 ? 'review' : 'reviews'} total</p>
               </div>
             </div>
           ` : ''}
 
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             ${ratings.map(rating => `
-              <div class="bg-gray-50 rounded-lg p-4 rating-card">
+              <div class="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 rating-card">
                 <div class="flex items-center justify-between mb-2">
                   <div class="flex items-center">
                     ${getSourceIcon(rating.source)}
-                    <span class="font-medium text-gray-700 capitalize ml-2">${escapeHtml(rating.source)}</span>
+                    <span class="font-medium text-gray-700 dark:text-slate-200 capitalize ml-2">${escapeHtml(rating.source)}</span>
                   </div>
                   <span class="text-lg font-bold text-yellow-600">${rating.score.toFixed(1)}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-500">
+                <div class="flex items-center text-sm text-gray-500 dark:text-slate-400">
                   ${renderStars(rating.score)}
                   <span class="ml-2">(${rating.review_count || 0} reviews)</span>
                 </div>
@@ -245,17 +244,17 @@ function showRestaurant(restaurant) {
 
       <!-- Photos Section -->
       ${photos.length > 0 ? `
-        <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-hotpink" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #FF6B9D;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-hotpink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Photos
-            <span class="ml-2 text-sm font-normal text-gray-500">(${photos.length})</span>
+            <span class="ml-2 text-sm font-normal text-gray-500 dark:text-slate-400">(${photos.length})</span>
           </h3>
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             ${photos.map((photo, index) => `
-              <button class="photo-thumb block aspect-square overflow-hidden rounded-lg hover:opacity-90 transition-all hover:ring-2 hover:ring-electric bg-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-electric"
+              <button class="photo-thumb block aspect-square overflow-hidden rounded-lg hover:opacity-90 transition-all hover:ring-2 hover:ring-electric bg-gray-100 dark:bg-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-electric"
                       data-photo-index="${index}"
                       data-photo-url="${escapeHtml(photo.url)}"
                       data-photo-source="${escapeHtml(photo.source)}"
@@ -264,7 +263,7 @@ function showRestaurant(restaurant) {
                      class="w-full h-full object-cover"
                      loading="lazy"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="photo-placeholder w-full h-full items-center justify-center text-gray-400" style="display: none;">
+                <div class="photo-placeholder w-full h-full items-center justify-center text-gray-400 dark:text-slate-500" style="display: none;">
                   <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -277,26 +276,26 @@ function showRestaurant(restaurant) {
 
       <!-- Videos Section -->
       ${videos.length > 0 ? `
-        <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-red-500" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #ef4444;" fill="currentColor" viewBox="0 0 24 24">
+        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"/>
             </svg>
             Videos
-            <span class="ml-2 text-sm font-normal text-gray-500">(${videos.length})</span>
+            <span class="ml-2 text-sm font-normal text-gray-500 dark:text-slate-400">(${videos.length})</span>
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             ${videos.map(video => `
               <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer"
-                 class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
-                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors" style="width: 48px; height: 48px; min-width: 48px;">
+                 class="flex items-center p-4 bg-gray-50 dark:bg-slate-800 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group">
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition-colors">
                   <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z"/>
                   </svg>
                 </div>
                 <div class="ml-4">
-                  <span class="text-gray-700 font-medium">Video from ${escapeHtml(video.source)}</span>
-                  <p class="text-sm text-gray-500">Click to watch</p>
+                  <span class="text-gray-700 dark:text-slate-200 font-medium">Video from ${escapeHtml(video.source)}</span>
+                  <p class="text-sm text-gray-500 dark:text-slate-400">Click to watch</p>
                 </div>
               </a>
             `).join('')}
@@ -306,19 +305,19 @@ function showRestaurant(restaurant) {
 
       <!-- Reviews Section -->
       ${reviews.length > 0 ? `
-        <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-mango" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #FFB347;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-mango" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             Review Snippets
-            <span class="ml-2 text-sm font-normal text-gray-500">(${reviews.length})</span>
+            <span class="ml-2 text-sm font-normal text-gray-500 dark:text-slate-400">(${reviews.length})</span>
           </h3>
           <div class="space-y-4" id="reviews-container">
             ${reviews.slice(0, 3).map((review, index) => renderReview(review, index)).join('')}
           </div>
           ${reviews.length > 3 ? `
-            <button id="show-more-reviews" class="mt-4 text-electric hover:text-hotpink font-medium transition-colors" style="color: #A855F7;" data-expanded="false">
+            <button id="show-more-reviews" class="mt-4 text-electric hover:text-hotpink font-medium transition-colors" data-expanded="false">
               Show ${reviews.length - 3} more reviews
             </button>
             <div id="hidden-reviews" style="display: none;" class="space-y-4 mt-4">
@@ -330,9 +329,9 @@ function showRestaurant(restaurant) {
 
       <!-- External Links Section -->
       ${externalIds.length > 0 ? `
-        <div class="p-6 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-electric" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #A855F7;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-electric" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
             View on Other Sites
@@ -344,9 +343,9 @@ function showRestaurant(restaurant) {
       ` : ''}
 
       <!-- Similar Restaurants Section (loaded async) -->
-      <div id="similar-restaurants" class="p-6 border-b border-gray-200" style="display: none;">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-          <svg class="w-5 h-5 mr-2 text-mint" style="width: 20px; height: 20px; margin-right: 0.5rem; color: #6EE7B7;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div id="similar-restaurants" class="p-6 border-b border-gray-200 dark:border-slate-700" style="display: none;">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
           Similar Restaurants
@@ -355,15 +354,15 @@ function showRestaurant(restaurant) {
       </div>
 
       <!-- Sources & Timestamp Section -->
-      <div class="p-6 bg-gray-50">
+      <div class="p-6 bg-gray-50 dark:bg-slate-800">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           ${sources.length > 0 ? `
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-gray-500 dark:text-slate-400">
               Data sources: ${sources.map(s => `<span class="capitalize">${escapeHtml(s)}</span>`).join(', ')}
             </p>
           ` : ''}
           ${lastUpdated ? `
-            <p class="text-sm text-gray-400" style="color: #9ca3af;">
+            <p class="text-sm text-gray-400 dark:text-slate-500">
               Last updated: ${formatDate(lastUpdated)}
             </p>
           ` : ''}
@@ -372,33 +371,33 @@ function showRestaurant(restaurant) {
     </article>
 
     <!-- Photo Lightbox Modal -->
-    <div id="photo-lightbox" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; background-color: rgba(0,0,0,0.9);" role="dialog" aria-modal="true" aria-label="Photo viewer">
-      <button id="lightbox-close" class="absolute top-4 right-4 text-white hover:text-gray-300 p-2" style="position: absolute; top: 16px; right: 16px; color: white; padding: 8px;" aria-label="Close photo viewer">
-        <svg class="w-8 h-8" style="width: 32px; height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div id="photo-lightbox" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90" style="display: none;" role="dialog" aria-modal="true" aria-label="Photo viewer">
+      <button id="lightbox-close" class="absolute top-4 right-4 text-white hover:text-gray-300 p-2" aria-label="Close photo viewer">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <button id="lightbox-prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: white; padding: 8px;" aria-label="Previous photo">
-        <svg class="w-10 h-10" style="width: 40px; height: 40px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button id="lightbox-prev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2" aria-label="Previous photo">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
-      <button id="lightbox-next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: white; padding: 8px;" aria-label="Next photo">
-        <svg class="w-10 h-10" style="width: 40px; height: 40px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <button id="lightbox-next" class="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2" aria-label="Next photo">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </button>
-      <div class="max-w-5xl max-h-full p-4" style="max-width: 80rem; max-height: 100%; padding: 16px;">
-        <img id="lightbox-image" src="" alt="" class="max-w-full max-h-[85vh] object-contain" style="max-width: 100%; max-height: 85vh; object-fit: contain;">
+      <div class="max-w-5xl max-h-full p-4">
+        <img id="lightbox-image" src="" alt="" class="max-w-full max-h-[85vh] object-contain">
       </div>
-      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm" style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); color: white; font-size: 0.875rem;">
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm">
         <span id="lightbox-counter">1 / 1</span>
-        <span id="lightbox-source" class="ml-2 text-gray-400"></span>
+        <span id="lightbox-source" class="ml-2 text-gray-400 dark:text-slate-500"></span>
       </div>
     </div>
 
     <!-- Share Toast -->
-    <div id="share-toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg transition-opacity duration-300 opacity-0" style="display: none; position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background-color: #1f2937; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; z-index: 60;">
+    <div id="share-toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg transition-opacity duration-300 opacity-0" style="display: none; z-index: 60;">
       Link copied to clipboard!
     </div>
   `;
@@ -423,16 +422,16 @@ function showRestaurant(restaurant) {
  */
 function renderReview(review, index) {
   return `
-    <blockquote class="bg-gray-50 rounded-lg p-4 review-card">
-      <p class="text-gray-700 italic mb-2">"${escapeHtml(review.snippet)}"</p>
+    <blockquote class="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 review-card">
+      <p class="text-gray-700 dark:text-slate-200 italic mb-2">"${escapeHtml(review.snippet)}"</p>
       <footer class="flex items-center justify-between">
-        <span class="text-sm text-gray-500 flex items-center">
+        <span class="text-sm text-gray-500 dark:text-slate-400 flex items-center">
           ${getSourceIcon(review.source)}
           <span class="ml-2 capitalize">— ${escapeHtml(review.source)}</span>
         </span>
         ${review.url ? `
           <a href="${escapeHtml(review.url)}" target="_blank" rel="noopener noreferrer"
-             class="text-sm text-blue-600 hover:underline">Read full review</a>
+             class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Read full review</a>
         ` : ''}
       </footer>
     </blockquote>
@@ -486,7 +485,7 @@ function getExternalLink(source, externalIds, restaurantName) {
 
   return `
     <a href="${url}" target="_blank" rel="noopener noreferrer"
-       class="text-xs text-blue-600 hover:underline mt-2 block" style="font-size: 0.75rem; color: #2563eb; margin-top: 0.5rem; display: block;">
+       class="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2 block">
       View on ${escapeHtml(source)}
     </a>
   `;
@@ -500,20 +499,19 @@ function renderExternalLinkButton(ext, restaurantName) {
   if (!url) return '';
 
   const colors = {
-    yelp: 'bg-red-100 text-red-700 hover:bg-red-200',
-    google: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
-    tripadvisor: 'bg-green-100 text-green-700 hover:bg-green-200'
+    yelp: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50',
+    google: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50',
+    tripadvisor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50'
   };
 
-  const colorClass = colors[ext.source.toLowerCase()] || 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+  const colorClass = colors[ext.source.toLowerCase()] || 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-200 dark:hover:bg-slate-600';
 
   return `
     <a href="${url}" target="_blank" rel="noopener noreferrer"
-       class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-colors ${colorClass}"
-       style="display: inline-flex; align-items: center; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+       class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-colors ${colorClass}">
       ${getSourceIcon(ext.source)}
       <span class="ml-2 capitalize">${escapeHtml(ext.source)}</span>
-      <svg class="w-4 h-4 ml-1" style="width: 16px; height: 16px; margin-left: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
       </svg>
     </a>
@@ -553,7 +551,7 @@ function initMap(restaurant) {
        class="block w-full h-full relative group">
       <img src="${staticMapUrl}" alt="Map showing location of ${escapeHtml(restaurant.name)}"
            class="w-full h-full object-cover"
-           onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-400\\'><p>Map unavailable</p></div>'">
+            onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-400 dark:text-slate-500\\'><p>Map unavailable</p></div>'">
       <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
         <span class="opacity-0 group-hover:opacity-100 transition-opacity text-white bg-black/50 px-3 py-1 rounded-full text-sm">
           Open in Google Maps
@@ -736,18 +734,18 @@ async function loadSimilarRestaurants(restaurant) {
     // Show container and render results
     container.style.display = 'block';
     list.innerHTML = similar.map(r => `
-      <a href="/details.html?id=${r.id}" class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group similar-card">
+      <a href="/details.html?id=${r.id}" class="flex items-center p-3 bg-gray-50 dark:bg-slate-800 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group similar-card">
         <div class="flex-1 min-w-0">
-          <h4 class="font-medium text-gray-800 truncate group-hover:text-electric" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(r.name)}</h4>
-          <p class="text-sm text-gray-500 truncate">${escapeHtml(r.address || r.location || '')}</p>
+          <h4 class="font-medium text-gray-800 dark:text-slate-100 truncate group-hover:text-electric">${escapeHtml(r.name)}</h4>
+          <p class="text-sm text-gray-500 dark:text-slate-400 truncate">${escapeHtml(r.address || r.location || '')}</p>
           ${r.ratings && r.ratings.length > 0 ? `
             <div class="flex items-center mt-1">
               ${renderStars(r.ratings[0].score)}
-              <span class="ml-1 text-xs text-gray-500">${r.ratings[0].score.toFixed(1)}</span>
+              <span class="ml-1 text-xs text-gray-500 dark:text-slate-400">${r.ratings[0].score.toFixed(1)}</span>
             </div>
           ` : ''}
         </div>
-        <svg class="w-5 h-5 text-gray-400 group-hover:text-electric ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 text-gray-400 dark:text-slate-500 group-hover:text-electric ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </a>
@@ -799,17 +797,17 @@ function formatDate(dateString) {
  */
 function showNotFound(id) {
   detailsContainer.innerHTML = `
-    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center" style="background-color: #fefce8; border: 1px solid #fef08a; border-radius: 0.5rem; padding: 2rem; text-align: center;">
-      <div class="text-yellow-500 mb-4" style="color: #eab308; margin-bottom: 1rem;">
-        <svg class="w-16 h-16 mx-auto" style="width: 64px; height: 64px; margin: 0 auto; display: block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-8 text-center">
+      <div class="text-yellow-500 dark:text-yellow-400 mb-4">
+        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </div>
-      <h3 class="text-lg font-semibold text-yellow-800 mb-2" style="font-size: 1.125rem; font-weight: 600; color: #854d0e; margin-bottom: 0.5rem;">Restaurant Not Found</h3>
-      <p class="text-yellow-700 mb-4" style="color: #a16207; margin-bottom: 1rem;">
+      <h3 class="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Restaurant Not Found</h3>
+      <p class="text-yellow-700 dark:text-yellow-300 mb-4">
         We couldn't find a restaurant with ID ${escapeHtml(String(id))}.
       </p>
-      <a href="/" class="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded transition-colors" style="display: inline-block; background-color: #ca8a04; color: white; font-weight: 500; padding: 0.5rem 1rem; border-radius: 0.25rem; text-decoration: none;">
+      <a href="/" class="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded transition-colors">
         Back to Search
       </a>
     </div>

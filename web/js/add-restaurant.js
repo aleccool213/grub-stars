@@ -137,14 +137,14 @@ async function handleSearch(event) {
 function renderResults(results, adapter, location) {
   if (!results || results.length === 0) {
     resultsContainer.innerHTML = `
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-        <div class="text-gray-400 mb-2">
+      <div class="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-6 text-center">
+        <div class="text-gray-400 dark:text-slate-500 mb-2">
           <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p class="text-gray-600 mb-2">No restaurants found.</p>
-        <p class="text-sm text-gray-500">Try a different name, location, or adapter.</p>
+        <p class="text-gray-600 dark:text-slate-300 mb-2">No restaurants found.</p>
+        <p class="text-sm text-gray-500 dark:text-slate-400">Try a different name, location, or adapter.</p>
       </div>
     `;
     return;
@@ -181,7 +181,7 @@ function renderResultCard(result, index) {
 
   return `
     <article
-      class="result-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+      class="result-card bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 hover:shadow-md transition-shadow"
       data-result-index="${index}"
     >
       <div class="flex gap-4">
@@ -198,15 +198,15 @@ function renderResultCard(result, index) {
         <div class="flex-grow min-w-0">
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0">
-              <h3 class="font-semibold text-gray-900 truncate">${escapeHtml(result.name)}</h3>
-              <p class="text-sm text-gray-500 truncate">${escapeHtml(result.address || 'Address not available')}</p>
+              <h3 class="font-semibold text-gray-900 dark:text-slate-100 truncate">${escapeHtml(result.name)}</h3>
+              <p class="text-sm text-gray-500 dark:text-slate-400 truncate">${escapeHtml(result.address || 'Address not available')}</p>
             </div>
             <div class="flex-shrink-0 text-right">
               <div class="text-sm font-medium text-amber-600">${rating}</div>
-              <div class="text-xs text-gray-400">${reviewCount}</div>
+              <div class="text-xs text-gray-400 dark:text-slate-500">${reviewCount}</div>
             </div>
           </div>
-          <p class="text-xs text-gray-400 mt-1">${escapeHtml(categories)}</p>
+          <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">${escapeHtml(categories)}</p>
           <div class="mt-3 flex items-center gap-2 flex-wrap">
             <button
               type="button"
@@ -220,7 +220,7 @@ function renderResultCard(result, index) {
                 href="${escapeHtml(result.url)}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="px-3 py-1.5 text-gray-500 text-sm hover:text-gray-700 hover:underline"
+                class="px-3 py-1.5 text-gray-500 dark:text-slate-400 text-sm hover:text-gray-700 dark:hover:text-slate-200 hover:underline"
               >
                 View on ${getAdapterLabel(result.source)} ↗
               </a>
@@ -265,7 +265,7 @@ function initIndexButtons(results, adapter, location) {
         // Add "View" link
         const viewLink = document.createElement('a');
         viewLink.href = `/details.html?id=${response.data.restaurant_id}`;
-        viewLink.className = 'ml-2 text-sm text-blue-600 hover:underline';
+        viewLink.className = 'ml-2 text-sm text-blue-600 dark:text-blue-400 hover:underline';
         viewLink.textContent = 'View →';
         btn.parentNode.insertBefore(viewLink, btn.nextSibling);
 
