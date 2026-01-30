@@ -156,3 +156,64 @@ Restaurant photos should be prominently displayed at the top of the details page
 - `web/js/details.js` - Details page controller
 - `web/js/components/` - Check for existing photo/lightbox components
 - `web/css/custom.css` - Styling for photo gallery
+
+---
+
+### Re-Index Button on Restaurant Details Page
+
+**Problem:**
+Restaurant data from external APIs (Yelp, Google, TripAdvisor) can become stale over time. A restaurant might update its hours, photos, ratings, or even move to a new location. Currently, there's no way for users to refresh a specific restaurant's data without re-indexing the entire location, which is time-consuming and uses unnecessary API quota.
+
+**Solution:**
+Add a "Refresh Data" or "Re-index" button on the restaurant details page that allows users to fetch the latest information for that specific restaurant from all configured adapters.
+
+**Implementation:**
+
+1. **UI Component:**
+   - Add a "Refresh Data" button to the restaurant details page
+   - Position it near the restaurant name or in an actions menu
+   - Show last updated timestamp: "Last updated: 2 days ago"
+   - Include a spinner/loading state while re-indexing
+   - Show success/error toast notification after completion
+
+2. **API Endpoint:**
+   - New endpoint: `POST /restaurants/:id/reindex`
+   - Accepts restaurant ID
+   - Fetches fresh data from all configured adapters
+   - Updates restaurant record with new data
+   - Returns updated restaurant data
+
+3. **Backend Logic:**
+   - Use existing adapter methods to fetch fresh data
+   - Update restaurant fields: name, address, phone, ratings, photos
+   - Preserve user data: bookmarks, notes, custom categories
+   - Handle partial failures (e.g., Yelp API down but Google works)
+   - Update `updated_at` timestamp
+
+4. **Rate Limiting:**
+   - Limit re-index to once per hour per restaurant to prevent abuse
+   - Show "Next refresh available in 45 minutes" message
+   - Consider admin override for urgent updates
+
+**UX Considerations:**
+- Button should be subtle but accessible (secondary action)
+- Show visual feedback: spinner → checkmark on success
+- Display what changed: "Updated: 3 new photos, rating changed from 4.2 to 4.5"
+- Handle errors gracefully: "Could not refresh Yelp data (API error), but Google data updated"
+- Mobile-friendly: button in header or floating action button
+
+**Benefits:**
+- **Fresh data** - Users always see current information
+- **API efficiency** - Re-index single restaurant vs entire location
+- **User control** - Users can refresh when they notice outdated info
+- **Data quality** - Encourages keeping database current
+- **Debugging** - Easy way to test adapter changes/fixes
+
+**Files to Review:**
+- `web/details.html` - Add re-index button
+- `web/js/details.js` - Handle re-index action and UI updates
+- `lib/api/server.rb` - Add POST /restaurants/:id/reindex endpoint
+- `lib/services/` - Create ReindexRestaurantService
+- `lib/infrastructure/adapters/` - Ensure adapters support single-restaurant refresh
+
+---
