@@ -15,26 +15,47 @@ module Domain
     # Maximum distance in meters to consider for GPS matching
     MAX_GPS_DISTANCE = 200
 
+    def initialize(logger: nil)
+      @logger = logger
+    end
+
     # Find the best matching restaurant from a list of candidates
     # @param business_data [Hash] Business data to match (with keys: name, address, latitude, longitude, phone)
     # @param candidates [Array<Domain::Models::Restaurant>] Candidate restaurants to match against
     # @return [Hash, nil] { restaurant: <Restaurant>, score: <Integer> } or nil if no match found
     def find_match(business_data, candidates)
-      return nil if candidates.empty?
+      log_debug("Matcher: Looking for match for '#{business_data[:name]}'")
+      log_debug("Matcher: #{candidates.length} candidate(s) to compare")
+
+      if candidates.empty?
+        log_debug("Matcher: No candidates available - will create new restaurant")
+        return nil
+      end
 
       best_match = nil
       best_score = 0
 
       candidates.each do |candidate|
-        score = calculate_score(business_data, candidate)
+        scores = calculate_component_scores(business_data, candidate)
+        score = scores.values.sum
+
+        log_debug("Matcher: Comparing '#{business_data[:name]}' with '#{candidate.name}' (ID: #{candidate.id})")
+        log_debug("Matcher:   Scores - name: #{scores[:name]}/#{NAME_WEIGHT}, address: #{scores[:address]}/#{ADDRESS_WEIGHT}, gps: #{scores[:gps]}/#{GPS_WEIGHT}, phone: #{scores[:phone]}/#{PHONE_WEIGHT}")
+        log_debug("Matcher:   Total: #{score}/100 (threshold: #{MATCH_THRESHOLD})")
+
         if score > best_score
           best_score = score
           best_match = candidate
         end
       end
 
-      return nil if best_score < MATCH_THRESHOLD
+      if best_score < MATCH_THRESHOLD
+        log_debug("Matcher: No match found - best score #{best_score} is below threshold #{MATCH_THRESHOLD}")
+        log_debug("Matcher: Will create new restaurant for '#{business_data[:name]}'")
+        return nil
+      end
 
+      log_debug("Matcher: MATCH FOUND - '#{business_data[:name]}' matches '#{best_match.name}' (score: #{best_score})")
       { restaurant: best_match, score: best_score }
     end
 
@@ -43,17 +64,27 @@ module Domain
     # @param restaurant [Domain::Models::Restaurant] Restaurant to compare against
     # @return [Integer] Score (0-100)
     def calculate_score(business_data, restaurant)
-      score = 0
+      calculate_component_scores(business_data, restaurant).values.sum
+    end
 
-      score += name_score(business_data[:name], restaurant.name)
-      score += address_score(business_data[:address], restaurant.address)
-      score += gps_score(business_data, restaurant)
-      score += phone_score(business_data[:phone], restaurant.phone)
-
-      score
+    # Calculate individual component scores for debugging
+    # @param business_data [Hash] Business data with keys: name, address, latitude, longitude, phone
+    # @param restaurant [Domain::Models::Restaurant] Restaurant to compare against
+    # @return [Hash] Individual scores { name:, address:, gps:, phone: }
+    def calculate_component_scores(business_data, restaurant)
+      {
+        name: name_score(business_data[:name], restaurant.name),
+        address: address_score(business_data[:address], restaurant.address),
+        gps: gps_score(business_data, restaurant),
+        phone: phone_score(business_data[:phone], restaurant.phone)
+      }
     end
 
     private
+
+    def log_debug(message)
+      @logger&.debug(message)
+    end
 
     # Score based on name similarity (0-35 points)
     def name_score(name1, name2)

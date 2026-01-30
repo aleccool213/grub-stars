@@ -16,6 +16,13 @@ module GrubStars
       @output.puts message
     end
 
+    # Debug logging - outputs detailed information for troubleshooting
+    def debug(message)
+      return unless @enabled
+
+      @output.puts @pastel.dim("[DEBUG] #{message}")
+    end
+
     def progress(name:, current:, total:, percent:)
       return unless @enabled
 

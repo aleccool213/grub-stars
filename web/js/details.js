@@ -154,7 +154,7 @@ function showRestaurant(restaurant) {
               </svg>
               <span>${escapeHtml(restaurant.address)}</span>
               ${restaurant.latitude && restaurant.longitude ? `
-                <a href="https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}"
+                <a href="${getDirectionsUrl(restaurant)}"
                    target="_blank" rel="noopener noreferrer"
                    class="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm">
                   (Get directions)
@@ -327,20 +327,6 @@ function showRestaurant(restaurant) {
         </div>
       ` : ''}
 
-      <!-- External Links Section -->
-      ${externalIds.length > 0 ? `
-        <div class="p-6 border-b border-gray-200 dark:border-slate-700">
-          <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-electric" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            View on Other Sites
-          </h3>
-          <div class="flex flex-wrap gap-3">
-            ${externalIds.map(ext => renderExternalLinkButton(ext, restaurant.name)).join('')}
-          </div>
-        </div>
-      ` : ''}
 
       <!-- Similar Restaurants Section (loaded async) -->
       <div id="similar-restaurants" class="p-6 border-b border-gray-200 dark:border-slate-700" style="display: none;">
@@ -492,40 +478,45 @@ function getExternalLink(source, externalIds, restaurantName) {
 }
 
 /**
- * Render external link button
+ * Strip source prefix from external ID (e.g., "yelp:abc123" -> "abc123")
  */
-function renderExternalLinkButton(ext, restaurantName) {
-  const url = getSourceUrl(ext.source, ext.external_id, restaurantName);
-  if (!url) return '';
+function stripSourcePrefix(externalId) {
+  if (!externalId) return '';
+  return externalId.replace(/^(yelp|google|tripadvisor):/, '');
+}
 
-  const colors = {
-    yelp: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50',
-    google: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50',
-    tripadvisor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50'
-  };
+/**
+ * Build Google Maps directions URL using restaurant name and address
+ * Falls back to coordinates if address is unavailable
+ */
+function getDirectionsUrl(restaurant) {
+  // Build a search query with name and address for better UX
+  const parts = [];
+  if (restaurant.name) parts.push(restaurant.name);
+  if (restaurant.address) parts.push(restaurant.address);
 
-  const colorClass = colors[ext.source.toLowerCase()] || 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-200 dark:hover:bg-slate-600';
+  if (parts.length > 0) {
+    const query = encodeURIComponent(parts.join(', '));
+    return `https://www.google.com/maps/search/?api=1&query=${query}`;
+  }
 
-  return `
-    <a href="${url}" target="_blank" rel="noopener noreferrer"
-       class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-colors ${colorClass}">
-      ${getSourceIcon(ext.source)}
-      <span class="ml-2 capitalize">${escapeHtml(ext.source)}</span>
-      <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-      </svg>
-    </a>
-  `;
+  // Fallback to coordinates if no name/address
+  if (restaurant.latitude && restaurant.longitude) {
+    return `https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`;
+  }
+
+  return '#';
 }
 
 /**
  * Get URL for a source
  */
 function getSourceUrl(source, externalId, restaurantName) {
+  const cleanId = stripSourcePrefix(externalId);
   const urls = {
-    yelp: `https://www.yelp.com/biz/${externalId}`,
-    google: `https://www.google.com/maps/place/?q=place_id:${externalId}`,
-    tripadvisor: `https://www.tripadvisor.com/${externalId}`
+    yelp: `https://www.yelp.com/biz/${cleanId}`,
+    google: `https://www.google.com/maps/place/?q=place_id:${cleanId}`,
+    tripadvisor: `https://www.tripadvisor.com/${cleanId}`
   };
   return urls[source.toLowerCase()];
 }
@@ -537,27 +528,33 @@ function initMap(restaurant) {
   const mapContainer = document.getElementById('restaurant-map');
   if (!mapContainer) return;
 
-  // Create a simple static map using OpenStreetMap tiles
   const lat = restaurant.latitude;
   const lng = restaurant.longitude;
-  const zoom = 15;
+  const zoom = 16;
 
-  // Use a static image approach for simplicity (no JS library needed)
-  const staticMapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=${zoom}&size=800x256&markers=${lat},${lng},red`;
+  // Use OpenStreetMap embed iframe - more reliable than static map services
+  const osmEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.005},${lat - 0.003},${lng + 0.005},${lat + 0.003}&layer=mapnik&marker=${lat},${lng}`;
 
   mapContainer.innerHTML = `
-    <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}"
-       target="_blank" rel="noopener noreferrer"
-       class="block w-full h-full relative group">
-      <img src="${staticMapUrl}" alt="Map showing location of ${escapeHtml(restaurant.name)}"
-           class="w-full h-full object-cover"
-            onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-gray-400 dark:text-slate-500\\'><p>Map unavailable</p></div>'">
-      <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-        <span class="opacity-0 group-hover:opacity-100 transition-opacity text-white bg-black/50 px-3 py-1 rounded-full text-sm">
-          Open in Google Maps
-        </span>
-      </div>
-    </a>
+    <div class="relative w-full h-full">
+      <iframe
+        src="${osmEmbedUrl}"
+        class="w-full h-full border-0"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Map showing location of ${escapeHtml(restaurant.name)}"
+        allowfullscreen>
+      </iframe>
+      <a href="${getDirectionsUrl(restaurant)}"
+         target="_blank" rel="noopener noreferrer"
+         class="absolute bottom-3 right-3 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 px-3 py-2 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors text-sm font-medium flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Get Directions
+      </a>
+    </div>
   `;
 }
 
