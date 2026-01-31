@@ -3,7 +3,7 @@
  * Enhanced with map, photo lightbox, share, and more
  */
 
-import { getRestaurant, searchRestaurants } from './api.js';
+import { getRestaurant, searchRestaurants, reindexRestaurant } from './api.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
@@ -31,6 +31,7 @@ async function init() {
   detailsContainer.addEventListener('click', handleRetryClick);
   detailsContainer.addEventListener('click', handlePhotoClick);
   detailsContainer.addEventListener('click', handleShareClick);
+  detailsContainer.addEventListener('click', handleReindexClick);
 
   // Get restaurant ID from URL
   const id = getRestaurantIdFromUrl();
@@ -124,6 +125,12 @@ function showRestaurant(restaurant) {
         <div class="flex items-start justify-between gap-4 mb-4">
           <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100">${escapeHtml(restaurant.name)}</h2>
           <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Refresh Data Button -->
+            <button id="reindex-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Refresh data from sources" aria-label="Refresh data from sources">
+              <svg id="reindex-icon" class="w-6 h-6 text-gray-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
             <!-- Share Button -->
             <button id="share-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Share restaurant" aria-label="Share restaurant">
               <svg class="w-6 h-6 text-gray-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,9 +389,9 @@ function showRestaurant(restaurant) {
       </div>
     </div>
 
-    <!-- Share Toast -->
-    <div id="share-toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg transition-opacity duration-300 opacity-0" style="display: none; z-index: 60;">
-      Link copied to clipboard!
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg transition-opacity duration-300 opacity-0 max-w-md text-center" style="display: none; z-index: 60;">
+      <span id="toast-message"></span>
     </div>
   `;
 
@@ -690,12 +697,16 @@ function copyToClipboard(text) {
 }
 
 /**
- * Show share toast notification
+ * Show toast notification
+ * @param {string} message - Message to display
+ * @param {number} duration - Duration in ms (default 3000)
  */
-function showShareToast() {
-  const toast = document.getElementById('share-toast');
-  if (!toast) return;
+function showToast(message, duration = 3000) {
+  const toast = document.getElementById('toast');
+  const toastMessage = document.getElementById('toast-message');
+  if (!toast || !toastMessage) return;
 
+  toastMessage.textContent = message;
   toast.style.display = 'block';
   toast.style.opacity = '1';
 
@@ -704,7 +715,60 @@ function showShareToast() {
     setTimeout(() => {
       toast.style.display = 'none';
     }, 300);
-  }, 2000);
+  }, duration);
+}
+
+/**
+ * Show share toast notification
+ */
+function showShareToast() {
+  showToast('Link copied to clipboard!', 2000);
+}
+
+/**
+ * Handle reindex button click
+ */
+async function handleReindexClick(event) {
+  const reindexBtn = event.target.closest('#reindex-btn');
+  if (!reindexBtn || !currentRestaurant) return;
+
+  const reindexIcon = document.getElementById('reindex-icon');
+
+  // Disable button and show spinner
+  reindexBtn.disabled = true;
+  reindexBtn.classList.add('cursor-not-allowed', 'opacity-50');
+  if (reindexIcon) {
+    reindexIcon.classList.add('animate-spin');
+  }
+
+  try {
+    showToast('Refreshing data from sources...', 10000);
+
+    const response = await reindexRestaurant(currentRestaurant.id);
+    const result = response.data.result;
+
+    // Show success message
+    showToast(result.message || 'Data refreshed successfully!', 4000);
+
+    // Reload restaurant data if we got updated restaurant
+    if (response.data.restaurant) {
+      currentRestaurant = response.data.restaurant;
+      showRestaurant(currentRestaurant);
+
+      // Re-load similar restaurants
+      loadSimilarRestaurants(currentRestaurant);
+    }
+  } catch (error) {
+    console.error('Error re-indexing restaurant:', error);
+    showToast(`Failed to refresh: ${error.message}`, 4000);
+  } finally {
+    // Re-enable button
+    reindexBtn.disabled = false;
+    reindexBtn.classList.remove('cursor-not-allowed', 'opacity-50');
+    if (reindexIcon) {
+      reindexIcon.classList.remove('animate-spin');
+    }
+  }
 }
 
 /**

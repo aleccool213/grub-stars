@@ -23,6 +23,13 @@ module GrubStars
       @output.puts @pastel.dim("[DEBUG] #{message}")
     end
 
+    # Warning logging - outputs warning messages
+    def warn(message)
+      return unless @enabled
+
+      @output.puts @pastel.yellow("[WARN] #{message}")
+    end
+
     def progress(name:, current:, total:, percent:)
       return unless @enabled
 

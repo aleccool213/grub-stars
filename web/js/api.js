@@ -171,3 +171,15 @@ export async function indexSingleRestaurant(businessData, source, location = nul
     body: JSON.stringify(body),
   });
 }
+
+/**
+ * Re-index a restaurant by fetching fresh data from all known sources
+ * Updates the existing restaurant without creating a new one
+ * @param {number} id - Restaurant ID to re-index
+ * @returns {Promise<Object>} - Result with sources_updated, sources_failed, changes, and updated restaurant
+ */
+export async function reindexRestaurant(id) {
+  return apiRequest(`/restaurants/${id}/reindex`, {
+    method: 'POST',
+  });
+}

@@ -12,7 +12,8 @@ import {
   getAdapters,
   searchExternal,
   indexSingleRestaurant,
-  autocompleteRestaurants
+  autocompleteRestaurants,
+  reindexRestaurant
 } from './api.js';
 
 // Mock fetch for testing
@@ -545,6 +546,154 @@ test('autocompleteRestaurants throws on short query', async () => {
   }
 
   assert(errorThrown, 'Should throw error for short query');
+
+  teardownMockFetch();
+});
+
+// Reindex Restaurant API Tests
+
+test('reindexRestaurant refreshes data from sources', async () => {
+  setupMockFetch();
+  mockResponse('POST', 'http://localhost:9292/restaurants/1/reindex', {
+    data: {
+      result: {
+        sources_updated: ['yelp', 'google'],
+        sources_failed: [],
+        changes: {
+          yelp_rating: { old: 4.0, new: 4.5 }
+        },
+        message: 'Updated from yelp, google. yelp rating: 4.0 → 4.5'
+      },
+      restaurant: {
+        id: 1,
+        name: 'Test Restaurant',
+        ratings: [
+          { source: 'yelp', score: 4.5, review_count: 150 },
+          { source: 'google', score: 4.2, review_count: 100 }
+        ]
+      }
+    },
+    meta: { timestamp: '2024-01-15T00:00:00Z' }
+  });
+
+  const result = await reindexRestaurant(1);
+
+  assertTruthy(result.data, 'Should have data property');
+  assertTruthy(result.data.result, 'Should have result property');
+  assertEqual(result.data.result.sources_updated.length, 2, 'Should have 2 sources updated');
+  assertTruthy(result.data.result.sources_updated.includes('yelp'), 'Should include yelp');
+  assertTruthy(result.data.result.sources_updated.includes('google'), 'Should include google');
+  assertEqual(result.data.result.sources_failed.length, 0, 'Should have no failed sources');
+  assertTruthy(result.data.result.message, 'Should have message');
+  assertTruthy(result.data.restaurant, 'Should return updated restaurant');
+  assertEqual(result.data.restaurant.id, 1, 'Restaurant ID should match');
+
+  teardownMockFetch();
+});
+
+test('reindexRestaurant handles partial failure', async () => {
+  setupMockFetch();
+  mockResponse('POST', 'http://localhost:9292/restaurants/2/reindex', {
+    data: {
+      result: {
+        sources_updated: ['yelp'],
+        sources_failed: [{ source: 'google', error: 'API rate limit exceeded' }],
+        changes: {},
+        message: 'Updated from yelp. Failed: google'
+      },
+      restaurant: {
+        id: 2,
+        name: 'Another Restaurant'
+      }
+    },
+    meta: {}
+  });
+
+  const result = await reindexRestaurant(2);
+
+  assertEqual(result.data.result.sources_updated.length, 1, 'Should have 1 source updated');
+  assertEqual(result.data.result.sources_failed.length, 1, 'Should have 1 failed source');
+  assertEqual(result.data.result.sources_failed[0].source, 'google', 'Failed source should be google');
+  assertTruthy(result.data.result.sources_failed[0].error, 'Should have error message');
+
+  teardownMockFetch();
+});
+
+test('reindexRestaurant handles no external sources', async () => {
+  setupMockFetch();
+  mockResponse('POST', 'http://localhost:9292/restaurants/3/reindex', {
+    data: {
+      result: {
+        sources_updated: [],
+        sources_failed: [],
+        changes: {},
+        message: 'No external sources to refresh'
+      },
+      restaurant: {
+        id: 3,
+        name: 'Local Only Restaurant'
+      }
+    },
+    meta: {}
+  });
+
+  const result = await reindexRestaurant(3);
+
+  assertEqual(result.data.result.sources_updated.length, 0, 'Should have no sources updated');
+  assertEqual(result.data.result.sources_failed.length, 0, 'Should have no failed sources');
+  assertTruthy(result.data.result.message.includes('No external sources'), 'Message should indicate no sources');
+
+  teardownMockFetch();
+});
+
+test('reindexRestaurant throws on 404', async () => {
+  setupMockFetch();
+  mockResponse('POST', 'http://localhost:9292/restaurants/999/reindex', {
+    error: { code: 'NOT_FOUND', message: 'Restaurant with ID 999 not found' }
+  }, false, 404);
+
+  let errorThrown = false;
+  try {
+    await reindexRestaurant(999);
+  } catch (e) {
+    errorThrown = true;
+    assertEqual(e.code, 'NOT_FOUND', 'Error code should be NOT_FOUND');
+    assertTruthy(e.message.includes('999'), 'Error should mention ID');
+  }
+
+  assert(errorThrown, 'Should throw error for non-existent restaurant');
+
+  teardownMockFetch();
+});
+
+test('reindexRestaurant reports changes in result', async () => {
+  setupMockFetch();
+  mockResponse('POST', 'http://localhost:9292/restaurants/5/reindex', {
+    data: {
+      result: {
+        sources_updated: ['yelp'],
+        sources_failed: [],
+        changes: {
+          yelp_rating: { old: 4.0, new: 4.8 },
+          yelp_review_count: { old: 100, new: 150 },
+          photos: { old: 5, new: 8 }
+        },
+        message: 'Updated from yelp. yelp rating: 4.0 → 4.8, 3 new photos'
+      },
+      restaurant: { id: 5, name: 'Changed Restaurant' }
+    },
+    meta: {}
+  });
+
+  const result = await reindexRestaurant(5);
+
+  const changes = result.data.result.changes;
+  assertTruthy(changes.yelp_rating, 'Should have rating change');
+  assertEqual(changes.yelp_rating.old, 4.0, 'Old rating should be 4.0');
+  assertEqual(changes.yelp_rating.new, 4.8, 'New rating should be 4.8');
+  assertTruthy(changes.photos, 'Should have photos change');
+  assertEqual(changes.photos.old, 5, 'Old photos count should be 5');
+  assertEqual(changes.photos.new, 8, 'New photos count should be 8');
 
   teardownMockFetch();
 });
