@@ -162,17 +162,34 @@ module GrubStars
       end
 
       # Index restaurants
+      # Accepts optional "limit" parameter (default: 100) to control max restaurants indexed
       post "/index" do
         body = parse_json_body
         location = body["location"]
         category = body["category"]
+        limit = body["limit"]&.to_i
 
         unless location
           halt 400, json_error("INVALID_REQUEST", "location is required")
         end
 
+        # Validate limit if provided (must be positive, max 500)
+        if limit
+          if limit < 1
+            halt 400, json_error("INVALID_REQUEST", "limit must be at least 1")
+          elsif limit > 500
+            halt 400, json_error("INVALID_REQUEST", "limit cannot exceed 500")
+          end
+        end
+
         service = Services::IndexRestaurantsService.new
-        stats = service.index(location: location, categories: category)
+
+        # Use provided limit or fall back to service default
+        stats = if limit
+                  service.index(location: location, categories: category, limit: limit)
+                else
+                  service.index(location: location, categories: category)
+                end
 
         json_response(stats, location: location, category: category)
       rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e

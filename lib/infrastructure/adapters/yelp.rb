@@ -93,20 +93,24 @@ module GrubStars
 
       # Paginate through all businesses in a location
       # Yields businesses array and progress hash { current:, total:, percent: }
-      def search_all_businesses(location:, categories: nil, &block)
+      # @param limit [Integer, nil] Maximum number of restaurants to return (default: unlimited, max: 240)
+      def search_all_businesses(location:, categories: nil, limit: nil, &block)
         ensure_configured!
 
         offset = 0
-        limit = 50
+        page_limit = 50
         total = nil
         processed = 0
+
+        # Apply user limit (capped at Yelp's max of 240)
+        max_results = limit ? [limit, 240].min : 240
 
         loop do
           track_request!
 
           params = {
             location: location,
-            limit: limit,
+            limit: page_limit,
             offset: offset
           }
           params[:categories] = categories if categories
@@ -115,12 +119,14 @@ module GrubStars
           handle_response(response)
 
           data = JSON.parse(response.body)
-          total ||= [data["total"], 240].min  # Yelp caps at 240
+          total ||= [data["total"], max_results].min
 
           businesses = data["businesses"].map { |biz| normalize_business(biz) }
           break if businesses.empty?
 
           businesses.each do |biz|
+            break if processed >= max_results
+
             processed += 1
             progress = {
               current: processed,
@@ -130,8 +136,8 @@ module GrubStars
             yield biz, progress if block_given?
           end
 
-          offset += limit
-          break if offset >= 240 || offset >= total
+          offset += page_limit
+          break if offset >= max_results || offset >= total || processed >= max_results
         end
 
         total
