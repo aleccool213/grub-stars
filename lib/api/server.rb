@@ -2,11 +2,18 @@
 
 require "sinatra/base"
 require "json"
+require "logger"
+require "sentry-ruby"
 require_relative "../grub_stars"
+require_relative "../config/sentry"
+
+# Initialize Sentry before Sinatra loads
+GrubStars::SentryConfig.init
 
 module GrubStars
   module API
     class Server < Sinatra::Base
+      use Sentry::Rack::CaptureExceptions
       configure do
         set :show_exceptions, false
         set :raise_errors, false
