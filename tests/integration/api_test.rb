@@ -343,6 +343,166 @@ class APITest < GrubStars::IntegrationTest
     assert_equal "bakery", body["meta"]["category"]
   end
 
+  # Index endpoint limit tests
+  def test_index_returns_limit_info_in_response
+    stub_yelp_search
+    stub_yelp_business("bakery-barrie")
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index", { location: "barrie, ontario" }.to_json, { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Should include limit info in response
+    assert_equal 100, body["data"]["limit"], "Should return default limit of 100"
+    assert_equal false, body["data"]["limit_reached"], "limit_reached should be false when under limit"
+  end
+
+  def test_index_with_custom_limit
+    stub_yelp_search
+    stub_yelp_business("bakery-barrie")
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 50 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert_equal 50, body["data"]["limit"], "Should return custom limit"
+  end
+
+  def test_index_rejects_zero_limit
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 0 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/limit must be at least 1/i, body["error"]["message"])
+  end
+
+  def test_index_rejects_negative_limit
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: -5 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/limit must be at least 1/i, body["error"]["message"])
+  end
+
+  def test_index_rejects_limit_over_500
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 501 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/limit cannot exceed 500/i, body["error"]["message"])
+  end
+
+  def test_index_accepts_max_limit_of_500
+    stub_yelp_search
+    stub_yelp_business("bakery-barrie")
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 500 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 500, body["data"]["limit"]
+  end
+
+  def test_index_limit_reached_when_results_equal_limit
+    # Stub Yelp to return exactly 2 results with different locations to avoid merging
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .to_return(
+        status: 200,
+        body: {
+          total: 2,
+          businesses: [
+            yelp_business_data_with_address("bakery-1", "Bakery One", "100 First St", 44.389, -79.690),
+            yelp_business_data_with_address("bakery-2", "Bakery Two", "200 Second St", 44.400, -79.700)
+          ]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+    stub_request(:get, /api\.yelp\.com.*businesses\/bakery-1/)
+      .to_return(status: 200, body: yelp_business_data_with_address("bakery-1", "Bakery One", "100 First St", 44.389, -79.690).to_json, headers: { "Content-Type" => "application/json" })
+    stub_request(:get, /api\.yelp\.com.*businesses\/bakery-2/)
+      .to_return(status: 200, body: yelp_business_data_with_address("bakery-2", "Bakery Two", "200 Second St", 44.400, -79.700).to_json, headers: { "Content-Type" => "application/json" })
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 2 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert_equal 2, body["data"]["total"]
+    assert_equal 2, body["data"]["limit"]
+    assert_equal true, body["data"]["limit_reached"], "limit_reached should be true when results equal limit"
+  end
+
+  def test_index_limit_stops_processing_early
+    # Stub Yelp to return 5 results with different locations, but we'll set limit to 2
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .to_return(
+        status: 200,
+        body: {
+          total: 5,
+          businesses: [
+            yelp_business_data_with_address("bakery-1", "Bakery One", "100 First St", 44.389, -79.690),
+            yelp_business_data_with_address("bakery-2", "Bakery Two", "200 Second St", 44.400, -79.700),
+            yelp_business_data_with_address("bakery-3", "Bakery Three", "300 Third St", 44.410, -79.710),
+            yelp_business_data_with_address("bakery-4", "Bakery Four", "400 Fourth St", 44.420, -79.720),
+            yelp_business_data_with_address("bakery-5", "Bakery Five", "500 Fifth St", 44.430, -79.730)
+          ]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+    # Only stub businesses 1 and 2 since limit should stop processing
+    stub_request(:get, /api\.yelp\.com.*businesses\/bakery-1/)
+      .to_return(status: 200, body: yelp_business_data_with_address("bakery-1", "Bakery One", "100 First St", 44.389, -79.690).to_json, headers: { "Content-Type" => "application/json" })
+    stub_request(:get, /api\.yelp\.com.*businesses\/bakery-2/)
+      .to_return(status: 200, body: yelp_business_data_with_address("bakery-2", "Bakery Two", "200 Second St", 44.400, -79.700).to_json, headers: { "Content-Type" => "application/json" })
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 2 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert_equal 2, body["data"]["total"], "Should only process up to limit"
+    assert_equal 2, body["data"]["limit"]
+    assert_equal true, body["data"]["limit_reached"]
+
+    # Verify only 2 restaurants were created in database
+    assert_equal 2, GrubStars.db[:restaurants].count
+  end
+
   # JSON content type tests
   def test_responses_are_json
     get "/health"
@@ -1163,6 +1323,26 @@ class APITest < GrubStars::IntegrationTest
       "categories" => [{ "alias" => "bakeries", "title" => "Bakeries" }],
       "photos" => ["https://example.com/photo1.jpg"],
       "phone" => "+17055551234"
+    }
+  end
+
+  def yelp_business_data_with_address(id, name, address, lat, lng)
+    {
+      "id" => id,
+      "name" => name,
+      "rating" => 4.5,
+      "review_count" => 100,
+      "coordinates" => { "latitude" => lat, "longitude" => lng },
+      "location" => {
+        "address1" => address,
+        "city" => "Barrie",
+        "state" => "ON",
+        "zip_code" => "L4M 1A6",
+        "country" => "CA"
+      },
+      "categories" => [{ "alias" => "bakeries", "title" => "Bakeries" }],
+      "photos" => ["https://example.com/photo1.jpg"],
+      "phone" => "+1705555#{id.hash.abs.to_s[0, 4]}"
     }
   end
 

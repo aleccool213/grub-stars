@@ -158,11 +158,13 @@ class IndexRestaurantsServiceTest < Minitest::Test
   def test_passes_categories_to_adapter
     # Create a mock adapter that captures the categories parameter
     captured_categories = nil
+    captured_limit = nil
     mock_adapter = Minitest::Mock.new
     mock_adapter.expect(:configured?, true)
     mock_adapter.expect(:source_name, "mock")
-    mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:|
+    mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:, limit:|
       captured_categories = categories
+      captured_limit = limit
       # Don't yield any businesses
       0
     end
@@ -181,6 +183,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
     service.index(location: "Test City", categories: "bakery")
 
     assert_equal "bakery", captured_categories
+    assert_equal 100, captured_limit  # Default limit
     mock_adapter.verify
   end
 

@@ -109,10 +109,25 @@ async function performIndexing(location, category) {
  * @param {string|null} category - Category filter used
  */
 function showResults(stats, location, category) {
-  const { total = 0, created = 0, updated = 0, merged = 0 } = stats;
+  const { total = 0, created = 0, updated = 0, merged = 0, limit = 100, limit_reached = false } = stats;
 
   const categoryText = category
     ? `<span class="text-gray-500 dark:text-slate-400">(filtered by: ${escapeHtml(category)})</span>`
+    : '';
+
+  // Show a notice if the limit was reached
+  const limitNotice = limit_reached
+    ? `<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg p-3 mb-4">
+        <div class="flex items-start gap-2">
+          <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p class="text-sm text-amber-700 dark:text-amber-300">
+            <strong>Limit reached:</strong> There may be more restaurants in this area.
+            The default limit is ${limit} restaurants per request to manage API costs.
+          </p>
+        </div>
+      </div>`
     : '';
 
   resultsContainer.innerHTML = `
@@ -131,6 +146,8 @@ function showResults(stats, location, category) {
           <strong>Location:</strong> ${escapeHtml(location)} ${categoryText}
         </p>
       </div>
+
+      ${limitNotice}
 
       <div class="bg-white dark:bg-slate-900 rounded-lg p-4 mb-4">
         <p class="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-2">${total} restaurants found</p>

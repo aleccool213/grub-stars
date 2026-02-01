@@ -93,10 +93,14 @@ module GrubStars
 
       # Paginate through all businesses in a location
       # Yields businesses array and progress hash { current:, total:, percent: }
-      def search_all_businesses(location:, categories: nil, &block)
+      # @param limit [Integer, nil] Maximum number of restaurants to return (default: unlimited, max: 60)
+      def search_all_businesses(location:, categories: nil, limit: nil, &block)
         ensure_configured!
 
         query = build_query(location, categories)
+
+        # Apply user limit (capped at Google's max of 60)
+        max_results = limit ? [limit, 60].min : 60
 
         # Google Places API returns up to 60 results via pagination tokens
         all_spots = []
@@ -117,11 +121,14 @@ module GrubStars
 
           next_page_token = data["next_page_token"]
           break unless next_page_token
-          break if all_spots.length >= 60  # Google's max
+          break if all_spots.length >= max_results
 
           # Google requires a short delay before using next_page_token
           sleep(2)
         end
+
+        # Apply limit to collected results
+        all_spots = all_spots.take(max_results)
 
         total = all_spots.length
         all_spots.each_with_index do |spot, index|
