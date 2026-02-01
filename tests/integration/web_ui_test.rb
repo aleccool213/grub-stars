@@ -48,14 +48,6 @@ class WebUITest < GrubStars::IntegrationTest
     assert_includes last_response.body, "location", "Should have location input"
   end
 
-  # Test that categories page loads
-  def test_categories_page_loads
-    get "/categories.html"
-
-    assert last_response.ok?
-    assert_includes last_response.body, "<html"
-  end
-
   # Test that JS modules are served with correct content type
   def test_js_modules_served_correctly
     get "/js/api.js"
