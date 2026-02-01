@@ -34,11 +34,16 @@ module Services
       @adapters = adapters || default_adapters
     end
 
+    # Default limit for restaurants per index operation
+    # This helps manage API costs across adapters (Yelp, Google, TripAdvisor)
+    DEFAULT_LIMIT = 100
+
     # Index restaurants from all configured adapters
     # @param location [String] Location to index (e.g., "barrie, ontario")
     # @param categories [String, nil] Optional category filter (e.g., "bakery")
-    # @return [Hash] Statistics: { total:, created:, updated:, merged: }
-    def index(location:, categories: nil)
+    # @param limit [Integer] Maximum restaurants to index (default: 100)
+    # @return [Hash] Statistics: { total:, created:, updated:, merged:, limit:, limit_reached: }
+    def index(location:, categories: nil, limit: DEFAULT_LIMIT)
       configured_adapters = @adapters.select(&:configured?)
 
       if configured_adapters.empty?
@@ -46,16 +51,26 @@ module Services
       end
 
       stats = { total: 0, created: 0, updated: 0, merged: 0 }
+      remaining_limit = limit
 
       configured_adapters.each do |adapter|
-        adapter_stats = index_with_adapter(adapter, location, categories)
+        break if remaining_limit <= 0
+
+        adapter_stats = index_with_adapter(adapter, location, categories, limit: remaining_limit)
         stats[:total] += adapter_stats[:total]
         stats[:created] += adapter_stats[:created]
         stats[:updated] += adapter_stats[:updated]
         stats[:merged] += adapter_stats[:merged]
+
+        remaining_limit -= adapter_stats[:total]
       end
 
       @logger.clear_line
+
+      # Add limit info to response
+      stats[:limit] = limit
+      stats[:limit_reached] = stats[:total] >= limit
+
       stats
     end
 
@@ -292,11 +307,14 @@ module Services
       ]
     end
 
-    def index_with_adapter(adapter, location, categories = nil)
+    def index_with_adapter(adapter, location, categories = nil, limit: nil)
       stats = { total: 0, created: 0, updated: 0, merged: 0 }
       source = adapter.source_name
 
-      adapter.search_all_businesses(location: location, categories: categories) do |biz, progress|
+      adapter.search_all_businesses(location: location, categories: categories, limit: limit) do |biz, progress|
+        # Stop if we've reached the limit
+        break if limit && stats[:total] >= limit
+
         @logger.progress(
           name: biz[:name],
           current: progress[:current],

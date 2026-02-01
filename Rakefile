@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Ruby 4.0 compatibility - must load Logger before Sentry
+# This ensures Logger is available when Sentry gem is loaded during tests
+require "logger"
+
 require "rake/testtask"
 
 Rake::TestTask.new(:test) do |t|

@@ -94,11 +94,13 @@ export async function getLocations() {
  * Index a new location
  * @param {string} location - Location to index (e.g., "barrie, ontario")
  * @param {string} category - Optional category filter
- * @returns {Promise<Object>} - Indexing results
+ * @param {number} limit - Optional max restaurants to index (default: 100, max: 500)
+ * @returns {Promise<Object>} - Indexing results including limit and limit_reached fields
  */
-export async function indexLocation(location, category = null) {
+export async function indexLocation(location, category = null, limit = null) {
   const body = { location };
   if (category) body.category = category;
+  if (limit) body.limit = limit;
 
   return apiRequest('/index', {
     method: 'POST',
@@ -182,4 +184,12 @@ export async function reindexRestaurant(id) {
   return apiRequest(`/restaurants/${id}/reindex`, {
     method: 'POST',
   });
+}
+
+/**
+ * Get application statistics (admin stats)
+ * @returns {Promise<Object>} - Statistics including restaurant counts, API usage, and data coverage
+ */
+export async function getStats() {
+  return apiRequest('/stats');
 }

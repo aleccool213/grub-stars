@@ -18,6 +18,7 @@ import {
   initOnboardingBanner
 } from './components/onboarding-banner.js';
 import { initRestaurantAutocomplete } from './components/restaurant-autocomplete.js';
+import { initSearchableSelect } from './components/searchable-select.js';
 
 // DOM elements
 let browseForm;
@@ -29,6 +30,8 @@ let onboardingContainer;
 
 // State
 let hasIndexedLocations = false;
+let categorySearchable = null;
+let locationSearchable = null;
 
 /**
  * Initialize the search page
@@ -82,7 +85,7 @@ async function init() {
 }
 
 /**
- * Load categories into the dropdown
+ * Load categories into the searchable dropdown
  */
 async function loadCategories() {
   if (!categorySelect) return;
@@ -91,12 +94,17 @@ async function loadCategories() {
     const response = await getCategories();
     const categories = response.data || [];
 
-    // Add categories to select
-    categories.forEach(category => {
-      const option = document.createElement('option');
-      option.value = category;
-      option.textContent = category;
-      categorySelect.appendChild(option);
+    // Initialize searchable select with categories
+    categorySearchable = initSearchableSelect(categorySelect, {
+      options: categories.map(cat => ({
+        value: cat,
+        label: cat,
+        icon: '🍽️'
+      })),
+      placeholder: 'Search categories...',
+      emptyMessage: 'No categories found',
+      defaultIcon: '🍽️',
+      allowEmpty: false
     });
   } catch (error) {
     console.error('Failed to load categories:', error);
@@ -105,7 +113,7 @@ async function loadCategories() {
 }
 
 /**
- * Load locations into the dropdown
+ * Load locations into the searchable dropdown
  */
 async function loadLocations() {
   if (!locationSelect) return;
@@ -117,12 +125,18 @@ async function loadLocations() {
     // Track if there are any indexed locations
     hasIndexedLocations = locations.length > 0;
 
-    // Add locations to select
-    locations.forEach(location => {
-      const option = document.createElement('option');
-      option.value = location;
-      option.textContent = location;
-      locationSelect.appendChild(option);
+    // Initialize searchable select with locations
+    locationSearchable = initSearchableSelect(locationSelect, {
+      options: locations.map(loc => ({
+        value: loc,
+        label: loc,
+        icon: '📍'
+      })),
+      placeholder: 'All locations',
+      emptyMessage: 'No locations found',
+      defaultIcon: '📍',
+      allowEmpty: true,
+      emptyLabel: 'All locations'
     });
   } catch (error) {
     console.error('Failed to load locations:', error);
@@ -155,16 +169,11 @@ async function handleUrlParams() {
 
   // If browse params exist, populate form and search
   if (category || location) {
-    if (category && categorySelect) categorySelect.value = category;
-    if (location && locationSelect) {
-      // Find matching option case-insensitively (API returns lowercase locations)
-      const locationLower = location.toLowerCase();
-      const matchingOption = Array.from(locationSelect.options).find(
-        opt => opt.value.toLowerCase() === locationLower
-      );
-      if (matchingOption) {
-        locationSelect.value = matchingOption.value;
-      }
+    if (category && categorySearchable) {
+      categorySearchable.setValue(category);
+    }
+    if (location && locationSearchable) {
+      locationSearchable.setValue(location);
     }
 
     await performSearch({ category, location });
@@ -178,10 +187,10 @@ async function handleUrlParams() {
 async function handleBrowse(event) {
   event.preventDefault();
 
-  const formData = new FormData(browseForm);
+  // Get values from searchable select components
   const params = {
-    category: formData.get('category') || '',
-    location: formData.get('location') || ''
+    category: categorySearchable ? categorySearchable.getValue() : '',
+    location: locationSearchable ? locationSearchable.getValue() : ''
   };
 
   // Validate: category is required

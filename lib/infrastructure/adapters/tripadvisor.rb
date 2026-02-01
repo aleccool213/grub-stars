@@ -119,7 +119,8 @@ module GrubStars
 
       # Paginate through all businesses in a location
       # Yields businesses array and progress hash { current:, total:, percent: }
-      def search_all_businesses(location:, categories: nil, &block)
+      # @param limit [Integer, nil] Maximum number of restaurants to return (default: unlimited)
+      def search_all_businesses(location:, categories: nil, limit: nil, &block)
         ensure_configured!
         track_request!
 
@@ -135,6 +136,9 @@ module GrubStars
 
         data = JSON.parse(response.body)
         locations = data["data"] || []
+
+        # Apply limit if specified
+        locations = locations.take(limit) if limit
 
         total = locations.length
         locations.each_with_index do |loc, index|
