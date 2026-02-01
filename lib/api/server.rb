@@ -193,6 +193,14 @@ module GrubStars
         json_response(adapters, count: adapters.length)
       end
 
+      # Get application statistics (admin stats page)
+      get "/stats" do
+        service = Services::StatsService.new
+        stats = service.get_all_stats
+
+        json_response(stats)
+      end
+
       # Index a single restaurant from external search results
       # This will search ALL configured adapters for the restaurant and merge data
       post "/restaurants/index-single" do

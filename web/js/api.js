@@ -183,3 +183,11 @@ export async function reindexRestaurant(id) {
     method: 'POST',
   });
 }
+
+/**
+ * Get application statistics (admin stats)
+ * @returns {Promise<Object>} - Statistics including restaurant counts, API usage, and data coverage
+ */
+export async function getStats() {
+  return apiRequest('/stats');
+}

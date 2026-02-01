@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Stats - grub stars</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://grubstars.com/">
+  <meta property="og:title" content="grub stars - Admin Stats">
+  <meta property="og:description" content="View application statistics including restaurant counts, API usage, and data coverage.">
+  <meta property="og:image" content="https://grubstars.com/images/og-image.svg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://grubstars.com/">
+  <meta property="twitter:title" content="grub stars - Admin Stats">
+  <meta property="twitter:description" content="View application statistics including restaurant counts, API usage, and data coverage.">
+  <meta property="twitter:image" content="https://grubstars.com/images/og-image.svg">
+  <!-- Early dark mode detection to prevent FOUC -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('grub_stars_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
+  <script src="/js/vendor/twind.min.js"></script>
+  <script src="/js/twind-config.js"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-cream min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <main>
+      <div class="max-w-4xl mx-auto card p-6">
+        <h2 class="text-2xl font-bold text-cocoa mb-6 flex items-center gap-2">
+          <span>📊</span> Admin Stats
+        </h2>
+
+        <!-- Stats will be loaded here -->
+        <div id="stats-container"></div>
+      </div>
+    </main>
+
+    <footer class="text-center mt-12 py-8">
+      <p class="text-cocoa/60">Made with 🍕 by friends, for friends</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/js/stats.js"></script>
+</body>
+</html>
