@@ -85,26 +85,28 @@
             <label for="search-category" class="block text-sm font-medium text-cocoa mb-1">
               Category
             </label>
-            <select
+            <input
+              type="text"
               id="search-category"
               name="category"
               class="input-whimsical"
+              placeholder="Select a category..."
+              autocomplete="off"
             >
-              <option value="">Select a category...</option>
-            </select>
           </div>
 
           <div>
             <label for="search-location" class="block text-sm font-medium text-cocoa mb-1">
               Location <span class="text-cocoa/50 font-normal">(optional)</span>
             </label>
-            <select
+            <input
+              type="text"
               id="search-location"
               name="location"
               class="input-whimsical"
+              placeholder="All locations"
+              autocomplete="off"
             >
-              <option value="">All locations</option>
-            </select>
           </div>
 
           <button
