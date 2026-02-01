@@ -741,8 +741,11 @@ class APITest < GrubStars::IntegrationTest
 
     assert last_response.ok?
     body = JSON.parse(last_response.body)
+    # With no external IDs and no configured adapters, nothing gets updated or added
     assert_equal [], body["data"]["result"]["sources_updated"]
-    assert_match(/No external sources/i, body["data"]["result"]["message"])
+    assert_equal [], body["data"]["result"]["sources_added"]
+    # Message indicates no changes were made
+    assert_match(/no changes detected/i, body["data"]["result"]["message"])
   end
 
   def test_reindex_fetches_fresh_data_from_yelp

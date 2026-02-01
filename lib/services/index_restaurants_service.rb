@@ -69,24 +69,25 @@ module Services
     end
 
     # Re-index a single restaurant by fetching fresh data from all known sources
+    # AND searching for data on sources that don't yet have an external ID
     # This updates the existing restaurant without creating a new one
     # @param restaurant_id [Integer] Restaurant ID to re-index
-    # @return [Hash] Result with sources_updated, sources_failed, and changes
+    # @return [Hash] Result with sources_updated, sources_failed, sources_added, and changes
     def reindex_restaurant(restaurant_id)
       restaurant = @restaurant_repo.find_by_id_with_associations(restaurant_id)
       raise ArgumentError, "Restaurant with ID #{restaurant_id} not found" unless restaurant
 
       external_ids = restaurant.external_ids || []
-      if external_ids.empty?
-        return { sources_updated: [], sources_failed: [], changes: {}, message: "No external sources to refresh" }
-      end
+      existing_sources = external_ids.map(&:source)
 
       # Store old values for comparison
       old_data = capture_restaurant_state(restaurant)
 
       sources_updated = []
+      sources_added = []
       sources_failed = []
 
+      # Step 1: Refresh from existing external IDs
       external_ids.each do |ext_id|
         adapter = find_adapter_by_name(ext_id.source)
         next unless adapter&.configured?
@@ -109,6 +110,34 @@ module Services
         end
       end
 
+      # Step 2: Search for the restaurant on adapters that don't have an external ID yet
+      configured_adapters = @adapters.select(&:configured?)
+      new_adapters = configured_adapters.reject { |a| existing_sources.include?(a.source_name) }
+
+      new_adapters.each do |adapter|
+        begin
+          # Search by restaurant name with location context
+          search_results = adapter.search_by_name(
+            name: restaurant.name,
+            location: restaurant.location,
+            limit: 5
+          )
+
+          next if search_results.nil? || search_results.empty?
+
+          # Use the matcher to find the best match among search results
+          best_match = find_best_match_for_restaurant(restaurant, search_results)
+          next unless best_match
+
+          # Merge data from the new source
+          merge_restaurant(restaurant, best_match, adapter.source_name, restaurant.location)
+          sources_added << adapter.source_name
+        rescue StandardError => e
+          @logger.warn("Failed to search #{adapter.source_name}: #{e.message}")
+          sources_failed << { source: adapter.source_name, error: e.message }
+        end
+      end
+
       # Reload restaurant to get updated data
       updated_restaurant = @restaurant_repo.find_by_id_with_associations(restaurant_id)
       new_data = capture_restaurant_state(updated_restaurant)
@@ -118,13 +147,44 @@ module Services
 
       {
         sources_updated: sources_updated,
+        sources_added: sources_added,
         sources_failed: sources_failed,
         changes: changes,
-        message: build_result_message(sources_updated, sources_failed, changes)
+        message: build_result_message(sources_updated, sources_failed, changes, sources_added)
       }
     end
 
     private
+
+    # Find the best matching result from search results for an existing restaurant
+    # Uses the matcher to compare candidates against the restaurant's data
+    # @param restaurant [Domain::Models::Restaurant] Existing restaurant to match against
+    # @param search_results [Array<Hash>] Search results from adapter
+    # @return [Hash, nil] Best matching result or nil if no good match
+    def find_best_match_for_restaurant(restaurant, search_results)
+      # Convert restaurant to the format expected by matcher
+      restaurant_data = {
+        name: restaurant.name,
+        address: restaurant.address,
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
+        phone: restaurant.phone
+      }
+
+      # Use matcher to find the best match among search results
+      best_match = nil
+      best_score = 0
+
+      search_results.each do |result|
+        score = @matcher.calculate_match_score(restaurant_data, result)
+        if score > best_score && score > 50 # Use same threshold as regular matching
+          best_score = score
+          best_match = result
+        end
+      end
+
+      best_match
+    end
 
     def find_adapter_by_name(name)
       @adapters.find { |a| a.source_name == name }
@@ -185,11 +245,15 @@ module Services
       changes
     end
 
-    def build_result_message(sources_updated, sources_failed, changes)
+    def build_result_message(sources_updated, sources_failed, changes, sources_added = [])
       parts = []
 
       if sources_updated.any?
         parts << "Updated from #{sources_updated.join(', ')}"
+      end
+
+      if sources_added.any?
+        parts << "Added data from #{sources_added.join(', ')}"
       end
 
       if sources_failed.any?
