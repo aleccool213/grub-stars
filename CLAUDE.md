@@ -1089,3 +1089,33 @@ sentry-cli releases files VERSION upload-sourcemaps ./web/js
 2. Configure `SENTRY_ENVIRONMENT` as "production"
 3. Run `./scripts/sentry-release.sh` after deployment
 4. For JavaScript: Upload source maps with Sentry CLI
+
+### Automated Deployment Integration
+
+Sentry releases are automatically created during Fly.io deployments via GitHub Actions.
+
+**GitHub Actions Workflows:**
+- `.github/workflows/deploy-test.yml` - Creates Sentry release for test environment
+- `.github/workflows/deploy-prod.yml` - Creates Sentry release for production environment
+
+**Required Secret:**
+Add `SENTRY_AUTH_TOKEN` to your GitHub repository secrets:
+1. Go to: https://github.com/aleccool213/grub-stars/settings/secrets/actions
+2. Click "New repository secret"
+3. Name: `SENTRY_AUTH_TOKEN`
+4. Value: Get your token from https://sentry.io/settings/account/api/auth-tokens/
+5. Click "Add secret"
+
+**Manual Deployment Scripts:**
+The deployment scripts also support Sentry releases:
+```bash
+# Test deployment with Sentry release
+export SENTRY_AUTH_TOKEN=your_token_here
+./scripts/deploy-test.sh
+
+# Production deployment with Sentry release
+export SENTRY_AUTH_TOKEN=your_token_here
+./scripts/deploy-prod.sh
+```
+
+If `SENTRY_AUTH_TOKEN` is not set, the deployment will proceed but skip the Sentry release step.

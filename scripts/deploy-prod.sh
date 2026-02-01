@@ -112,6 +112,16 @@ echo "Deploying..."
 fly deploy --config fly.prod.toml
 
 echo ""
+echo "Creating Sentry release..."
+if [ -n "$SENTRY_AUTH_TOKEN" ]; then
+  SENTRY_ENVIRONMENT=production ./scripts/sentry-release.sh
+else
+  echo "  Skipping Sentry release (SENTRY_AUTH_TOKEN not set)"
+  echo "  To create a Sentry release, set SENTRY_AUTH_TOKEN environment variable"
+  echo "  Get your token from: https://sentry.io/settings/account/api/auth-tokens/"
+fi
+
+echo ""
 echo "=== Deployment complete ==="
 echo "App URL: https://grub-stars-prod.fly.dev"
 echo ""
