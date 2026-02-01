@@ -909,3 +909,123 @@ node scripts/screenshot.js --url "http://localhost:9292/page" --name "section" -
 **Issue:** Restaurant photos from external URLs (Unsplash, Yelp CDN, etc.) may fail to load due to network restrictions or CORS policies in development/CI environments.
 
 **Solution:** Photo thumbnails include a fallback placeholder icon that displays when image loading fails. The lightbox also handles missing images gracefully.
+
+---
+
+### Browser Automation with Agent Browser
+
+**Tool:** [agent-browser](https://agent-browser.dev) - Headless browser automation CLI by Vercel Labs designed for AI agents.
+
+**Installation:**
+```bash
+npm install -g agent-browser
+```
+
+**Key Features:**
+- Works with any AI agent (Claude Code, Cursor, Codex, Copilot, Gemini, opencode, etc.)
+- AI-first design - returns accessibility tree with refs for deterministic element selection
+- Fast Rust CLI with Node.js fallback
+- 50+ commands for navigation, forms, screenshots, network, storage
+- Multiple isolated browser sessions
+
+**Common Commands:**
+```bash
+# Navigate and get page snapshot
+agent-browser open http://localhost:9292
+agent-browser snapshot --json
+
+# Interact with elements using refs
+agent-browser click @e1
+agent-browser type @e2 "search query"
+agent-browser submit @e3
+
+# Screenshots
+agent-browser screenshot --full-page
+
+# Form handling
+agent-browser select @e4 "option-value"
+agent-browser check @e5
+agent-browser upload @e6 /path/to/file
+
+# Session management
+agent-browser new-session my-session
+agent-browser list-sessions
+agent-browser close-session my-session
+```
+
+**Usage with opencode:**
+The `--json` flag provides machine-readable output perfect for AI agents:
+```bash
+agent-browser snapshot --json
+# Returns: {"success":true,"data":{"snapshot":"...","refs":{...}}}
+```
+
+**Benefits:**
+- Saves ~93% of context window compared to traditional browser automation
+- Returns structured accessibility trees instead of raw HTML
+- Deterministic element selection via refs (not fragile CSS selectors)
+- Perfect for automated testing, screenshots, and UI validation
+
+**Example Workflow:**
+```bash
+# Start the server
+bundle _2.5.23_ exec rackup &
+
+# Navigate and capture state
+agent-browser open http://localhost:9292/categories.html
+agent-browser snapshot --json
+
+# Interact with UI
+agent-browser click @e3  # Click a category link
+agent-browser wait --selector "#search-results"
+agent-browser screenshot --name "categories-clicked"
+```
+
+---
+
+## Error Tracking with Sentry (JavaScript Only)
+
+**Sentry CLI** is installed for managing JavaScript error tracking and source maps.
+
+**Installation:**
+```bash
+# Sentry CLI (already installed)
+curl -sL https://sentry.io/get-cli/ | bash
+```
+
+**Sentry CLI Commands:**
+```bash
+# Upload source maps (for JavaScript)
+sentry-cli releases files VERSION upload-sourcemaps ./web/js
+
+# Create a new release
+sentry-cli releases new VERSION
+
+# Associate commits with release
+sentry-cli releases set-commits VERSION --auto
+
+# Deploy release
+sentry-cli releases deploys VERSION new -e production
+```
+
+**JavaScript SDK Setup:**
+To add Sentry error tracking to the Web UI:
+
+1. Add the Sentry JavaScript SDK to your HTML:
+```html
+<script src="https://browser.sentry-cdn.com/7.100.1/bundle.min.js" crossorigin="anonymous"></script>
+```
+
+2. Initialize Sentry in your JavaScript:
+```javascript
+Sentry.init({
+  dsn: "https://23b2b68a54a6f3de1f65be28ffb5b83f@o361849.ingest.us.sentry.io/4510797529677824",
+  release: "grub-stars@0.1.0",
+  environment: "production"
+});
+```
+
+**Production Setup:**
+1. Set up Sentry JavaScript SDK in the Web UI
+2. Use Sentry CLI to upload source maps for better error tracking
+3. Create releases and associate them with deployments
