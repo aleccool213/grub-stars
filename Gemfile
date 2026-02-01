@@ -4,6 +4,7 @@ source "https://rubygems.org"
 
 # Ruby 4.0 compatibility - these were moved out of stdlib
 gem "ostruct"
+gem "logger"
 
 gem "thor", "~> 1.4"
 gem "sequel", "~> 5.99"
@@ -15,6 +16,7 @@ gem "tty-spinner", "~> 0.9"
 gem "tty-prompt", "~> 0.23"
 gem "sinatra", "~> 3.0"
 gem "rackup", "~> 1.0"
+gem "sentry-ruby", "~> 5.22"
 
 group :development do
   gem "rubocop", "~> 1.69"

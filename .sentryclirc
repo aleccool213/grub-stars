@@ -1,0 +1,13 @@
+# Sentry CLI Configuration
+# https://docs.sentry.io/product/cli/configuration/
+
+[defaults]
+project=lively-sky-7391
+org=alec-brunelle
+url=https://sentry.io/
+
+[auth]
+token=${SENTRY_AUTH_TOKEN}
+
+[log]
+level=info

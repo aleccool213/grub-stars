@@ -10,11 +10,30 @@
 #      - YELP_API_KEY
 #      - GOOGLE_API_KEY
 #      - TRIPADVISOR_API_KEY
+#      - SENTRY_AUTH_TOKEN (optional, for Sentry releases)
 #
 # The script uses stable 1Password references (op://vault/item/field)
 # Configure your vault and item names in the variables below.
+#
+# Usage: ./scripts/deploy-prod.sh [--skip-sentry]
 
 set -e
+
+# Parse arguments
+SKIP_SENTRY=false
+for arg in "$@"; do
+  case $arg in
+    --skip-sentry)
+      SKIP_SENTRY=true
+      shift
+      ;;
+    *)
+      echo "Unknown argument: $arg"
+      echo "Usage: ./scripts/deploy-prod.sh [--skip-sentry]"
+      exit 1
+      ;;
+  esac
+done
 
 # === 1Password Configuration ===
 # Adjust these to match your 1Password setup
@@ -110,6 +129,27 @@ fly secrets set $SECRETS_ARGS --config fly.prod.toml
 echo ""
 echo "Deploying..."
 fly deploy --config fly.prod.toml
+
+echo ""
+if [ "$SKIP_SENTRY" = true ]; then
+  echo "Skipping Sentry release (--skip-sentry flag set)"
+else
+  echo "Creating Sentry release..."
+  if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+    echo "ERROR: SENTRY_AUTH_TOKEN environment variable is not set"
+    echo ""
+    echo "Sentry release creation is required for production deployments."
+    echo "To set up Sentry:"
+    echo "  1. Get your token from: https://sentry.io/settings/account/api/auth-tokens/"
+    echo "  2. Export it: export SENTRY_AUTH_TOKEN=your_token_here"
+    echo "  3. Add it to your 1Password item as 'SENTRY_AUTH_TOKEN'"
+    echo ""
+    echo "To skip Sentry release (not recommended for production):"
+    echo "  ./scripts/deploy-prod.sh --skip-sentry"
+    exit 1
+  fi
+  SENTRY_ENVIRONMENT=production ./scripts/sentry-release.sh
+fi
 
 echo ""
 echo "=== Deployment complete ==="
