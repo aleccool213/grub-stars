@@ -1,8 +1,26 @@
 #!/bin/bash
 # Deploy to test environment on Fly.io
 # Uses mock API server - no real API keys needed
+#
+# Usage: ./scripts/deploy-test.sh [--skip-sentry]
 
 set -e
+
+# Parse arguments
+SKIP_SENTRY=false
+for arg in "$@"; do
+  case $arg in
+    --skip-sentry)
+      SKIP_SENTRY=true
+      shift
+      ;;
+    *)
+      echo "Unknown argument: $arg"
+      echo "Usage: ./scripts/deploy-test.sh [--skip-sentry]"
+      exit 1
+      ;;
+  esac
+done
 
 echo "=== Deploying grub-stars TEST environment ==="
 echo ""
@@ -37,12 +55,24 @@ echo "Deploying..."
 fly deploy --config fly.test.toml
 
 echo ""
-echo "Creating Sentry release..."
-if [ -n "$SENTRY_AUTH_TOKEN" ]; then
-  SENTRY_ENVIRONMENT=test ./scripts/sentry-release.sh
+if [ "$SKIP_SENTRY" = true ]; then
+  echo "Skipping Sentry release (--skip-sentry flag set)"
 else
-  echo "  Skipping Sentry release (SENTRY_AUTH_TOKEN not set)"
-  echo "  To create a Sentry release, set SENTRY_AUTH_TOKEN environment variable"
+  echo "Creating Sentry release..."
+  if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+    echo "ERROR: SENTRY_AUTH_TOKEN environment variable is not set"
+    echo ""
+    echo "Sentry release creation is required for deployments."
+    echo "To set up Sentry:"
+    echo "  1. Get your token from: https://sentry.io/settings/account/api/auth-tokens/"
+    echo "  2. Export it: export SENTRY_AUTH_TOKEN=your_token_here"
+    echo "  3. Or add it to your .env file"
+    echo ""
+    echo "To skip Sentry release (not recommended):"
+    echo "  ./scripts/deploy-test.sh --skip-sentry"
+    exit 1
+  fi
+  SENTRY_ENVIRONMENT=test ./scripts/sentry-release.sh
 fi
 
 echo ""
