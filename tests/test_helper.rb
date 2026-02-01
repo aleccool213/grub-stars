@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 # Ruby 4.0 compatibility - must load Logger before Sentry
+# This MUST come before bundler/setup to ensure Logger is available
+# when the Sentry gem is autoloaded
+gem "logger"
 require "logger"
 
 require "bundler/setup"

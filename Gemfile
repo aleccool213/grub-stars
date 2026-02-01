@@ -4,7 +4,9 @@ source "https://rubygems.org"
 
 # Ruby 4.0 compatibility - these were moved out of stdlib
 gem "ostruct"
-gem "logger"
+
+# Logger MUST be loaded before Sentry due to Ruby 4.0 bundled gems behavior
+gem "logger", require: true
 
 gem "thor", "~> 1.4"
 gem "sequel", "~> 5.99"
