@@ -905,8 +905,11 @@ class APITest < GrubStars::IntegrationTest
 
     assert last_response.ok?
     body = JSON.parse(last_response.body)
+    # With no external IDs and no configured adapters, nothing gets updated or added
     assert_equal [], body["data"]["result"]["sources_updated"]
-    assert_match(/No external sources/i, body["data"]["result"]["message"])
+    assert_equal [], body["data"]["result"]["sources_added"]
+    # Message indicates no changes were made
+    assert_match(/no changes detected/i, body["data"]["result"]["message"])
   end
 
   def test_reindex_fetches_fresh_data_from_yelp
@@ -1096,6 +1099,81 @@ class APITest < GrubStars::IntegrationTest
     sources_updated = body["data"]["result"]["sources_updated"]
     assert_includes sources_updated, "yelp"
     assert_includes sources_updated, "google"
+  end
+
+  def test_reindex_single_source_restaurant_adds_new_sources
+    GrubStars.reset_db!
+    # Seed a restaurant with only a Yelp external ID (no Google)
+    db = GrubStars.db
+    restaurant_id = db[:restaurants].insert(
+      name: "Single Source Bakery",
+      address: "456 Oak Ave",
+      latitude: 44.390,
+      longitude: -79.691,
+      phone: "+17055551234",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Only Yelp external ID - no Google external ID
+    db[:external_ids].insert(restaurant_id: restaurant_id, source: "yelp", external_id: "yelp:single-source-yelp-123")
+    db[:ratings].insert(restaurant_id: restaurant_id, source: "yelp", score: 4.0, review_count: 50, fetched_at: Time.now)
+
+    # Stub Yelp API for refreshing existing source
+    stub_request(:get, /api\.yelp\.com.*businesses\/single-source-yelp-123/)
+      .to_return(
+        status: 200,
+        body: yelp_business_data("single-source-yelp-123", "Single Source Bakery").to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Stub Google API text search for finding the restaurant on a new source
+    # The search query will be "Single Source Bakery in barrie, ontario"
+    stub_request(:get, /maps\.googleapis\.com.*textsearch\/json/)
+      .to_return(
+        status: 200,
+        body: {
+          results: [
+            {
+              place_id: "google-new-place-789",
+              name: "Single Source Bakery",
+              rating: 4.3,
+              user_ratings_total: 75,
+              geometry: { location: { lat: 44.390, lng: -79.691 } },
+              formatted_address: "456 Oak Ave, Barrie, ON",
+              formatted_phone_number: "+1 705-555-1234",
+              photos: [{ photo_reference: "photo123" }]
+            }
+          ],
+          status: "OK"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    with_env("YELP_API_KEY" => "test_key", "GOOGLE_API_KEY" => "test_key") do
+      post "/restaurants/#{restaurant_id}/reindex"
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Yelp should be updated (existing source refreshed)
+    sources_updated = body["data"]["result"]["sources_updated"]
+    assert_includes sources_updated, "yelp", "Yelp should be in sources_updated"
+
+    # Google should be added (new source discovered via search)
+    sources_added = body["data"]["result"]["sources_added"]
+    assert_includes sources_added, "google", "Google should be in sources_added"
+
+    # Verify the restaurant now has a Google external ID
+    google_ext_id = db[:external_ids].where(restaurant_id: restaurant_id, source: "google").first
+    assert google_ext_id, "Restaurant should now have a Google external ID"
+
+    # Verify Google rating was added
+    google_rating = db[:ratings].where(restaurant_id: restaurant_id, source: "google").first
+    assert google_rating, "Restaurant should now have a Google rating"
+    assert_equal 4.3, google_rating[:score]
   end
 
   # Stats endpoint tests
