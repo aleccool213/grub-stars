@@ -183,3 +183,11 @@ export async function reindexRestaurant(id) {
     method: 'POST',
   });
 }
+
+/**
+ * Get system statistics
+ * @returns {Promise<Object>} - System stats with restaurants, provider coverage, API usage, and locations
+ */
+export async function getStats() {
+  return apiRequest('/stats');
+}

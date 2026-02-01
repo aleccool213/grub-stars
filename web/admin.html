@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>grub stars - Admin Stats</title>
+  <meta name="description" content="System statistics and API usage dashboard">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <!-- Early dark mode detection to prevent FOUC -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('grub_stars_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
+  <script src="/js/vendor/twind.min.js"></script>
+  <script src="/js/twind-config.js"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+  <style>
+    .stat-card {
+      background: linear-gradient(135deg, #fff9f0 0%, #fff5e6 100%);
+      border: 2px solid #e6d5c3;
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(139, 90, 43, 0.15);
+    }
+    html.dark .stat-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-color: #334155;
+    }
+    .progress-bar {
+      height: 8px;
+      background: #e6d5c3;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    html.dark .progress-bar {
+      background: #334155;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .progress-fill.low { background: #22c55e; }
+    .progress-fill.medium { background: #f59e0b; }
+    .progress-fill.high { background: #ef4444; }
+    html.dark .progress-fill.low { background: #4ade80; }
+    html.dark .progress-fill.medium { background: #fbbf24; }
+    html.dark .progress-fill.high { background: #f87171; }
+    .provider-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .provider-badge.yelp { background: #fee2e2; color: #991b1b; }
+    .provider-badge.google { background: #dbeafe; color: #1e40af; }
+    .provider-badge.tripadvisor { background: #dcfce7; color: #166534; }
+    html.dark .provider-badge.yelp { background: #450a0a; color: #fca5a5; }
+    html.dark .provider-badge.google { background: #172554; color: #93c5fd; }
+    html.dark .provider-badge.tripadvisor { background: #052e16; color: #86efac; }
+  </style>
+</head>
+<body class="bg-cream min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-bold text-cocoa mb-2">📊 Admin Stats</h1>
+          <p class="text-cocoa/70">System overview and API usage dashboard</p>
+        </div>
+        <a href="/" class="btn-secondary">← Back to Search</a>
+      </div>
+    </header>
+
+    <main>
+      <!-- Loading State -->
+      <div id="loading" class="text-center py-12">
+        <div class="text-6xl mb-4">⏳</div>
+        <p class="text-cocoa/70 text-lg">Loading stats...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="error" class="hidden max-w-2xl mx-auto">
+        <div class="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
+          <div class="text-4xl mb-2">⚠️</div>
+          <h3 class="text-xl font-bold text-red-800 mb-2">Failed to load stats</h3>
+          <p id="error-message" class="text-red-600"></p>
+          <button onclick="loadStats()" class="mt-4 btn-primary">Try Again</button>
+        </div>
+      </div>
+
+      <!-- Stats Content -->
+      <div id="stats-content" class="hidden space-y-8">
+        <!-- Restaurant Overview -->
+        <section>
+          <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
+            <span>🍽️</span> Restaurant Overview
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card">
+              <div class="text-3xl font-bold text-mango" id="stat-total-restaurants">-</div>
+              <div class="text-sm text-cocoa/70">Total Restaurants</div>
+            </div>
+            <div class="stat-card">
+              <div class="text-3xl font-bold text-electric" id="stat-with-photos">-</div>
+              <div class="text-sm text-cocoa/70">With Photos</div>
+            </div>
+            <div class="stat-card">
+              <div class="text-3xl font-bold text-hotpink" id="stat-with-reviews">-</div>
+              <div class="text-sm text-cocoa/70">With Reviews</div>
+            </div>
+            <div class="stat-card">
+              <div class="text-3xl font-bold text-mint" id="stat-with-ratings">-</div>
+              <div class="text-sm text-cocoa/70">With Ratings</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Data Coverage -->
+        <section>
+          <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
+            <span>🔗</span> Data Coverage by Provider
+          </h2>
+          <div class="card p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="provider-coverage">
+              <!-- Provider badges will be inserted here -->
+            </div>
+            <div class="mt-6 pt-6 border-t border-latte">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="stat-card">
+                  <div class="text-2xl font-bold text-coral" id="stat-multi-source">-</div>
+                  <div class="text-sm text-cocoa/70">Multi-Source Restaurants</div>
+                  <div class="text-xs text-cocoa/50 mt-1">Restaurants with data from 2+ providers</div>
+                </div>
+                <div class="stat-card">
+                  <div class="text-2xl font-bold text-sunny" id="stat-single-source">-</div>
+                  <div class="text-sm text-cocoa/70">Single Source Only</div>
+                  <div class="text-xs text-cocoa/50 mt-1">Restaurants with only 1 provider</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- API Usage -->
+        <section>
+          <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
+            <span>📡</span> API Usage This Month
+          </h2>
+          <div id="api-usage" class="space-y-4">
+            <!-- API usage cards will be inserted here -->
+          </div>
+        </section>
+
+        <!-- Indexed Locations -->
+        <section>
+          <h2 class="text-2xl font-bold text-cocoa mb-4 flex items-center gap-2">
+            <span>📍</span> Indexed Locations
+          </h2>
+          <div class="card p-6">
+            <div id="locations-list" class="flex flex-wrap gap-2">
+              <!-- Location tags will be inserted here -->
+            </div>
+            <p id="no-locations" class="hidden text-cocoa/50 text-center py-4">
+              No locations indexed yet. <a href="/index-location.html" class="text-mango hover:underline">Index a location</a> to get started.
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="text-center mt-12 py-8">
+      <p class="text-cocoa/60">Last updated: <span id="last-updated">-</span></p>
+    </footer>
+  </div>
+
+  <script type="module" src="/js/admin.js"></script>
+</body>
+</html>
