@@ -6,6 +6,9 @@ require "logger"
 
 require "rake/testtask"
 
+# Set test environment to prevent Sentry from loading during tests
+ENV["RACK_ENV"] = "test"
+
 Rake::TestTask.new(:test) do |t|
   t.libs << "tests"
   t.test_files = FileList["tests/**/*_test.rb"]
