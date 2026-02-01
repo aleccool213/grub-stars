@@ -37,6 +37,7 @@ require_relative "services/index_restaurants_service"
 require_relative "services/search_restaurants_service"
 require_relative "services/restaurant_details_service"
 require_relative "services/list_categories_service"
+require_relative "services/stats_service"
 
 # Presentation Layer
 require_relative "cli"

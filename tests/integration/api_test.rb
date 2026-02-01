@@ -1098,7 +1098,221 @@ class APITest < GrubStars::IntegrationTest
     assert_includes sources_updated, "google"
   end
 
+  # Stats endpoint tests
+  def test_stats_returns_json_structure
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert body["data"]
+    assert body["meta"]["timestamp"]
+
+    # Check top-level structure
+    assert body["data"]["restaurants"]
+    assert body["data"]["api_usage"]
+    assert body["data"]["data_coverage"]
+  end
+
+  def test_stats_empty_database
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Restaurant stats
+    assert_equal 0, body["data"]["restaurants"]["total"]
+    assert_equal({}, body["data"]["restaurants"]["by_location"])
+
+    # API usage (all adapters should be present)
+    api_usage = body["data"]["api_usage"]
+    assert api_usage["yelp"]
+    assert api_usage["google"]
+    assert api_usage["tripadvisor"]
+
+    # Data coverage
+    data_coverage = body["data"]["data_coverage"]
+    assert_equal 0, data_coverage["total_restaurants"]
+    assert_equal 0, data_coverage["with_all_sources"]
+    assert_equal 0, data_coverage["with_multiple_sources"]
+    assert_equal 0, data_coverage["with_single_source"]
+  end
+
+  def test_stats_with_restaurants
+    seed_restaurant_with_location
+
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Restaurant stats
+    assert_equal 1, body["data"]["restaurants"]["total"]
+    assert_equal({ "barrie, ontario" => 1 }, body["data"]["restaurants"]["by_location"])
+
+    # Data coverage
+    data_coverage = body["data"]["data_coverage"]
+    assert_equal 1, data_coverage["total_restaurants"]
+    assert_equal 1, data_coverage["with_single_source"]
+    assert_equal 1, data_coverage["by_source"]["yelp"]
+  end
+
+  def test_stats_api_usage_shows_adapter_limits
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    api_usage = body["data"]["api_usage"]
+
+    # Check Yelp (limit = 5000)
+    yelp_usage = api_usage["yelp"]
+    assert_equal 5000, yelp_usage["request_limit"]
+    assert_equal 0, yelp_usage["requests_used"]
+    assert_equal 5000, yelp_usage["remaining"]
+    assert_equal 0, yelp_usage["percentage_used"]
+
+    # Check Google (limit = 10000)
+    google_usage = api_usage["google"]
+    assert_equal 10_000, google_usage["request_limit"]
+
+    # Check TripAdvisor (limit = 5000)
+    tripadvisor_usage = api_usage["tripadvisor"]
+    assert_equal 5000, tripadvisor_usage["request_limit"]
+  end
+
+  def test_stats_api_usage_with_tracked_requests
+    # Simulate API usage
+    api_repo = Infrastructure::Repositories::ApiRequestRepository.new
+    api_repo.increment("yelp", 100)
+    api_repo.increment("google", 500)
+
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    api_usage = body["data"]["api_usage"]
+
+    # Check Yelp usage
+    yelp_usage = api_usage["yelp"]
+    assert_equal 100, yelp_usage["requests_used"]
+    assert_equal 4900, yelp_usage["remaining"]
+    assert_equal 2.0, yelp_usage["percentage_used"]
+
+    # Check Google usage
+    google_usage = api_usage["google"]
+    assert_equal 500, google_usage["requests_used"]
+    assert_equal 9500, google_usage["remaining"]
+    assert_equal 5.0, google_usage["percentage_used"]
+  end
+
+  def test_stats_data_coverage_with_multiple_sources
+    seed_restaurant_with_all_sources
+
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    data_coverage = body["data"]["data_coverage"]
+
+    assert_equal 1, data_coverage["total_restaurants"]
+    assert_equal 1, data_coverage["with_all_sources"]
+    assert_equal 1, data_coverage["with_multiple_sources"]
+    assert_equal 0, data_coverage["with_single_source"]
+
+    # Each source should have 1 restaurant
+    assert_equal 1, data_coverage["by_source"]["yelp"]
+    assert_equal 1, data_coverage["by_source"]["google"]
+    assert_equal 1, data_coverage["by_source"]["tripadvisor"]
+  end
+
+  def test_stats_data_coverage_with_mixed_sources
+    seed_restaurants_with_mixed_sources
+
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    data_coverage = body["data"]["data_coverage"]
+
+    # 3 restaurants total
+    assert_equal 3, data_coverage["total_restaurants"]
+    # 1 with all sources, 1 with 2 sources, 1 with single source
+    assert_equal 1, data_coverage["with_all_sources"]
+    assert_equal 2, data_coverage["with_multiple_sources"] # includes all_sources
+    assert_equal 1, data_coverage["with_single_source"]
+  end
+
   private
+
+  def seed_restaurant_with_all_sources
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    restaurant_id = db[:restaurants].insert(
+      name: "All Sources Restaurant",
+      address: "123 Main St",
+      latitude: 44.389,
+      longitude: -79.690,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Add external IDs for all sources
+    %w[yelp google tripadvisor].each do |source|
+      db[:external_ids].insert(
+        restaurant_id: restaurant_id,
+        source: source,
+        external_id: "#{source}-id-123"
+      )
+    end
+
+    restaurant_id
+  end
+
+  def seed_restaurants_with_mixed_sources
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    # Restaurant 1: All 3 sources
+    r1_id = db[:restaurants].insert(
+      name: "Restaurant One",
+      address: "100 Main St",
+      latitude: 44.389,
+      longitude: -79.690,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    %w[yelp google tripadvisor].each do |source|
+      db[:external_ids].insert(restaurant_id: r1_id, source: source, external_id: "#{source}-r1")
+    end
+
+    # Restaurant 2: 2 sources (yelp and google)
+    r2_id = db[:restaurants].insert(
+      name: "Restaurant Two",
+      address: "200 Main St",
+      latitude: 44.390,
+      longitude: -79.691,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    %w[yelp google].each do |source|
+      db[:external_ids].insert(restaurant_id: r2_id, source: source, external_id: "#{source}-r2")
+    end
+
+    # Restaurant 3: Single source (yelp only)
+    r3_id = db[:restaurants].insert(
+      name: "Restaurant Three",
+      address: "300 Main St",
+      latitude: 44.391,
+      longitude: -79.692,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    db[:external_ids].insert(restaurant_id: r3_id, source: "yelp", external_id: "yelp-r3")
+  end
 
   def seed_restaurant
     GrubStars.reset_db!
