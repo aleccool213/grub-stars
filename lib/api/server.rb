@@ -2,11 +2,24 @@
 
 require "sinatra/base"
 require "json"
+require "logger"
 require_relative "../grub_stars"
+
+# Only load Sentry in non-test environments to avoid Ruby 4.0 bundled gem issues
+# In test environment, we don't need error tracking anyway
+unless ENV["RACK_ENV"] == "test" || ENV["RAILS_ENV"] == "test"
+  require "sentry-ruby"
+  require_relative "../config/sentry"
+  
+  # Initialize Sentry before Sinatra loads
+  GrubStars::SentryConfig.init
+end
 
 module GrubStars
   module API
     class Server < Sinatra::Base
+      # Only use Sentry middleware if Sentry is loaded
+      use Sentry::Rack::CaptureExceptions if defined?(Sentry)
       configure do
         set :show_exceptions, false
         set :raise_errors, false

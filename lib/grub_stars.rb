@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Ruby 4.0 compatibility - Logger moved out of stdlib
+require "logger"
+
 require "fileutils"
 require_relative "config"
 require_relative "logger"
