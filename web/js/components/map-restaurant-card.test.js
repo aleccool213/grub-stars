@@ -97,7 +97,8 @@ test('mapRestaurantCard renders directions link with coordinates', () => {
   const html = mapRestaurantCard(mockRestaurant);
   assertTruthy(html.includes('google.com/maps/dir'), 'Should include directions link');
   assertTruthy(html.includes('44.389'), 'Should include latitude in URL');
-  assertTruthy(html.includes('-79.690'), 'Should include longitude in URL');
+  // Note: JavaScript drops trailing zeros, so -79.690 becomes -79.69
+  assertTruthy(html.includes('-79.69'), 'Should include longitude in URL');
 });
 
 test('mapRestaurantCard renders View Details button', () => {
