@@ -927,6 +927,135 @@ Or use the provided startup script approach that ensures proper loading order.
 
 ---
 
+### Production Debugging on Fly.io
+
+When investigating issues in production, you'll need to access logs and the database from the Fly.io deployment.
+
+**Prerequisites:**
+```bash
+# Install Fly.io CLI (if not already installed)
+curl -L https://fly.io/install.sh | sh
+
+# Login to Fly.io
+fly auth login
+```
+
+**Viewing Production Logs:**
+```bash
+# Stream logs in real-time
+fly logs --config fly.prod.toml
+
+# Get recent logs without tailing (useful for one-time inspection)
+fly logs --config fly.prod.toml -n
+
+# Filter by time (get last hour)
+fly logs --config fly.prod.toml -n | grep "2026-02-02T00:"
+```
+
+**Accessing the Production Database:**
+
+The production database is stored in a persistent volume mounted at `/data`:
+
+```bash
+# Check if the app is running
+fly status --config fly.prod.toml
+
+# Start the machine if it's stopped
+fly machine start <MACHINE_ID> --config fly.prod.toml
+
+# SSH into the container and query the database
+fly ssh console --config fly.prod.toml --command "sqlite3 /data/grub_stars.db 'SELECT * FROM restaurants WHERE name LIKE \"%Off the Hook%\";'"
+
+# Export the entire database as SQL
+fly ssh console --config fly.prod.toml --command "sqlite3 /data/grub_stars.db '.dump'" > /tmp/prod_dump.sql
+
+# Download the binary database file
+fly ssh console --config fly.prod.toml --command "cat /data/grub_stars.db" > /tmp/grub_stars_prod.db
+```
+
+**Analyzing Production Data Locally:**
+```bash
+# Clean up the SQL dump (remove SSH connection messages)
+grep -v "^Connecting\|^Warning\|^Error" /tmp/prod_dump.sql > /tmp/clean.sql
+
+# Create a local database from the dump
+sqlite3 /tmp/prod.db < /tmp/clean.sql
+
+# Query the local copy
+sqlite3 /tmp/prod.db "SELECT r.*, e.source, e.external_id 
+  FROM restaurants r 
+  JOIN external_ids e ON r.id = e.restaurant_id 
+  WHERE r.name LIKE '%search_term%';"
+```
+
+**Debugging Restaurant Merging Issues:**
+
+When investigating why restaurants didn't merge (e.g., "Off the Hook Poke Market" appearing twice):
+
+1. **Check the logs for matcher activity:**
+   ```bash
+   fly logs --config fly.prod.toml -n | grep -i "off the hook\|matcher"
+   ```
+
+2. **Look for key log patterns:**
+   - `Matcher: Looking for match for 'Restaurant Name'` - When matching starts
+   - `Matcher: X candidate(s) to compare` - How many nearby restaurants were found
+   - `Matcher: Comparing 'New' with 'Existing' (ID: N)` - Individual comparisons
+   - `Matcher: Scores - name: X/35, address: X/20, gps: X/25, phone: X/20` - Scoring breakdown
+   - `Matcher: Total: X/100 (threshold: 50)` - Final score vs threshold
+   - `Matcher: MATCH FOUND` or `Matcher: No candidates available` - Result
+
+3. **Common issues to look for:**
+   - **"0 candidate(s) to compare"** - GPS coordinates missing, can't find nearby restaurants
+   - **Low GPS scores** - Restaurants are farther than 200m apart
+   - **Name mismatch** - Different capitalization or wording (e.g., "the" vs "The")
+   - **Missing phone numbers** - Can't use phone matching (20 points)
+
+4. **Query the database for duplicates:**
+   ```sql
+   -- Find restaurants with similar names
+   SELECT r1.id, r1.name, r1.address, r1.latitude, r1.longitude, r1.phone,
+          r2.id, r2.name, r2.address, r2.latitude, r2.longitude, r2.phone
+   FROM restaurants r1
+   JOIN restaurants r2 ON r1.id < r2.id
+   WHERE r1.name LIKE '%Off the Hook%' OR r2.name LIKE '%Off the Hook%';
+   
+   -- Check external IDs for suspected duplicates
+   SELECT r.name, r.id, e.source, e.external_id
+   FROM restaurants r
+   JOIN external_ids e ON r.id = e.restaurant_id
+   WHERE r.name LIKE '%Off the Hook%';
+   ```
+
+**Example Debugging Session:**
+
+```bash
+# 1. Get recent logs showing the indexing process
+fly logs --config fly.prod.toml -n 2>&1 | grep -i "off the hook" > /tmp/poke_logs.txt
+
+# 2. Analyze the logs
+cat /tmp/poke_logs.txt
+# Output shows:
+# - First "Off the Hook Poke Market" from Yelp: 0 candidates (new area, first restaurant)
+# - Second from Google: 1 candidate found, score 75/100, MATCHED
+# - Third from TripAdvisor: 0 candidates (no GPS coordinates in TripAdvisor search results!)
+
+# 3. Query database to confirm
+fly ssh console --config fly.prod.toml --command "sqlite3 /data/grub_stars.db '
+  SELECT r.id, r.name, r.latitude, r.longitude, r.phone, e.source 
+  FROM restaurants r 
+  JOIN external_ids e ON r.id = e.restaurant_id 
+  WHERE r.name LIKE \"%Off the Hook%\";'"
+
+# Result shows:
+# ID 334: GPS present, phone present, sources: yelp, google
+# ID 335: NO GPS, NO phone, source: tripadvisor (created as separate entry)
+```
+
+**Key Finding:** TripAdvisor search results don't include GPS coordinates, causing the matcher to find 0 candidates and create a duplicate restaurant instead of merging.
+
+---
+
 ### Browser Automation with Agent Browser
 
 **Tool:** [agent-browser](https://agent-browser.dev) - Headless browser automation CLI by Vercel Labs designed for AI agents.
