@@ -293,6 +293,72 @@ class IndexRestaurantsServiceTest < Minitest::Test
     assert_equal 1, @db[:restaurants].count
   end
 
+  def test_limit_applies_per_adapter_not_shared
+    # This test verifies that each adapter gets its own limit of 100
+    # rather than sharing a single pool of 100 across all adapters
+
+    # Track what limit each adapter receives
+    captured_limits = {}
+
+    # Create mock adapter class that properly handles blocks
+    mock_adapter1 = MockAdapter.new("adapter1", 60, captured_limits)
+    mock_adapter2 = MockAdapter.new("adapter2", 50, captured_limits)
+
+    service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [mock_adapter1, mock_adapter2],
+      logger: GrubStars::Logger.new
+    )
+
+    stats = service.index(location: "Test City", limit: 100)
+
+    # Each adapter should receive the full limit of 100
+    assert_equal 100, captured_limits["adapter1"], "Adapter 1 should receive limit of 100"
+    assert_equal 100, captured_limits["adapter2"], "Adapter 2 should receive limit of 100 (per adapter, not shared)"
+
+    # Total should be 110 (60 from adapter1 + 50 from adapter2)
+    assert_equal 110, stats[:total], "Total should include all restaurants from both adapters"
+  end
+
+  # Helper class for testing adapter behavior
+  class MockAdapter
+    attr_reader :source_name
+
+    def initialize(name, num_results, captured_limits)
+      @source_name = name
+      @num_results = num_results
+      @captured_limits = captured_limits
+    end
+
+    def configured?
+      true
+    end
+
+    def search_all_businesses(location:, categories:, limit:)
+      @captured_limits[@source_name] = limit
+
+      @num_results.times do |i|
+        yield(
+          {
+            external_id: "#{@source_name}-#{i}",
+            name: "Restaurant #{@source_name} #{i}",
+            address: "#{i} Main St",
+            latitude: 44.0 + (i * 0.01),
+            longitude: -79.0 + (i * 0.01),
+            rating: 4.0,
+            categories: ["Restaurant"]
+          },
+          { current: i + 1, total: @num_results, percent: ((i + 1).to_f / @num_results * 100).to_i }
+        )
+      end
+    end
+  end
+
   private
 
   def create_test_db
