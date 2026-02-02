@@ -991,6 +991,19 @@ html.dark .autocomplete-item {
   margin-top: 2px;
 }
 
+.autocomplete-address {
+  font-size: 0.8rem;
+  color: rgba(74, 55, 40, 0.75);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+html.dark .autocomplete-address {
+  color: rgba(255, 251, 245, 0.65);
+}
+
 html.dark .autocomplete-empty {
   color: rgba(255, 251, 245, 0.5);
 }

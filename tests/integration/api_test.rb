@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Set test environment before loading server to skip Sentry initialization
+# This avoids Ruby 4.0 bundled gem issues with Logger
+ENV["RACK_ENV"] = "test"
+
 require_relative "../test_helper"
 require "rack/test"
 require "webmock/minitest"
@@ -337,6 +341,166 @@ class APITest < GrubStars::IntegrationTest
 
     assert_equal 1, body["data"]["total"]
     assert_equal "bakery", body["meta"]["category"]
+  end
+
+  # Index endpoint limit tests
+  def test_index_returns_limit_info_in_response
+    stub_yelp_search
+    stub_yelp_business("bakery-barrie")
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index", { location: "barrie, ontario" }.to_json, { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Should include limit info in response
+    assert_equal 100, body["data"]["limit"], "Should return default limit of 100"
+    assert_equal false, body["data"]["limit_reached"], "limit_reached should be false when under limit"
+  end
+
+  def test_index_with_custom_limit
+    stub_yelp_search
+    stub_yelp_business("bakery-barrie")
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 50 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert_equal 50, body["data"]["limit"], "Should return custom limit"
+  end
+
+  def test_index_rejects_zero_limit
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 0 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/limit must be at least 1/i, body["error"]["message"])
+  end
+
+  def test_index_rejects_negative_limit
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: -5 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/limit must be at least 1/i, body["error"]["message"])
+  end
+
+  def test_index_rejects_limit_over_500
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 501 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/limit cannot exceed 500/i, body["error"]["message"])
+  end
+
+  def test_index_accepts_max_limit_of_500
+    stub_yelp_search
+    stub_yelp_business("bakery-barrie")
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 500 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 500, body["data"]["limit"]
+  end
+
+  def test_index_limit_reached_when_results_equal_limit
+    # Stub Yelp to return exactly 2 results with different locations to avoid merging
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .to_return(
+        status: 200,
+        body: {
+          total: 2,
+          businesses: [
+            yelp_business_data_with_address("bakery-1", "Bakery One", "100 First St", 44.389, -79.690),
+            yelp_business_data_with_address("bakery-2", "Bakery Two", "200 Second St", 44.400, -79.700)
+          ]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+    stub_request(:get, /api\.yelp\.com.*businesses\/bakery-1/)
+      .to_return(status: 200, body: yelp_business_data_with_address("bakery-1", "Bakery One", "100 First St", 44.389, -79.690).to_json, headers: { "Content-Type" => "application/json" })
+    stub_request(:get, /api\.yelp\.com.*businesses\/bakery-2/)
+      .to_return(status: 200, body: yelp_business_data_with_address("bakery-2", "Bakery Two", "200 Second St", 44.400, -79.700).to_json, headers: { "Content-Type" => "application/json" })
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 2 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert_equal 2, body["data"]["total"]
+    assert_equal 2, body["data"]["limit"]
+    assert_equal true, body["data"]["limit_reached"], "limit_reached should be true when results equal limit"
+  end
+
+  def test_index_limit_stops_processing_early
+    # Stub Yelp to return 5 results with different locations, but we'll set limit to 2
+    stub_request(:get, /api\.yelp\.com.*businesses\/search/)
+      .to_return(
+        status: 200,
+        body: {
+          total: 5,
+          businesses: [
+            yelp_business_data_with_address("bakery-1", "Bakery One", "100 First St", 44.389, -79.690),
+            yelp_business_data_with_address("bakery-2", "Bakery Two", "200 Second St", 44.400, -79.700),
+            yelp_business_data_with_address("bakery-3", "Bakery Three", "300 Third St", 44.410, -79.710),
+            yelp_business_data_with_address("bakery-4", "Bakery Four", "400 Fourth St", 44.420, -79.720),
+            yelp_business_data_with_address("bakery-5", "Bakery Five", "500 Fifth St", 44.430, -79.730)
+          ]
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+    # Only stub businesses 1 and 2 since limit should stop processing
+    stub_request(:get, /api\.yelp\.com.*businesses\/bakery-1/)
+      .to_return(status: 200, body: yelp_business_data_with_address("bakery-1", "Bakery One", "100 First St", 44.389, -79.690).to_json, headers: { "Content-Type" => "application/json" })
+    stub_request(:get, /api\.yelp\.com.*businesses\/bakery-2/)
+      .to_return(status: 200, body: yelp_business_data_with_address("bakery-2", "Bakery Two", "200 Second St", 44.400, -79.700).to_json, headers: { "Content-Type" => "application/json" })
+
+    with_env("YELP_API_KEY" => "test_key") do
+      post "/index",
+           { location: "barrie, ontario", limit: 2 }.to_json,
+           { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    assert_equal 2, body["data"]["total"], "Should only process up to limit"
+    assert_equal 2, body["data"]["limit"]
+    assert_equal true, body["data"]["limit_reached"]
+
+    # Verify only 2 restaurants were created in database
+    assert_equal 2, GrubStars.db[:restaurants].count
   end
 
   # JSON content type tests
@@ -741,8 +905,11 @@ class APITest < GrubStars::IntegrationTest
 
     assert last_response.ok?
     body = JSON.parse(last_response.body)
+    # With no external IDs and no configured adapters, nothing gets updated or added
     assert_equal [], body["data"]["result"]["sources_updated"]
-    assert_match(/No external sources/i, body["data"]["result"]["message"])
+    assert_equal [], body["data"]["result"]["sources_added"]
+    # Message indicates no changes were made
+    assert_match(/no changes detected/i, body["data"]["result"]["message"])
   end
 
   def test_reindex_fetches_fresh_data_from_yelp
@@ -934,7 +1101,296 @@ class APITest < GrubStars::IntegrationTest
     assert_includes sources_updated, "google"
   end
 
+  def test_reindex_single_source_restaurant_adds_new_sources
+    GrubStars.reset_db!
+    # Seed a restaurant with only a Yelp external ID (no Google)
+    db = GrubStars.db
+    restaurant_id = db[:restaurants].insert(
+      name: "Single Source Bakery",
+      address: "456 Oak Ave",
+      latitude: 44.390,
+      longitude: -79.691,
+      phone: "+17055551234",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Only Yelp external ID - no Google external ID
+    db[:external_ids].insert(restaurant_id: restaurant_id, source: "yelp", external_id: "yelp:single-source-yelp-123")
+    db[:ratings].insert(restaurant_id: restaurant_id, source: "yelp", score: 4.0, review_count: 50, fetched_at: Time.now)
+
+    # Stub Yelp API for refreshing existing source
+    stub_request(:get, /api\.yelp\.com.*businesses\/single-source-yelp-123/)
+      .to_return(
+        status: 200,
+        body: yelp_business_data("single-source-yelp-123", "Single Source Bakery").to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Stub Google API text search for finding the restaurant on a new source
+    # The search query will be "Single Source Bakery in barrie, ontario"
+    stub_request(:get, /maps\.googleapis\.com.*textsearch\/json/)
+      .to_return(
+        status: 200,
+        body: {
+          results: [
+            {
+              place_id: "google-new-place-789",
+              name: "Single Source Bakery",
+              rating: 4.3,
+              user_ratings_total: 75,
+              geometry: { location: { lat: 44.390, lng: -79.691 } },
+              formatted_address: "456 Oak Ave, Barrie, ON",
+              formatted_phone_number: "+1 705-555-1234",
+              photos: [{ photo_reference: "photo123" }]
+            }
+          ],
+          status: "OK"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    with_env("YELP_API_KEY" => "test_key", "GOOGLE_API_KEY" => "test_key") do
+      post "/restaurants/#{restaurant_id}/reindex"
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Yelp should be updated (existing source refreshed)
+    sources_updated = body["data"]["result"]["sources_updated"]
+    assert_includes sources_updated, "yelp", "Yelp should be in sources_updated"
+
+    # Google should be added (new source discovered via search)
+    sources_added = body["data"]["result"]["sources_added"]
+    assert_includes sources_added, "google", "Google should be in sources_added"
+
+    # Verify the restaurant now has a Google external ID
+    google_ext_id = db[:external_ids].where(restaurant_id: restaurant_id, source: "google").first
+    assert google_ext_id, "Restaurant should now have a Google external ID"
+
+    # Verify Google rating was added
+    google_rating = db[:ratings].where(restaurant_id: restaurant_id, source: "google").first
+    assert google_rating, "Restaurant should now have a Google rating"
+    assert_equal 4.3, google_rating[:score]
+  end
+
+  # Stats endpoint tests
+  def test_stats_returns_json_structure
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert body["data"]
+    assert body["meta"]["timestamp"]
+
+    # Check top-level structure
+    assert body["data"]["restaurants"]
+    assert body["data"]["api_usage"]
+    assert body["data"]["data_coverage"]
+  end
+
+  def test_stats_empty_database
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Restaurant stats
+    assert_equal 0, body["data"]["restaurants"]["total"]
+    assert_equal({}, body["data"]["restaurants"]["by_location"])
+
+    # API usage (all adapters should be present)
+    api_usage = body["data"]["api_usage"]
+    assert api_usage["yelp"]
+    assert api_usage["google"]
+    assert api_usage["tripadvisor"]
+
+    # Data coverage
+    data_coverage = body["data"]["data_coverage"]
+    assert_equal 0, data_coverage["total_restaurants"]
+    assert_equal 0, data_coverage["with_all_sources"]
+    assert_equal 0, data_coverage["with_multiple_sources"]
+    assert_equal 0, data_coverage["with_single_source"]
+  end
+
+  def test_stats_with_restaurants
+    seed_restaurant_with_location
+
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Restaurant stats
+    assert_equal 1, body["data"]["restaurants"]["total"]
+    assert_equal({ "barrie, ontario" => 1 }, body["data"]["restaurants"]["by_location"])
+
+    # Data coverage
+    data_coverage = body["data"]["data_coverage"]
+    assert_equal 1, data_coverage["total_restaurants"]
+    assert_equal 1, data_coverage["with_single_source"]
+    assert_equal 1, data_coverage["by_source"]["yelp"]
+  end
+
+  def test_stats_api_usage_shows_adapter_limits
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    api_usage = body["data"]["api_usage"]
+
+    # Check Yelp (limit = 5000)
+    yelp_usage = api_usage["yelp"]
+    assert_equal 5000, yelp_usage["request_limit"]
+    assert_equal 0, yelp_usage["requests_used"]
+    assert_equal 5000, yelp_usage["remaining"]
+    assert_equal 0, yelp_usage["percentage_used"]
+
+    # Check Google (limit = 10000)
+    google_usage = api_usage["google"]
+    assert_equal 10_000, google_usage["request_limit"]
+
+    # Check TripAdvisor (limit = 5000)
+    tripadvisor_usage = api_usage["tripadvisor"]
+    assert_equal 5000, tripadvisor_usage["request_limit"]
+  end
+
+  def test_stats_api_usage_with_tracked_requests
+    # Simulate API usage
+    api_repo = Infrastructure::Repositories::ApiRequestRepository.new
+    api_repo.increment("yelp", 100)
+    api_repo.increment("google", 500)
+
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    api_usage = body["data"]["api_usage"]
+
+    # Check Yelp usage
+    yelp_usage = api_usage["yelp"]
+    assert_equal 100, yelp_usage["requests_used"]
+    assert_equal 4900, yelp_usage["remaining"]
+    assert_equal 2.0, yelp_usage["percentage_used"]
+
+    # Check Google usage
+    google_usage = api_usage["google"]
+    assert_equal 500, google_usage["requests_used"]
+    assert_equal 9500, google_usage["remaining"]
+    assert_equal 5.0, google_usage["percentage_used"]
+  end
+
+  def test_stats_data_coverage_with_multiple_sources
+    seed_restaurant_with_all_sources
+
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    data_coverage = body["data"]["data_coverage"]
+
+    assert_equal 1, data_coverage["total_restaurants"]
+    assert_equal 1, data_coverage["with_all_sources"]
+    assert_equal 1, data_coverage["with_multiple_sources"]
+    assert_equal 0, data_coverage["with_single_source"]
+
+    # Each source should have 1 restaurant
+    assert_equal 1, data_coverage["by_source"]["yelp"]
+    assert_equal 1, data_coverage["by_source"]["google"]
+    assert_equal 1, data_coverage["by_source"]["tripadvisor"]
+  end
+
+  def test_stats_data_coverage_with_mixed_sources
+    seed_restaurants_with_mixed_sources
+
+    get "/stats"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    data_coverage = body["data"]["data_coverage"]
+
+    # 3 restaurants total
+    assert_equal 3, data_coverage["total_restaurants"]
+    # 1 with all sources, 1 with 2 sources, 1 with single source
+    assert_equal 1, data_coverage["with_all_sources"]
+    assert_equal 2, data_coverage["with_multiple_sources"] # includes all_sources
+    assert_equal 1, data_coverage["with_single_source"]
+  end
+
   private
+
+  def seed_restaurant_with_all_sources
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    restaurant_id = db[:restaurants].insert(
+      name: "All Sources Restaurant",
+      address: "123 Main St",
+      latitude: 44.389,
+      longitude: -79.690,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Add external IDs for all sources
+    %w[yelp google tripadvisor].each do |source|
+      db[:external_ids].insert(
+        restaurant_id: restaurant_id,
+        source: source,
+        external_id: "#{source}-id-123"
+      )
+    end
+
+    restaurant_id
+  end
+
+  def seed_restaurants_with_mixed_sources
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    # Restaurant 1: All 3 sources
+    r1_id = db[:restaurants].insert(
+      name: "Restaurant One",
+      address: "100 Main St",
+      latitude: 44.389,
+      longitude: -79.690,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    %w[yelp google tripadvisor].each do |source|
+      db[:external_ids].insert(restaurant_id: r1_id, source: source, external_id: "#{source}-r1")
+    end
+
+    # Restaurant 2: 2 sources (yelp and google)
+    r2_id = db[:restaurants].insert(
+      name: "Restaurant Two",
+      address: "200 Main St",
+      latitude: 44.390,
+      longitude: -79.691,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    %w[yelp google].each do |source|
+      db[:external_ids].insert(restaurant_id: r2_id, source: source, external_id: "#{source}-r2")
+    end
+
+    # Restaurant 3: Single source (yelp only)
+    r3_id = db[:restaurants].insert(
+      name: "Restaurant Three",
+      address: "300 Main St",
+      latitude: 44.391,
+      longitude: -79.692,
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    db[:external_ids].insert(restaurant_id: r3_id, source: "yelp", external_id: "yelp-r3")
+  end
 
   def seed_restaurant
     GrubStars.reset_db!
@@ -1159,6 +1615,26 @@ class APITest < GrubStars::IntegrationTest
       "categories" => [{ "alias" => "bakeries", "title" => "Bakeries" }],
       "photos" => ["https://example.com/photo1.jpg"],
       "phone" => "+17055551234"
+    }
+  end
+
+  def yelp_business_data_with_address(id, name, address, lat, lng)
+    {
+      "id" => id,
+      "name" => name,
+      "rating" => 4.5,
+      "review_count" => 100,
+      "coordinates" => { "latitude" => lat, "longitude" => lng },
+      "location" => {
+        "address1" => address,
+        "city" => "Barrie",
+        "state" => "ON",
+        "zip_code" => "L4M 1A6",
+        "country" => "CA"
+      },
+      "categories" => [{ "alias" => "bakeries", "title" => "Bakeries" }],
+      "photos" => ["https://example.com/photo1.jpg"],
+      "phone" => "+1705555#{id.hash.abs.to_s[0, 4]}"
     }
   end
 
