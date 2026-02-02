@@ -41,8 +41,8 @@ module Services
     # Index restaurants from all configured adapters
     # @param location [String] Location to index (e.g., "barrie, ontario")
     # @param categories [String, nil] Optional category filter (e.g., "bakery")
-    # @param limit [Integer] Maximum restaurants to index (default: 100)
-    # @return [Hash] Statistics: { total:, created:, updated:, merged:, limit:, limit_reached: }
+    # @param limit [Integer] Maximum restaurants to index per adapter (default: 100)
+    # @return [Hash] Statistics: { total:, created:, updated:, merged:, limit:, limit_per_adapter:, limit_reached: }
     def index(location:, categories: nil, limit: DEFAULT_LIMIT)
       configured_adapters = @adapters.select(&:configured?)
 
@@ -51,25 +51,27 @@ module Services
       end
 
       stats = { total: 0, created: 0, updated: 0, merged: 0 }
-      remaining_limit = limit
+      any_limit_reached = false
 
+      # Each adapter gets its own limit (not shared across adapters)
       configured_adapters.each do |adapter|
-        break if remaining_limit <= 0
-
-        adapter_stats = index_with_adapter(adapter, location, categories, limit: remaining_limit)
+        adapter_stats = index_with_adapter(adapter, location, categories, limit: limit)
         stats[:total] += adapter_stats[:total]
         stats[:created] += adapter_stats[:created]
         stats[:updated] += adapter_stats[:updated]
         stats[:merged] += adapter_stats[:merged]
-
-        remaining_limit -= adapter_stats[:total]
+        any_limit_reached ||= adapter_stats[:limit_reached]
       end
 
       @logger.clear_line
 
       # Add limit info to response
+      # limit_per_adapter: The limit given to each adapter (new, more accurate name)
+      # limit: Same as limit_per_adapter (for backward compatibility)
+      # limit_reached: True if any adapter hit its limit
+      stats[:limit_per_adapter] = limit
       stats[:limit] = limit
-      stats[:limit_reached] = stats[:total] >= limit
+      stats[:limit_reached] = any_limit_reached
 
       stats
     end
@@ -308,12 +310,15 @@ module Services
     end
 
     def index_with_adapter(adapter, location, categories = nil, limit: nil)
-      stats = { total: 0, created: 0, updated: 0, merged: 0 }
+      stats = { total: 0, created: 0, updated: 0, merged: 0, limit_reached: false }
       source = adapter.source_name
 
       adapter.search_all_businesses(location: location, categories: categories, limit: limit) do |biz, progress|
         # Stop if we've reached the limit
-        break if limit && stats[:total] >= limit
+        if limit && stats[:total] >= limit
+          stats[:limit_reached] = true
+          break
+        end
 
         @logger.progress(
           name: biz[:name],
@@ -328,6 +333,9 @@ module Services
         stats[:updated] += 1 if result == :updated
         stats[:merged] += 1 if result == :merged
       end
+
+      # Also mark limit_reached if we processed exactly the limit amount
+      stats[:limit_reached] = true if limit && stats[:total] >= limit
 
       stats
     end
