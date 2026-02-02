@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map - grub stars</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://grubstars.com/">
+  <meta property="og:title" content="grub stars - Restaurant Map">
+  <meta property="og:description" content="Explore restaurants near you on an interactive map. Click markers to see details and get directions.">
+  <meta property="og:image" content="https://grubstars.com/images/og-image.svg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://grubstars.com/">
+  <meta property="twitter:title" content="grub stars - Restaurant Map">
+  <meta property="twitter:description" content="Explore restaurants near you on an interactive map. Click markers to see details and get directions.">
+  <meta property="twitter:image" content="https://grubstars.com/images/og-image.svg">
+
+  <!-- Early dark mode detection to prevent FOUC -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('grub_stars_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
+  <script src="/js/vendor/twind.min.js"></script>
+  <script src="/js/twind-config.js"></script>
+  <link rel="stylesheet" href="/css/leaflet.min.css">
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-cream min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <main>
+      <div class="max-w-6xl mx-auto">
+        <!-- Map Header -->
+        <div class="card p-4 mb-4">
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <h2 class="text-2xl font-bold text-cocoa flex items-center gap-2">
+              <span>🗺️</span> Restaurant Map
+            </h2>
+            <div class="flex items-center gap-4">
+              <button id="locate-me-btn" class="btn-secondary flex items-center gap-2">
+                <span>📍</span> Find My Location
+              </button>
+              <div id="restaurant-count" class="text-sm text-cocoa/70"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map-container" class="card overflow-hidden" style="height: 500px;"></div>
+
+        <!-- Empty State -->
+        <div id="map-empty" class="card p-8 text-center" style="display: none;">
+          <div class="text-6xl mb-4">🗺️</div>
+          <h3 class="text-xl font-semibold text-cocoa mb-2">No restaurants to show</h3>
+          <p class="text-cocoa/70 mb-4">
+            Restaurants need location data to appear on the map.
+            Try indexing a location first.
+          </p>
+          <a href="/index-location.html" class="btn-primary inline-block">Index a Location</a>
+        </div>
+
+        <!-- Selected Restaurant Card -->
+        <div id="selected-restaurant" class="mt-4" style="display: none;"></div>
+      </div>
+    </main>
+
+    <footer class="text-center mt-12 py-8">
+      <p class="text-cocoa/60">Made with 🍕 by friends, for friends</p>
+    </footer>
+  </div>
+
+  <script src="/js/vendor/leaflet.min.js"></script>
+  <script type="module" src="/js/map.js"></script>
+</body>
+</html>

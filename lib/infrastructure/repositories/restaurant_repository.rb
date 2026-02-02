@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../../domain/models/restaurant"
+require_relative "../../domain/models/rating"
 require_relative "./rating_repository"
 require_relative "./review_repository"
 require_relative "./media_repository"
@@ -169,6 +170,47 @@ module Infrastructure
           .map { |row| to_domain_model(row) }
       end
 
+      # Find restaurants within geographic bounds (for map view)
+      # Optimized to batch-load ratings in 2 queries instead of N+1
+      # @param sw_lat [Float] Southwest corner latitude
+      # @param sw_lng [Float] Southwest corner longitude
+      # @param ne_lat [Float] Northeast corner latitude
+      # @param ne_lng [Float] Northeast corner longitude
+      # @param limit [Integer] Maximum results to return (default 100)
+      # @return [Array<Restaurant>] Restaurants within bounds with ratings
+      def find_within_bounds(sw_lat:, sw_lng:, ne_lat:, ne_lng:, limit: 100)
+        return [] unless sw_lat && sw_lng && ne_lat && ne_lng
+
+        # Query 1: Get restaurants in bounds
+        rows = @db[:restaurants]
+          .where(latitude: sw_lat..ne_lat, longitude: sw_lng..ne_lng)
+          .where(Sequel.~(latitude: nil))
+          .where(Sequel.~(longitude: nil))
+          .limit(limit)
+          .all
+
+        return [] if rows.empty?
+
+        # Convert to domain models
+        restaurants = rows.map { |row| to_domain_model(row) }
+        restaurant_ids = restaurants.map(&:id)
+
+        # Query 2: Batch-load all ratings for these restaurants
+        ratings_by_restaurant = @db[:ratings]
+          .where(restaurant_id: restaurant_ids)
+          .all
+          .group_by { |r| r[:restaurant_id] }
+
+        # Associate ratings with restaurants in memory
+        restaurants.each do |restaurant|
+          rating_rows = ratings_by_restaurant[restaurant.id] || []
+          restaurant.ratings = rating_rows.map { |r| row_to_rating(r) }
+          restaurant.external_ids = [] # Not needed for map view
+        end
+
+        restaurants
+      end
+
       # Create a new restaurant
       def create(restaurant)
         now = Time.now
@@ -256,6 +298,18 @@ module Infrastructure
       def to_domain_model_with_basic_associations(row)
         restaurant = to_domain_model(row)
         load_basic_associations(restaurant)
+      end
+
+      # Convert rating row to domain model (for batch loading)
+      def row_to_rating(row)
+        Domain::Models::Rating.new(
+          id: row[:id],
+          restaurant_id: row[:restaurant_id],
+          source: row[:source],
+          score: row[:score],
+          review_count: row[:review_count],
+          fetched_at: row[:fetched_at]
+        )
       end
     end
   end

@@ -16,6 +16,7 @@ export function navBar(options = {}) {
 
   const navLinks = [
     { href: '/', label: 'Search', icon: '🔍', id: 'search' },
+    { href: '/map.html', label: 'Map', icon: '🗺️', id: 'map' },
     { href: '/bookmarks.html', label: 'Bookmarks', icon: '💖', id: 'bookmarks' },
     { href: '/index-location.html', label: 'Add Area', icon: '📍', id: 'index' },
     { href: '/add-restaurant.html', label: 'Add Restaurant', icon: '🍽️', id: 'add-restaurant' },

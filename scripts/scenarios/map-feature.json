@@ -1,0 +1,34 @@
+{
+  "name": "map-feature-demo",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 800 },
+  "steps": [
+    {
+      "action": "goto",
+      "path": "/map.html"
+    },
+    {
+      "action": "wait",
+      "ms": 1500
+    },
+    {
+      "action": "screenshot",
+      "name": "map-initial-view",
+      "description": "Initial map view showing restaurant markers"
+    },
+    {
+      "action": "evaluate",
+      "script": "document.querySelector('.restaurant-marker .marker-pin') ? 'Markers found' : 'No markers'",
+      "log": true
+    },
+    {
+      "action": "wait",
+      "ms": 500
+    },
+    {
+      "action": "screenshot",
+      "name": "map-with-markers",
+      "description": "Map showing restaurant markers loaded"
+    }
+  ]
+}
