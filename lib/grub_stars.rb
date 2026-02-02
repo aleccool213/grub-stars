@@ -46,6 +46,14 @@ module GrubStars
   VERSION = "0.1.0"
 
   class << self
+    def logger
+      @logger ||= Logger.new(enabled: true)
+    end
+
+    def logger=(logger)
+      @logger = logger
+    end
+
     def db
       @db ||= begin
         db_path = Config.db_path

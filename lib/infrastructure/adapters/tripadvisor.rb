@@ -120,7 +120,8 @@ module GrubStars
       # Paginate through all businesses in a location
       # Yields businesses array and progress hash { current:, total:, percent: }
       # @param limit [Integer, nil] Maximum number of restaurants to return (default: unlimited)
-      def search_all_businesses(location:, categories: nil, limit: nil, &block)
+      # @param fetch_details [Boolean] Whether to fetch detailed data for GPS coordinates (default: true)
+      def search_all_businesses(location:, categories: nil, limit: nil, fetch_details: true, &block)
         ensure_configured!
         track_request!
 
@@ -142,7 +143,34 @@ module GrubStars
 
         total = locations.length
         locations.each_with_index do |loc, index|
+          # Get basic normalized data from search results
           normalized = normalize_location(loc)
+
+          # Fetch detailed data to get GPS coordinates and phone
+          # TripAdvisor search results don't include GPS, but details do
+          if fetch_details
+            begin
+              detailed_data = get_business(normalized[:external_id])
+              if detailed_data
+                # Merge detailed data into normalized result
+                normalized[:latitude] = detailed_data[:latitude] if detailed_data[:latitude]
+                normalized[:longitude] = detailed_data[:longitude] if detailed_data[:longitude]
+                normalized[:phone] = detailed_data[:phone] if detailed_data[:phone]
+                # Also get categories if available
+                if detailed_data[:categories] && !detailed_data[:categories].empty?
+                  normalized[:categories] = detailed_data[:categories]
+                end
+              end
+            rescue StandardError => e
+              # Log warning but continue with basic data
+              # This ensures indexing doesn't fail if one detail fetch fails
+              GrubStars.logger.warn("TripAdvisor: Failed to fetch details for #{normalized[:name]}: #{e.message}")
+            end
+
+            # Rate limiting: small delay between detail calls to be API-friendly
+            sleep(0.1) if index < locations.length - 1
+          end
+
           progress = {
             current: index + 1,
             total: total,
