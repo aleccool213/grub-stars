@@ -31,14 +31,13 @@ async function init() {
 
   // Get DOM elements
   const mapContainer = document.getElementById('map-container');
-  const loadingEl = document.getElementById('map-loading');
-  const emptyEl = document.getElementById('map-empty');
   const locateMeBtn = document.getElementById('locate-me-btn');
 
-  // Show loading state
-  showLoading(true);
+  // Ensure map container is visible before initializing Leaflet
+  // (Leaflet needs visible container with dimensions to render correctly)
+  mapContainer.style.display = 'block';
 
-  // Initialize the map
+  // Initialize the map immediately (don't wait for async operations)
   map = L.map(mapContainer, {
     center: [DEFAULT_CENTER.lat, DEFAULT_CENTER.lng],
     zoom: DEFAULT_ZOOM,
@@ -54,6 +53,19 @@ async function init() {
   // Create markers layer
   markersLayer = L.layerGroup().addTo(map);
 
+  // Listen for map movement
+  map.on('moveend', handleMapMove);
+  map.on('zoomend', handleMapMove);
+
+  // Set up locate me button
+  if (locateMeBtn) {
+    locateMeBtn.addEventListener('click', handleLocateMe);
+  }
+
+  // Now do async operations (user location + restaurant loading)
+  // Show loading indicator in restaurant count
+  updateRestaurantCount(-1); // -1 = loading state
+
   // Try to get user location
   const userLocation = await getUserLocation();
   if (userLocation) {
@@ -65,16 +77,10 @@ async function init() {
   // Load initial restaurants
   await loadRestaurantsInView();
 
-  // Listen for map movement
-  map.on('moveend', handleMapMove);
-  map.on('zoomend', handleMapMove);
-
-  // Set up locate me button
-  if (locateMeBtn) {
-    locateMeBtn.addEventListener('click', handleLocateMe);
-  }
-
-  showLoading(false);
+  // Force a resize in case container size changed
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 100);
 }
 
 /**
@@ -283,25 +289,19 @@ async function handleLocateMe() {
 
 /**
  * Update restaurant count display
- * @param {number} count
+ * @param {number} count - Number of restaurants, or -1 for loading state
  */
 function updateRestaurantCount(count) {
   const el = document.getElementById('restaurant-count');
   if (el) {
-    el.textContent = count === 1 ? '1 restaurant' : `${count} restaurants`;
+    if (count === -1) {
+      el.textContent = 'Loading...';
+    } else if (count === 0) {
+      el.textContent = 'No restaurants in view';
+    } else {
+      el.textContent = count === 1 ? '1 restaurant' : `${count} restaurants`;
+    }
   }
-}
-
-/**
- * Show/hide loading state
- * @param {boolean} show
- */
-function showLoading(show) {
-  const mapContainer = document.getElementById('map-container');
-  const loadingEl = document.getElementById('map-loading');
-
-  if (mapContainer) mapContainer.style.display = show ? 'none' : 'block';
-  if (loadingEl) loadingEl.style.display = show ? 'block' : 'none';
 }
 
 /**
