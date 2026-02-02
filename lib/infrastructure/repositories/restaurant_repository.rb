@@ -169,6 +169,25 @@ module Infrastructure
           .map { |row| to_domain_model(row) }
       end
 
+      # Find restaurants within geographic bounds (for map view)
+      # @param sw_lat [Float] Southwest corner latitude
+      # @param sw_lng [Float] Southwest corner longitude
+      # @param ne_lat [Float] Northeast corner latitude
+      # @param ne_lng [Float] Northeast corner longitude
+      # @param limit [Integer] Maximum results to return (default 100)
+      # @return [Array<Restaurant>] Restaurants within bounds with basic associations
+      def find_within_bounds(sw_lat:, sw_lng:, ne_lat:, ne_lng:, limit: 100)
+        return [] unless sw_lat && sw_lng && ne_lat && ne_lng
+
+        @db[:restaurants]
+          .where(latitude: sw_lat..ne_lat, longitude: sw_lng..ne_lng)
+          .where(Sequel.~(latitude: nil))
+          .where(Sequel.~(longitude: nil))
+          .limit(limit)
+          .all
+          .map { |row| to_domain_model_with_basic_associations(row) }
+      end
+
       # Create a new restaurant
       def create(restaurant)
         now = Time.now

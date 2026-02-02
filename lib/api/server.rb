@@ -90,6 +90,35 @@ module GrubStars
         halt 400, json_error("LOCATION_NOT_INDEXED", e.message)
       end
 
+      # Get restaurants within geographic bounds (for map view)
+      # NOTE: This route MUST be defined before /restaurants/:id to avoid the :id capturing "bounds"
+      get "/restaurants/bounds" do
+        sw_lat = params[:sw_lat]&.to_f
+        sw_lng = params[:sw_lng]&.to_f
+        ne_lat = params[:ne_lat]&.to_f
+        ne_lng = params[:ne_lng]&.to_f
+        limit = [(params[:limit] || 100).to_i, 500].min
+
+        unless sw_lat && sw_lng && ne_lat && ne_lng
+          halt 400, json_error("INVALID_REQUEST", "Required: sw_lat, sw_lng, ne_lat, ne_lng (bounding box coordinates)")
+        end
+
+        repo = Infrastructure::Repositories::RestaurantRepository.new
+        results = repo.find_within_bounds(
+          sw_lat: sw_lat,
+          sw_lng: sw_lng,
+          ne_lat: ne_lat,
+          ne_lng: ne_lng,
+          limit: limit
+        )
+
+        json_response(
+          results.map { |r| serialize_restaurant_summary(r) },
+          count: results.length,
+          bounds: { sw_lat: sw_lat, sw_lng: sw_lng, ne_lat: ne_lat, ne_lng: ne_lng }
+        )
+      end
+
       # Search external APIs by restaurant name
       # NOTE: This route MUST be defined before /restaurants/:id to avoid the :id capturing "search-external"
       get "/restaurants/search-external" do

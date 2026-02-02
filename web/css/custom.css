@@ -1282,3 +1282,151 @@ html.dark #restaurant-details .flex.flex-wrap.gap-3 a {
     animation: swipe-hint 1s ease-in-out 2;
   }
 }
+
+/* ==========================================================================
+   Map Page Styles
+   ========================================================================== */
+
+/* Restaurant marker styles */
+.restaurant-marker {
+  background: transparent;
+  border: none;
+}
+
+.restaurant-marker .marker-pin {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.restaurant-marker:hover .marker-pin {
+  transform: scale(1.2);
+}
+
+/* Map popup styles */
+.map-popup {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.map-popup strong {
+  color: #4a3728;
+  font-weight: 600;
+}
+
+.map-popup small {
+  color: #6b5c4e;
+}
+
+/* Leaflet container override */
+.leaflet-container {
+  font-family: 'Nunito', sans-serif;
+  border-radius: 1rem;
+}
+
+/* Dark mode - Leaflet map tiles */
+html.dark .leaflet-container {
+  background-color: #1e293b;
+}
+
+html.dark .leaflet-tile-pane {
+  filter: brightness(0.8) saturate(0.9) hue-rotate(180deg) invert(1);
+}
+
+/* Dark mode - Leaflet controls */
+html.dark .leaflet-control-zoom a {
+  background-color: #334155 !important;
+  color: #e2e8f0 !important;
+  border-color: #475569 !important;
+}
+
+html.dark .leaflet-control-zoom a:hover {
+  background-color: #475569 !important;
+}
+
+html.dark .leaflet-control-attribution {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  color: #94a3b8 !important;
+}
+
+html.dark .leaflet-control-attribution a {
+  color: #a78bfa !important;
+}
+
+/* Dark mode - Leaflet popups */
+html.dark .leaflet-popup-content-wrapper {
+  background-color: #334155 !important;
+  color: #e2e8f0 !important;
+  border-radius: 0.5rem;
+}
+
+html.dark .leaflet-popup-tip {
+  background-color: #334155 !important;
+}
+
+html.dark .map-popup strong {
+  color: #f8fafc !important;
+}
+
+html.dark .map-popup small {
+  color: #94a3b8 !important;
+}
+
+/* Dark mode - Restaurant marker */
+html.dark .restaurant-marker .marker-pin {
+  background: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Dark mode - Selected restaurant card */
+html.dark #selected-restaurant article {
+  background-color: #1e293b !important;
+}
+
+html.dark #selected-restaurant h3 a {
+  color: #f8fafc !important;
+}
+
+html.dark #selected-restaurant h3 a:hover {
+  color: #a78bfa !important;
+}
+
+html.dark #selected-restaurant p {
+  color: #94a3b8 !important;
+}
+
+/* Dark mode - Map header and controls */
+html.dark #locate-me-btn {
+  background-color: #334155 !important;
+  color: #e2e8f0 !important;
+  border-color: #475569 !important;
+}
+
+html.dark #locate-me-btn:hover {
+  background-color: #475569 !important;
+}
+
+html.dark #restaurant-count {
+  color: #94a3b8 !important;
+}
+
+/* Dark mode - Empty state */
+html.dark #map-empty {
+  background-color: #1e293b !important;
+}
+
+html.dark #map-empty h3 {
+  color: #f8fafc !important;
+}
+
+html.dark #map-empty p {
+  color: #94a3b8 !important;
+}

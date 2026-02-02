@@ -183,3 +183,24 @@ export async function reindexRestaurant(id) {
     method: 'POST',
   });
 }
+
+/**
+ * Get restaurants within geographic bounds (for map view)
+ * @param {Object} bounds - Bounding box coordinates
+ * @param {number} bounds.sw_lat - Southwest corner latitude
+ * @param {number} bounds.sw_lng - Southwest corner longitude
+ * @param {number} bounds.ne_lat - Northeast corner latitude
+ * @param {number} bounds.ne_lng - Northeast corner longitude
+ * @param {number} limit - Maximum results (default 100, max 500)
+ * @returns {Promise<Object>} - Restaurants within bounds with data and meta
+ */
+export async function getRestaurantsInBounds(bounds, limit = 100) {
+  const queryParams = new URLSearchParams({
+    sw_lat: bounds.sw_lat.toString(),
+    sw_lng: bounds.sw_lng.toString(),
+    ne_lat: bounds.ne_lat.toString(),
+    ne_lng: bounds.ne_lng.toString(),
+    limit: limit.toString()
+  });
+  return apiRequest(`/restaurants/bounds?${queryParams}`);
+}
