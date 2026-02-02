@@ -66,6 +66,10 @@ function renderDropdown(suggestions, query = '') {
       ? `<div class="autocomplete-details">${escapeHtml(details.join(' • '))}</div>`
       : '';
 
+    const addressHtml = restaurant.address
+      ? `<div class="autocomplete-address">${escapeHtml(restaurant.address)}</div>`
+      : '';
+
     return `
       <li
         role="option"
@@ -78,6 +82,7 @@ function renderDropdown(suggestions, query = '') {
         <span class="autocomplete-icon">🍽️</span>
         <div class="autocomplete-content">
           <span class="autocomplete-text">${escapeHtml(restaurant.name)}</span>
+          ${addressHtml}
           ${detailsHtml}
         </div>
       </li>
