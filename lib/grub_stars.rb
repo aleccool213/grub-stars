@@ -38,6 +38,7 @@ require_relative "services/search_restaurants_service"
 require_relative "services/restaurant_details_service"
 require_relative "services/list_categories_service"
 require_relative "services/stats_service"
+require_relative "services/merge_duplicates_service"
 
 # Presentation Layer
 require_relative "cli"
@@ -46,6 +47,14 @@ module GrubStars
   VERSION = "0.1.0"
 
   class << self
+    def logger
+      @logger ||= Logger.new(enabled: true)
+    end
+
+    def logger=(logger)
+      @logger = logger
+    end
+
     def db
       @db ||= begin
         db_path = Config.db_path
