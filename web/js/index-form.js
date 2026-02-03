@@ -3,7 +3,7 @@
  * Handles the index location page functionality
  */
 
-import { indexLocation } from './api.js';
+import { indexLocationWithProgress } from './api.js';
 import { loadingSpinner } from './components/loading-spinner.js';
 import { errorMessage } from './components/error-message.js';
 import { insertNavBar } from './components/nav-bar.js';
@@ -75,31 +75,166 @@ async function handleFormSubmit(event) {
   await performIndexing(location, category);
 }
 
+// Track active EventSource for cancellation
+let activeEventSource = null;
+
 /**
- * Perform the indexing operation
+ * Perform the indexing operation with real-time progress
  * @param {string} location - Location to index
  * @param {string|null} category - Optional category filter
  */
-async function performIndexing(location, category) {
+function performIndexing(location, category) {
   // Disable form during indexing
   setFormDisabled(true);
 
-  // Show loading state
-  resultsContainer.innerHTML = loadingSpinner('Indexing restaurants... This may take a minute.');
+  // Show initial progress state
+  showProgressUI(location, category);
 
-  try {
-    const response = await indexLocation(location, category);
-    const stats = response.data || {};
-    const meta = response.meta || {};
+  // Start SSE-based indexing with progress updates
+  activeEventSource = indexLocationWithProgress(location, category, {
+    onProgress: (progress) => {
+      updateProgressUI(progress);
+    },
+    onComplete: (stats) => {
+      activeEventSource = null;
+      showResults(stats, location, category);
+      setFormDisabled(false);
+    },
+    onError: (error) => {
+      activeEventSource = null;
+      console.error('Indexing error:', error);
+      showError(error.message, error.code);
+      setFormDisabled(false);
+    }
+  });
+}
 
-    showResults(stats, meta.location || location, meta.category || category);
-  } catch (error) {
-    console.error('Indexing error:', error);
-    showError(error.message, error.code);
-  } finally {
-    // Re-enable form
-    setFormDisabled(false);
+/**
+ * Show the progress UI
+ * @param {string} location - Location being indexed
+ * @param {string|null} category - Category filter
+ */
+function showProgressUI(location, category) {
+  const categoryText = category ? ` (${escapeHtml(category)})` : '';
+
+  resultsContainer.innerHTML = `
+    <div class="bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-blue-700/50 rounded-lg p-6">
+      <div class="flex items-center mb-4">
+        <div class="animate-spin text-blue-600 dark:text-blue-400 mr-3">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-blue-800 dark:text-blue-300">
+          Indexing ${escapeHtml(location)}${categoryText}
+        </h3>
+      </div>
+
+      <!-- Progress info -->
+      <div id="progress-info" class="space-y-3">
+        <p class="text-gray-600 dark:text-slate-300 text-sm">Connecting to data sources...</p>
+      </div>
+
+      <!-- Cancel button -->
+      <div class="mt-4">
+        <button
+          type="button"
+          id="cancel-indexing"
+          class="text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 underline"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Add cancel handler
+  document.getElementById('cancel-indexing')?.addEventListener('click', cancelIndexing);
+}
+
+/**
+ * Update the progress UI with current progress
+ * @param {Object} progress - Progress data from SSE
+ */
+function updateProgressUI(progress) {
+  const progressInfo = document.getElementById('progress-info');
+  if (!progressInfo) return;
+
+  const { adapter, phase, current, total, percent, restaurant_name } = progress;
+
+  if (phase === 'starting') {
+    // Show adapter starting message
+    progressInfo.innerHTML = `
+      <div class="space-y-2">
+        <p class="text-blue-700 dark:text-blue-300 font-medium">
+          📡 Searching ${escapeHtml(adapter)}...
+        </p>
+        <div class="text-sm text-gray-500 dark:text-slate-400">
+          Fetching restaurant data...
+        </div>
+      </div>
+    `;
+  } else if (phase === 'indexing') {
+    // Show progress bar and current restaurant
+    const progressPercent = percent || 0;
+    const displayName = restaurant_name
+      ? (restaurant_name.length > 40 ? restaurant_name.substring(0, 37) + '...' : restaurant_name)
+      : 'Processing...';
+
+    progressInfo.innerHTML = `
+      <div class="space-y-2">
+        <p class="text-blue-700 dark:text-blue-300 font-medium">
+          📡 Indexing from ${escapeHtml(adapter)}
+        </p>
+
+        <!-- Progress bar -->
+        <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3">
+          <div
+            class="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-200"
+            style="width: ${progressPercent}%"
+          ></div>
+        </div>
+
+        <div class="flex justify-between text-sm text-gray-600 dark:text-slate-300">
+          <span>${current || 0} / ${total || '?'} restaurants</span>
+          <span>${progressPercent.toFixed(1)}%</span>
+        </div>
+
+        <div class="text-sm text-gray-500 dark:text-slate-400 truncate">
+          ${escapeHtml(displayName)}
+        </div>
+      </div>
+    `;
+  } else if (phase === 'completed') {
+    // Show adapter completed
+    progressInfo.innerHTML = `
+      <div class="space-y-2">
+        <p class="text-green-700 dark:text-green-400 font-medium">
+          ✓ ${escapeHtml(adapter)} complete
+        </p>
+        <div class="text-sm text-gray-500 dark:text-slate-400">
+          Moving to next source...
+        </div>
+      </div>
+    `;
   }
+}
+
+/**
+ * Cancel the current indexing operation
+ */
+function cancelIndexing() {
+  if (activeEventSource) {
+    activeEventSource.close();
+    activeEventSource = null;
+  }
+  setFormDisabled(false);
+  resultsContainer.innerHTML = `
+    <div class="bg-yellow-50 dark:bg-slate-800 border border-yellow-200 dark:border-yellow-700/50 rounded-lg p-4">
+      <p class="text-yellow-700 dark:text-yellow-300">Indexing cancelled.</p>
+    </div>
+  `;
 }
 
 /**
@@ -109,7 +244,18 @@ async function performIndexing(location, category) {
  * @param {string|null} category - Category filter used
  */
 function showResults(stats, location, category) {
-  const { total = 0, created = 0, updated = 0, merged = 0, limit = 100, limit_reached = false } = stats;
+  const {
+    total = 0,
+    created = 0,
+    updated = 0,
+    merged = 0,
+    limit = 100,
+    limit_reached = false,
+    adapters = {},
+    restaurants_created = [],
+    restaurants_updated = [],
+    restaurants_merged = []
+  } = stats;
 
   const categoryText = category
     ? `<span class="text-gray-500 dark:text-slate-400">(filtered by: ${escapeHtml(category)})</span>`
@@ -128,6 +274,25 @@ function showResults(stats, location, category) {
           </p>
         </div>
       </div>`
+    : '';
+
+  // Build per-adapter breakdown HTML
+  const adapterBreakdown = Object.keys(adapters).length > 0
+    ? `
+      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+        <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Per-source breakdown:</p>
+        <div class="space-y-1">
+          ${Object.entries(adapters).map(([source, s]) => `
+            <div class="flex justify-between text-sm">
+              <span class="text-purple-600 dark:text-purple-400 font-medium">${escapeHtml(source)}</span>
+              <span class="text-gray-600 dark:text-slate-400">
+                ${s.total} total (${s.created} new, ${s.merged} merged, ${s.updated} updated)
+              </span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `
     : '';
 
   resultsContainer.innerHTML = `
@@ -165,7 +330,11 @@ function showResults(stats, location, category) {
             ${updated} updated (existing)
           </li>
         </ul>
+        ${adapterBreakdown}
       </div>
+
+      <!-- Collapsible restaurant lists -->
+      ${renderRestaurantLists(restaurants_created, restaurants_merged, restaurants_updated)}
 
       <div class="flex flex-col sm:flex-row gap-3">
         <a
@@ -191,8 +360,67 @@ function showResults(stats, location, category) {
     </div>
   `;
 
-  // Add reset handler
+  // Add reset handler and toggle handlers
   resultsContainer.querySelector('[data-action="reset"]')?.addEventListener('click', resetForm);
+  resultsContainer.querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.toggle;
+      const target = document.getElementById(targetId);
+      if (target) {
+        const isHidden = target.style.display === 'none';
+        target.style.display = isHidden ? 'block' : 'none';
+        btn.querySelector('.toggle-icon')?.classList.toggle('rotate-180', isHidden);
+      }
+    });
+  });
+}
+
+/**
+ * Render collapsible restaurant lists
+ * @param {Array} created - Newly created restaurants
+ * @param {Array} merged - Merged restaurants
+ * @param {Array} updated - Updated restaurants
+ * @returns {string} - HTML string
+ */
+function renderRestaurantLists(created, merged, updated) {
+  const hasAny = created.length > 0 || merged.length > 0 || updated.length > 0;
+  if (!hasAny) return '';
+
+  const renderList = (items, id, title, icon, colorClass) => {
+    if (items.length === 0) return '';
+    return `
+      <div class="mb-3">
+        <button
+          type="button"
+          data-toggle="${id}"
+          class="flex items-center justify-between w-full text-left text-sm font-medium ${colorClass} p-2 rounded hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+        >
+          <span>${icon} ${title} (${items.length})</span>
+          <svg class="toggle-icon w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div id="${id}" class="mt-2 pl-4 space-y-1" style="display: none;">
+          ${items.slice(0, 50).map(r => `
+            <div class="text-sm text-gray-600 dark:text-slate-400 py-1 border-b border-gray-100 dark:border-slate-700 last:border-0">
+              <span class="font-medium text-gray-800 dark:text-slate-200">${escapeHtml(r.name)}</span>
+              ${r.address ? `<span class="text-xs block text-gray-500 dark:text-slate-500 truncate">${escapeHtml(r.address)}</span>` : ''}
+            </div>
+          `).join('')}
+          ${items.length > 50 ? `<p class="text-xs text-gray-500 dark:text-slate-500 italic">...and ${items.length - 50} more</p>` : ''}
+        </div>
+      </div>
+    `;
+  };
+
+  return `
+    <div class="mb-4 bg-gray-50 dark:bg-slate-900/50 rounded-lg p-3">
+      <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Restaurant details:</p>
+      ${renderList(created, 'list-created', 'New restaurants', '🆕', 'text-green-700 dark:text-green-400')}
+      ${renderList(merged, 'list-merged', 'Merged restaurants', '🔀', 'text-blue-700 dark:text-blue-400')}
+      ${renderList(updated, 'list-updated', 'Updated restaurants', '📝', 'text-yellow-700 dark:text-yellow-400')}
+    </div>
+  `;
 }
 
 /**
