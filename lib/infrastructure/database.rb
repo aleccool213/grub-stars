@@ -179,5 +179,18 @@ module GrubStars
 
       db
     end
+
+    # Run migrations for existing databases
+    # This adds any new columns that may not exist in older schemas
+    def self.migrate(db)
+      # Add description column to restaurants table if it doesn't exist
+      unless db[:restaurants].columns.include?(:description)
+        db.alter_table(:restaurants) do
+          add_column :description, :text
+        end
+      end
+
+      db
+    end
   end
 end
