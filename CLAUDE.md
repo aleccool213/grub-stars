@@ -909,3 +909,19 @@ node scripts/screenshot.js --url "http://localhost:9292/page" --name "section" -
 **Issue:** Restaurant photos from external URLs (Unsplash, Yelp CDN, etc.) may fail to load due to network restrictions or CORS policies in development/CI environments.
 
 **Solution:** Photo thumbnails include a fallback placeholder icon that displays when image loading fails. The lightbox also handles missing images gracefully.
+
+### Photo Indexing - Search vs Details API Endpoints
+
+**Issue:** Photos were not being indexed from Yelp and Google during initial indexing. Users would see no photos on restaurant details pages despite seeing photos on the source websites.
+
+**Root Cause:** The Yelp `/businesses/search` and Google `/textsearch` endpoints do NOT return photos in their response - only the business details endpoints (`/businesses/{id}` for Yelp, `/details/json` for Google) return the `photos` array. The `IndexRestaurantsService` was only calling `search_all_businesses`, never `get_business`, so photos were never fetched.
+
+**Complicating Factor:** The mock fixtures in `dev/fixtures/` incorrectly included photos in the search results, masking this bug during local development and testing. The mock data did not accurately reflect the real API behavior.
+
+**Solution:** Modified `IndexRestaurantsService.index_with_adapter` to call `adapter.get_business(id)` for each restaurant found in search results to fetch detailed info including photos. Added `fetch_business_details` method that:
+- Fetches business details for each search result
+- Merges photo data from details into search data
+- Also fills in missing phone/address/rating from details
+- Handles API errors gracefully with fallback to search data
+
+**Lesson:** When working with external APIs, always verify that mock/fixture data accurately reflects the real API response structure. The discrepancy between mock data and real API behavior can hide bugs that only manifest in production.
