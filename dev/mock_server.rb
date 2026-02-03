@@ -23,10 +23,10 @@ require "sinatra"
 require "json"
 
 # Configurable delay for testing progress UI
-# Set MOCK_DELAY_MS environment variable to add artificial delays (in milliseconds)
-# Example: MOCK_DELAY_MS=500 bundle exec ruby dev/mock_server.rb
-MOCK_DELAY_MS = (ENV["MOCK_DELAY_MS"] || 0).to_i
-MOCK_DELAY_PER_ITEM_MS = (ENV["MOCK_DELAY_PER_ITEM_MS"] || 0).to_i
+# Set MOCK_DELAY_MS environment variable to override (in milliseconds)
+# Example: MOCK_DELAY_MS=0 ruby dev/mock_server.rb  # disable delays
+MOCK_DELAY_MS = (ENV["MOCK_DELAY_MS"] || 500).to_i
+MOCK_DELAY_PER_ITEM_MS = (ENV["MOCK_DELAY_PER_ITEM_MS"] || 200).to_i
 
 def simulate_delay(per_item: false)
   delay_ms = per_item ? MOCK_DELAY_PER_ITEM_MS : MOCK_DELAY_MS
@@ -460,9 +460,9 @@ puts "    GOOGLE_API_BASE_URL=http://localhost:4567"
 puts "    TRIPADVISOR_API_KEY=mock_api_key"
 puts "    TRIPADVISOR_API_BASE_URL=http://localhost:4567/api/v1"
 puts ""
-puts "  Testing Progress UI (add artificial delays):"
-puts "    MOCK_DELAY_MS=500 ruby dev/mock_server.rb       # 500ms per search"
-puts "    MOCK_DELAY_PER_ITEM_MS=200 ruby dev/mock_server.rb  # 200ms per item"
+puts "  Delays (enabled by default for testing progress UI):"
+puts "    MOCK_DELAY_MS=0 ruby dev/mock_server.rb         # disable search delay"
+puts "    MOCK_DELAY_PER_ITEM_MS=0 ruby dev/mock_server.rb    # disable per-item delay"
 puts ""
 puts "=" * 70
 puts ""
