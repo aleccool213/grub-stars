@@ -877,6 +877,25 @@ This section documents friction points encountered during development to help fu
 ruby -I lib -r bundler/setup -e "require 'rack'; Rack::Server.start(config: 'config.ru', Port: 9292, Host: '0.0.0.0')"
 ```
 
+### Running Tests - Bundler Version Errors
+
+**Issue:** Running tests with `ruby -I lib -I tests tests/unit/...` fails with a cryptic error:
+
+```
+Could not find ostruct-0.6.3, thor-1.5.0, sequel-5.100.0... in locally installed gems (Bundler::GemNotFound)
+```
+
+This happens because Bundler 4.0.x is used by default, which has compatibility issues with this project.
+
+**Root Cause:** The `test_helper.rb` requires `bundler/setup`, which loads the default Bundler version. If Bundler 2.5.23 isn't installed or the gems weren't installed with it, the test fails before any test code runs.
+
+**Solution:** Before running any tests:
+1. Install the correct Bundler: `gem install bundler -v 2.5.23`
+2. Install gems with that version: `bundle _2.5.23_ install`
+3. Use the rake command from CLAUDE.md: `ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test`
+
+**Symptom to watch for:** If you see `GemNotFound` errors listing many gems, it's almost always a Bundler version mismatch, not actually missing gems.
+
 ### Database Location
 
 **Issue:** The SQLite database is stored in `~/.grub_stars/grub_stars.db` by default (not in the project directory). This can cause confusion when creating test data or debugging.
