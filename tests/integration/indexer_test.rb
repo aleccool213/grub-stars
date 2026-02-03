@@ -34,6 +34,7 @@ class IndexerTest < GrubStars::IntegrationTest
     stub_yelp_search
     stub_google_search
     stub_yelp_business("bakery-barrie")
+    stub_google_details("ChIJtest123")
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     google = GrubStars::Adapters::Google.new(api_key: "test_key")
@@ -70,6 +71,7 @@ class IndexerTest < GrubStars::IntegrationTest
     stub_google_search_different
     stub_yelp_business("bakery-barrie")
     stub_yelp_business("coffee-barrie")
+    stub_google_details("ChIJdifferent")
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     google = GrubStars::Adapters::Google.new(api_key: "test_key")
@@ -108,6 +110,7 @@ class IndexerTest < GrubStars::IntegrationTest
         }.to_json,
         headers: { "Content-Type" => "application/json" }
       )
+    stub_yelp_business("bakery-barrie")
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     service = create_service(adapters: [yelp])
@@ -206,6 +209,19 @@ class IndexerTest < GrubStars::IntegrationTest
       )
   end
 
+  def stub_google_details(place_id)
+    stub_request(:get, /maps\.googleapis\.com.*details/)
+      .with(query: hash_including(placeid: place_id))
+      .to_return(
+        status: 200,
+        body: {
+          status: "OK",
+          result: google_details_data(place_id)
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+  end
+
   def yelp_business_data(id, name, lat, lng, address: "123 Main St", phone: "+17055551234")
     {
       "id" => id,
@@ -236,6 +252,23 @@ class IndexerTest < GrubStars::IntegrationTest
       "formatted_address" => "123 Main St, Barrie, ON L4M 1A6, Canada",
       "types" => %w[bakery food establishment],
       "photos" => [{ "photo_reference" => "photo123" }]
+    }
+  end
+
+  def google_details_data(place_id)
+    {
+      "place_id" => place_id,
+      "name" => "Test Place",
+      "rating" => 4.6,
+      "user_ratings_total" => 150,
+      "geometry" => { "location" => { "lat" => 44.3894, "lng" => -79.6903 } },
+      "formatted_address" => "123 Main St, Barrie, ON L4M 1A6, Canada",
+      "formatted_phone_number" => "(705) 555-1234",
+      "types" => %w[bakery food establishment],
+      "photos" => [
+        { "photo_reference" => "photo1", "url" => "https://example.com/photo1.jpg" },
+        { "photo_reference" => "photo2", "url" => "https://example.com/photo2.jpg" }
+      ]
     }
   end
 end

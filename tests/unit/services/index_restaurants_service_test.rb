@@ -290,6 +290,106 @@ class IndexRestaurantsServiceTest < Minitest::Test
     assert_equal 1, @db[:restaurants].count
   end
 
+  def test_fetch_business_details_merges_photos_from_details
+    # Mock adapter that returns empty photos from search, but photos from get_business
+    mock_adapter = Object.new
+    def mock_adapter.source_name; "test"; end
+    def mock_adapter.get_business(id)
+      {
+        external_id: "test:#{id}",
+        name: "Test Restaurant",
+        photos: ["detail_photo1.jpg", "detail_photo2.jpg"],
+        phone: "555-9999"
+      }
+    end
+
+    # Search data has no photos
+    search_data = {
+      external_id: "test:123",
+      name: "Test Restaurant",
+      address: "123 Test St",
+      photos: []
+    }
+
+    result = @service.send(:fetch_business_details, mock_adapter, search_data)
+
+    # Photos should be fetched from details
+    assert_equal ["detail_photo1.jpg", "detail_photo2.jpg"], result[:photos]
+    # Original search data fields should be preserved
+    assert_equal "123 Test St", result[:address]
+    # Phone from details should fill in missing value
+    assert_equal "555-9999", result[:phone]
+  end
+
+  def test_fetch_business_details_handles_api_errors_gracefully
+    # Mock adapter that raises an error
+    mock_adapter = Object.new
+    def mock_adapter.source_name; "test"; end
+    def mock_adapter.get_business(_id)
+      raise StandardError, "API error"
+    end
+
+    search_data = {
+      external_id: "test:123",
+      name: "Test Restaurant",
+      photos: []
+    }
+
+    # Should return original search data on error
+    result = @service.send(:fetch_business_details, mock_adapter, search_data)
+
+    assert_equal search_data, result
+  end
+
+  def test_index_fetches_details_for_photos
+    # Create a mock adapter that tracks whether get_business was called
+    get_business_called = false
+    mock_adapter = Minitest::Mock.new
+    mock_adapter.expect(:configured?, true)
+    mock_adapter.expect(:source_name, "mock")
+
+    # search_all_businesses yields one business without photos
+    mock_adapter.expect(:search_all_businesses, 1) do |location:, categories:, &block|
+      block.call(
+        { external_id: "mock:123", name: "Test Place", photos: [], latitude: 44.5, longitude: -79.5 },
+        { current: 1, total: 1, percent: 100 }
+      )
+      1
+    end
+
+    # get_business should be called to fetch details with photos
+    mock_adapter.expect(:source_name, "mock")
+    mock_adapter.expect(:get_business, {
+      external_id: "mock:123",
+      name: "Test Place",
+      photos: ["photo1.jpg", "photo2.jpg"],
+      latitude: 44.5,
+      longitude: -79.5
+    }, ["123"])
+
+    service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [mock_adapter],
+      logger: GrubStars::Logger.new
+    )
+
+    stats = service.index(location: "Test City")
+
+    assert_equal 1, stats[:total]
+
+    # Verify photos were stored
+    restaurant = @restaurant_repo.find_by_external_id("mock", "mock:123")
+    photos = @media_repo.find_photos(restaurant.id)
+    assert_equal 2, photos.length
+
+    mock_adapter.verify
+  end
+
   private
 
   def create_test_db
