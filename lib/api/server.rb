@@ -311,6 +311,7 @@ module GrubStars
           longitude: restaurant.longitude,
           phone: restaurant.phone,
           location: restaurant.location,
+          description: restaurant.description,
           ratings: restaurant.ratings.map do |r|
             { source: r.source, score: r.score, review_count: r.review_count }
           end,

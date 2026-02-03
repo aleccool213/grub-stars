@@ -8,6 +8,34 @@ class IndexerTest < GrubStars::IntegrationTest
     super
     WebMock.reset!
     WebMock.disable_net_connect!
+    # Stub all reviews endpoints to return empty reviews by default
+    stub_all_reviews_endpoints
+  end
+
+  def stub_all_reviews_endpoints
+    # Stub Yelp reviews endpoint
+    stub_request(:get, /api\.yelp\.com.*\/reviews/)
+      .to_return(
+        status: 200,
+        body: { reviews: [] }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Stub Google reviews endpoint
+    stub_request(:get, /maps\.googleapis\.com.*details.*fields=reviews/)
+      .to_return(
+        status: 200,
+        body: { status: "OK", result: { reviews: [] } }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Stub TripAdvisor reviews endpoint
+    stub_request(:get, /api\.content\.tripadvisor\.com.*\/reviews/)
+      .to_return(
+        status: 200,
+        body: { data: [] }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
   end
 
   def teardown
@@ -129,6 +157,7 @@ class IndexerTest < GrubStars::IntegrationTest
     # Create repositories with test database
     restaurant_repo = Infrastructure::Repositories::RestaurantRepository.new(@db)
     rating_repo = Infrastructure::Repositories::RatingRepository.new(@db)
+    review_repo = Infrastructure::Repositories::ReviewRepository.new(@db)
     media_repo = Infrastructure::Repositories::MediaRepository.new(@db)
     category_repo = Infrastructure::Repositories::CategoryRepository.new(@db)
     external_id_repo = Infrastructure::Repositories::ExternalIdRepository.new(@db)
@@ -136,6 +165,7 @@ class IndexerTest < GrubStars::IntegrationTest
     Services::IndexRestaurantsService.new(
       restaurant_repo: restaurant_repo,
       rating_repo: rating_repo,
+      review_repo: review_repo,
       media_repo: media_repo,
       category_repo: category_repo,
       external_id_repo: external_id_repo,

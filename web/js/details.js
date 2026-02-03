@@ -190,6 +190,12 @@ function showRestaurant(restaurant) {
             </p>
           ` : ''}
         </div>
+
+        ${restaurant.description ? `
+          <div class="mt-4 p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+            <p class="text-gray-700 dark:text-slate-200 italic">"${escapeHtml(restaurant.description)}"</p>
+          </div>
+        ` : ''}
       </div>
 
       <!-- Map Section -->

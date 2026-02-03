@@ -18,6 +18,7 @@ import { bookmarkButton } from './bookmark-button.js';
 export function restaurantCard(restaurant) {
   const categories = restaurant.categories || [];
   const ratings = restaurant.ratings || [];
+  const description = restaurant.description || '';
 
   // Calculate average rating if available
   const avgRating = calculateAverageRating(ratings);
@@ -31,6 +32,11 @@ export function restaurantCard(restaurant) {
   const categoryTags = categories.slice(0, 3).map(cat =>
     `<span class="inline-block bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded mr-1 mb-1">${escapeHtml(cat)}</span>`
   ).join('');
+
+  // Truncate description for card view (max 100 chars)
+  const truncatedDescription = description.length > 100
+    ? description.substring(0, 100).replace(/\s+\S*$/, '') + '...'
+    : description;
 
   // Rating source badges (only show ratings with valid values)
   const ratingBadges = ratings
@@ -68,6 +74,11 @@ export function restaurantCard(restaurant) {
         <p class="text-sm text-gray-600 mb-2">
           ${escapeHtml(restaurant.address || 'Address not available')}
         </p>
+        ${truncatedDescription ? `
+          <p class="text-sm text-gray-500 italic mb-2 line-clamp-2">
+            "${escapeHtml(truncatedDescription)}"
+          </p>
+        ` : ''}
         <div class="flex items-center text-sm text-gray-700 mb-2">
           <span class="font-medium text-yellow-600">${ratingDisplay}</span>
           <span class="mx-2 text-gray-300">|</span>

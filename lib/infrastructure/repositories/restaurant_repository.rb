@@ -180,6 +180,7 @@ module Infrastructure
           longitude: restaurant.longitude,
           phone: restaurant.phone,
           location: restaurant.location,
+          description: restaurant.description,
           created_at: now,
           updated_at: now
         )
@@ -198,6 +199,7 @@ module Infrastructure
           longitude: restaurant.longitude,
           phone: restaurant.phone,
           location: restaurant.location,
+          description: restaurant.description,
           updated_at: Time.now
         )
         restaurant
@@ -230,6 +232,7 @@ module Infrastructure
           longitude: row[:longitude],
           phone: row[:phone],
           location: row[:location],
+          description: row[:description],
           created_at: row[:created_at],
           updated_at: row[:updated_at]
         )
