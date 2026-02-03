@@ -22,6 +22,17 @@ Encoding.default_internal = Encoding::UTF_8
 require "sinatra"
 require "json"
 
+# Configurable delay for testing progress UI
+# Set MOCK_DELAY_MS environment variable to override (in milliseconds)
+# Example: MOCK_DELAY_MS=0 ruby dev/mock_server.rb  # disable delays
+MOCK_DELAY_MS = (ENV["MOCK_DELAY_MS"] || 500).to_i
+MOCK_DELAY_PER_ITEM_MS = (ENV["MOCK_DELAY_PER_ITEM_MS"] || 200).to_i
+
+def simulate_delay(per_item: false)
+  delay_ms = per_item ? MOCK_DELAY_PER_ITEM_MS : MOCK_DELAY_MS
+  sleep(delay_ms / 1000.0) if delay_ms > 0
+end
+
 # Load fixture data
 FIXTURES_DIR = File.expand_path("fixtures", __dir__)
 
@@ -70,6 +81,9 @@ end
 
 # GET /businesses/search - Search for businesses (Yelp)
 get "/businesses/search" do
+  # Add artificial delay for testing progress UI
+  simulate_delay
+
   location = params["location"]
   categories = params["categories"]
   limit = (params["limit"] || 50).to_i
@@ -111,6 +125,9 @@ end
 
 # GET /businesses/:id - Get business details (Yelp)
 get "/businesses/:id" do
+  # Add per-item delay for testing progress UI
+  simulate_delay(per_item: true)
+
   id = params["id"]
   business = YELP_BUSINESS_BY_ID[id]
 
@@ -140,6 +157,8 @@ end
 # GET /textsearch/json - Text search for places (Google)
 get "/textsearch/json" do
   content_type :json
+  # Add artificial delay for testing progress UI
+  simulate_delay
 
   query = params["query"]
   key = params["key"]
@@ -197,6 +216,8 @@ end
 # GET /details/json - Get place details (Google)
 get "/details/json" do
   content_type :json
+  # Add per-item delay for testing progress UI
+  simulate_delay(per_item: true)
 
   place_id = params["placeid"]
   key = params["key"]
@@ -255,6 +276,8 @@ end
 # GET /api/v1/location/search - Search for locations (TripAdvisor)
 get "/api/v1/location/search" do
   content_type :json
+  # Add artificial delay for testing progress UI
+  simulate_delay
 
   search_query = params["searchQuery"]
   key = params["key"]
@@ -327,6 +350,8 @@ end
 # GET /api/v1/location/:id - Get location details (TripAdvisor)
 get "/api/v1/location/:id" do
   content_type :json
+  # Add per-item delay for testing progress UI
+  simulate_delay(per_item: true)
 
   location_id = params["id"]
   key = params["key"]
@@ -392,6 +417,12 @@ puts "=" * 70
 puts "  Mock API Server (Yelp + Google Places + TripAdvisor)"
 puts "=" * 70
 puts ""
+if MOCK_DELAY_MS > 0 || MOCK_DELAY_PER_ITEM_MS > 0
+  puts "  ⏱️  Delay Configuration (for testing progress UI):"
+  puts "    - Search delay: #{MOCK_DELAY_MS}ms" if MOCK_DELAY_MS > 0
+  puts "    - Per-item delay: #{MOCK_DELAY_PER_ITEM_MS}ms" if MOCK_DELAY_PER_ITEM_MS > 0
+  puts ""
+end
 puts "  Yelp Data:"
 puts "    - #{YELP_BUSINESSES['businesses'].length} businesses"
 puts "    - #{YELP_REVIEWS.keys.length} businesses with reviews"
@@ -428,6 +459,10 @@ puts "    GOOGLE_API_KEY=mock_api_key"
 puts "    GOOGLE_API_BASE_URL=http://localhost:4567"
 puts "    TRIPADVISOR_API_KEY=mock_api_key"
 puts "    TRIPADVISOR_API_BASE_URL=http://localhost:4567/api/v1"
+puts ""
+puts "  Delays (enabled by default for testing progress UI):"
+puts "    MOCK_DELAY_MS=0 ruby dev/mock_server.rb         # disable search delay"
+puts "    MOCK_DELAY_PER_ITEM_MS=0 ruby dev/mock_server.rb    # disable per-item delay"
 puts ""
 puts "=" * 70
 puts ""

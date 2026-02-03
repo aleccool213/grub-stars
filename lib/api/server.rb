@@ -203,7 +203,7 @@ module GrubStars
         json_response(restaurant.to_h)
       end
 
-      # Index restaurants
+      # Index restaurants (returns detailed results)
       # Accepts optional "limit" parameter (default: 100) to control max restaurants indexed
       post "/index" do
         body = parse_json_body
@@ -233,11 +233,88 @@ module GrubStars
                   service.index(location: location, categories: category)
                 end
 
-        json_response(stats, location: location, category: category)
+        # Format detailed response
+        response_data = {
+          total: stats[:total],
+          created: stats[:created],
+          updated: stats[:updated],
+          merged: stats[:merged],
+          limit: stats[:limit],
+          limit_per_adapter: stats[:limit_per_adapter],
+          limit_reached: stats[:limit_reached],
+          adapters: stats[:adapters],
+          restaurants_created: stats[:restaurants_created] || [],
+          restaurants_updated: stats[:restaurants_updated] || [],
+          restaurants_merged: stats[:restaurants_merged] || []
+        }
+
+        json_response(response_data, location: location, category: category)
       rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
         halt 503, json_error("NO_ADAPTERS", e.message)
       rescue GrubStars::Adapters::Base::APIError => e
         halt 502, json_error("API_ERROR", e.message)
+      end
+
+      # Index restaurants with Server-Sent Events for progress
+      get "/index/stream" do
+        location = params[:location]
+        category = params[:category]
+
+        unless location
+          halt 400, json_error("INVALID_REQUEST", "location is required")
+        end
+
+        content_type "text/event-stream"
+        headers "Cache-Control" => "no-cache",
+                "Connection" => "keep-alive",
+                "X-Accel-Buffering" => "no"  # Disable nginx buffering
+
+        stream(:keep_open) do |out|
+          begin
+            service = Services::IndexRestaurantsService.new
+
+            # Progress callback for SSE
+            on_progress = lambda do |progress|
+              event_data = {
+                adapter: progress[:adapter],
+                phase: progress[:phase].to_s,
+                current: progress[:current],
+                total: progress[:total],
+                percent: progress[:percent],
+                restaurant_name: progress[:restaurant_name]
+              }
+              out << "event: progress\n"
+              out << "data: #{event_data.to_json}\n\n"
+            end
+
+            stats = service.index(location: location, categories: category, on_progress: on_progress)
+
+            # Send final results
+            result_data = {
+              total: stats[:total],
+              created: stats[:created],
+              updated: stats[:updated],
+              merged: stats[:merged],
+              adapters: stats[:adapters],
+              restaurants_created: stats[:restaurants_created] || [],
+              restaurants_updated: stats[:restaurants_updated] || [],
+              restaurants_merged: stats[:restaurants_merged] || []
+            }
+            out << "event: complete\n"
+            out << "data: #{result_data.to_json}\n\n"
+          rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
+            out << "event: error\n"
+            out << "data: #{{ code: 'NO_ADAPTERS', message: e.message }.to_json}\n\n"
+          rescue GrubStars::Adapters::Base::APIError => e
+            out << "event: error\n"
+            out << "data: #{{ code: 'API_ERROR', message: e.message }.to_json}\n\n"
+          rescue StandardError => e
+            out << "event: error\n"
+            out << "data: #{{ code: 'INTERNAL_ERROR', message: e.message }.to_json}\n\n"
+          ensure
+            out.close
+          end
+        end
       end
 
       # List available adapters

@@ -42,25 +42,84 @@ module Services
     # @param location [String] Location to index (e.g., "barrie, ontario")
     # @param categories [String, nil] Optional category filter (e.g., "bakery")
     # @param limit [Integer] Maximum restaurants to index per adapter (default: 100)
-    # @return [Hash] Statistics: { total:, created:, updated:, merged:, limit:, limit_per_adapter:, limit_reached: }
-    def index(location:, categories: nil, limit: DEFAULT_LIMIT)
+    # @param on_progress [Proc, nil] Optional callback for progress updates
+    #   Called with { adapter:, current:, total:, percent:, restaurant_name:, phase: }
+    # @return [Hash] Detailed statistics including restaurant lists:
+    #   { total:, created:, updated:, merged:, limit:, limit_per_adapter:, limit_reached:,
+    #     restaurants_created: [], restaurants_updated: [], restaurants_merged: [],
+    #     adapters: { source_name => { total:, created:, updated:, merged: } } }
+    def index(location:, categories: nil, limit: DEFAULT_LIMIT, on_progress: nil)
       configured_adapters = @adapters.select(&:configured?)
 
       if configured_adapters.empty?
         raise NoAdaptersConfiguredError, "No adapters configured. Set API keys in .env file."
       end
 
-      stats = { total: 0, created: 0, updated: 0, merged: 0 }
+      stats = {
+        total: 0,
+        created: 0,
+        updated: 0,
+        merged: 0,
+        restaurants_created: [],
+        restaurants_updated: [],
+        restaurants_merged: [],
+        adapters: {}
+      }
       any_limit_reached = false
 
       # Each adapter gets its own limit (not shared across adapters)
       configured_adapters.each do |adapter|
-        adapter_stats = index_with_adapter(adapter, location, categories, limit: limit)
+        # Log adapter starting
+        @logger.adapter_phase(adapter: adapter.source_name, phase: :starting)
+
+        # Notify progress callback that we're starting a new adapter
+        on_progress&.call({
+          adapter: adapter.source_name,
+          phase: :starting,
+          current: 0,
+          total: 0,
+          percent: 0,
+          restaurant_name: nil
+        })
+
+        adapter_stats = index_with_adapter(adapter, location, categories, limit: limit, on_progress: on_progress)
+
+        # Clear progress line before showing completion
+        @logger.clear_line
+
+        # Aggregate totals
         stats[:total] += adapter_stats[:total]
         stats[:created] += adapter_stats[:created]
         stats[:updated] += adapter_stats[:updated]
         stats[:merged] += adapter_stats[:merged]
         any_limit_reached ||= adapter_stats[:limit_reached]
+
+        # Aggregate restaurant lists
+        stats[:restaurants_created].concat(adapter_stats[:restaurants_created])
+        stats[:restaurants_updated].concat(adapter_stats[:restaurants_updated])
+        stats[:restaurants_merged].concat(adapter_stats[:restaurants_merged])
+
+        # Store per-adapter stats
+        adapter_summary = {
+          total: adapter_stats[:total],
+          created: adapter_stats[:created],
+          updated: adapter_stats[:updated],
+          merged: adapter_stats[:merged]
+        }
+        stats[:adapters][adapter.source_name] = adapter_summary
+
+        # Log adapter completion with stats
+        @logger.adapter_phase(adapter: adapter.source_name, phase: :completed, stats: adapter_summary)
+
+        # Notify progress callback that adapter is complete
+        on_progress&.call({
+          adapter: adapter.source_name,
+          phase: :completed,
+          current: adapter_stats[:total],
+          total: adapter_stats[:total],
+          percent: 100,
+          restaurant_name: nil
+        })
       end
 
       @logger.clear_line
@@ -309,8 +368,17 @@ module Services
       ]
     end
 
-    def index_with_adapter(adapter, location, categories = nil, limit: nil)
-      stats = { total: 0, created: 0, updated: 0, merged: 0, limit_reached: false }
+    def index_with_adapter(adapter, location, categories = nil, limit: nil, on_progress: nil)
+      stats = {
+        total: 0,
+        created: 0,
+        updated: 0,
+        merged: 0,
+        limit_reached: false,
+        restaurants_created: [],
+        restaurants_updated: [],
+        restaurants_merged: []
+      }
       source = adapter.source_name
 
       adapter.search_all_businesses(location: location, categories: categories, limit: limit) do |biz, progress|
@@ -324,14 +392,36 @@ module Services
           name: biz[:name],
           current: progress[:current],
           total: progress[:total],
-          percent: progress[:percent]
+          percent: progress[:percent],
+          adapter: source
         )
+
+        # Call progress callback if provided
+        on_progress&.call({
+          adapter: source,
+          phase: :indexing,
+          current: progress[:current],
+          total: progress[:total],
+          percent: progress[:percent],
+          restaurant_name: biz[:name]
+        })
 
         result = store_business(biz, source, location)
         stats[:total] += 1
-        stats[:created] += 1 if result == :created
-        stats[:updated] += 1 if result == :updated
-        stats[:merged] += 1 if result == :merged
+
+        restaurant_info = { name: biz[:name], address: biz[:address] }
+
+        case result
+        when :created
+          stats[:created] += 1
+          stats[:restaurants_created] << restaurant_info
+        when :updated
+          stats[:updated] += 1
+          stats[:restaurants_updated] << restaurant_info
+        when :merged
+          stats[:merged] += 1
+          stats[:restaurants_merged] << restaurant_info
+        end
       end
 
       # Also mark limit_reached if we processed exactly the limit amount

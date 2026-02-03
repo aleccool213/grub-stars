@@ -30,7 +30,7 @@ module GrubStars
       @output.puts @pastel.yellow("[WARN] #{message}")
     end
 
-    def progress(name:, current:, total:, percent:)
+    def progress(name:, current:, total:, percent:, adapter: nil)
       return unless @enabled
 
       bar_width = 20
@@ -47,9 +47,28 @@ module GrubStars
       count_str = @pastel.dim("(#{current}/#{total})")
       name_str = @pastel.white(display_name)
 
-      line = "\r   [#{bar}] #{percent_str} #{count_str} #{name_str}"
-      @output.print line.ljust(100)
+      # Include adapter name if provided
+      adapter_str = adapter ? @pastel.magenta("[#{adapter}] ") : ""
+
+      line = "\r   #{adapter_str}[#{bar}] #{percent_str} #{count_str} #{name_str}"
+      @output.print line.ljust(110)
       @output.flush
+    end
+
+    # Display adapter phase message (starting, completed)
+    def adapter_phase(adapter:, phase:, stats: nil)
+      return unless @enabled
+
+      case phase
+      when :starting
+        @output.puts @pastel.bold("   📡 Indexing from #{@pastel.magenta(adapter)}...")
+      when :completed
+        if stats
+          @output.puts @pastel.dim("      ✓ #{stats[:total]} found (#{stats[:created]} new, #{stats[:merged]} merged, #{stats[:updated]} updated)")
+        else
+          @output.puts @pastel.dim("      ✓ Complete")
+        end
+      end
     end
 
     def clear_line

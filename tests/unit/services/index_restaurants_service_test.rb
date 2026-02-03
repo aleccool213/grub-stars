@@ -161,7 +161,11 @@ class IndexRestaurantsServiceTest < Minitest::Test
     captured_limit = nil
     mock_adapter = Minitest::Mock.new
     mock_adapter.expect(:configured?, true)
-    mock_adapter.expect(:source_name, "mock")
+    # source_name is called multiple times for adapter_phase logging and progress tracking
+    mock_adapter.expect(:source_name, "mock")  # for adapter_phase :starting
+    mock_adapter.expect(:source_name, "mock")  # for index_with_adapter
+    mock_adapter.expect(:source_name, "mock")  # for adapter_phase :completed
+    mock_adapter.expect(:source_name, "mock")  # for adapters hash key
     mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:, limit:|
       captured_categories = categories
       captured_limit = limit
@@ -177,7 +181,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
       external_id_repo: @external_id_repo,
       matcher: @matcher,
       adapters: [mock_adapter],
-      logger: GrubStars::Logger.new
+      logger: GrubStars::Logger.silent
     )
 
     service.index(location: "Test City", categories: "bakery")

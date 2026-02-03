@@ -214,3 +214,58 @@ export async function getRestaurantsInBounds(bounds, limit = 100) {
 export async function getStats() {
   return apiRequest('/stats');
 }
+
+/**
+ * Index a location with real-time progress updates via Server-Sent Events
+ * @param {string} location - Location to index (e.g., "barrie, ontario")
+ * @param {string|null} category - Optional category filter
+ * @param {Object} callbacks - Event callbacks
+ * @param {Function} callbacks.onProgress - Called for each progress update
+ *   Receives: { adapter, phase, current, total, percent, restaurant_name }
+ * @param {Function} callbacks.onComplete - Called when indexing completes
+ *   Receives: { total, created, updated, merged, adapters, restaurants_created, restaurants_updated, restaurants_merged }
+ * @param {Function} callbacks.onError - Called if an error occurs
+ *   Receives: { code, message }
+ * @returns {EventSource} - The EventSource instance (call .close() to cancel)
+ */
+export function indexLocationWithProgress(location, category, callbacks) {
+  const params = new URLSearchParams({ location });
+  if (category) params.append('category', category);
+
+  const url = `${API_BASE_URL}/index/stream?${params}`;
+  const eventSource = new EventSource(url);
+
+  eventSource.addEventListener('progress', (event) => {
+    const data = JSON.parse(event.data);
+    callbacks.onProgress?.(data);
+  });
+
+  eventSource.addEventListener('complete', (event) => {
+    const data = JSON.parse(event.data);
+    eventSource.close();
+    callbacks.onComplete?.(data);
+  });
+
+  eventSource.addEventListener('error', (event) => {
+    // Check if it's a custom error event with data
+    if (event.data) {
+      const data = JSON.parse(event.data);
+      eventSource.close();
+      callbacks.onError?.(data);
+    } else {
+      // Connection error
+      eventSource.close();
+      callbacks.onError?.({ code: 'CONNECTION_ERROR', message: 'Lost connection to server' });
+    }
+  });
+
+  // Handle connection errors (onerror fires for all errors)
+  eventSource.onerror = (event) => {
+    // Only handle if the EventSource is closed (connection failed)
+    if (eventSource.readyState === EventSource.CLOSED) {
+      callbacks.onError?.({ code: 'CONNECTION_ERROR', message: 'Unable to connect to server' });
+    }
+  };
+
+  return eventSource;
+}
