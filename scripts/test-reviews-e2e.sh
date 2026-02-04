@@ -44,7 +44,7 @@ fi
 
 # Start main server
 echo "Starting main server on port 9292..."
-bundle _2.5.23_ exec rackup -p 9292 > /tmp/main_server.log 2>&1 &
+ruby -I lib -r bundler/setup -e "require 'rack'; Rack::Server.start(config: 'config.ru', Port: 9292, Host: '0.0.0.0')" > /tmp/main_server.log 2>&1 &
 MAIN_PID=$!
 sleep 3
 
