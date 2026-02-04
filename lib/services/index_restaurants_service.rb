@@ -368,6 +368,33 @@ module Services
       ]
     end
 
+    # Fetch detailed business info to get photos (search endpoints often don't return photos)
+    # Merges detail data with search data, preferring non-empty values from details
+    def fetch_business_details(adapter, search_data)
+      # Extract raw ID from external_id (e.g., "yelp:abc123" -> "abc123")
+      raw_id = strip_source_prefix(search_data[:external_id], adapter.source_name)
+      return search_data unless raw_id
+
+      begin
+        details = adapter.get_business(raw_id)
+        return search_data unless details
+
+        # Merge: use details data for photos, keep search data for anything details doesn't have
+        merged = search_data.dup
+        merged[:photos] = details[:photos] if details[:photos] && !details[:photos].empty?
+
+        # Also update other fields if details has better data
+        %i[phone address rating review_count].each do |field|
+          merged[field] = details[field] if details[field] && (merged[field].nil? || merged[field].to_s.empty?)
+        end
+
+        merged
+      rescue StandardError => e
+        @logger.warn("Failed to fetch details for #{search_data[:name]}: #{e.message}")
+        search_data
+      end
+    end
+
     def index_with_adapter(adapter, location, categories = nil, limit: nil, on_progress: nil)
       stats = {
         total: 0,
@@ -406,7 +433,10 @@ module Services
           restaurant_name: biz[:name]
         })
 
-        result = store_business(biz, source, location)
+        # Fetch detailed business info to get photos (search endpoints don't return photos)
+        biz_with_details = fetch_business_details(adapter, biz)
+
+        result = store_business(biz_with_details, source, location)
         stats[:total] += 1
 
         restaurant_info = { name: biz[:name], address: biz[:address] }
