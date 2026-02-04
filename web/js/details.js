@@ -125,8 +125,8 @@ function showRestaurant(restaurant) {
         <div class="flex items-start justify-between gap-4 mb-4">
           <h2 class="text-2xl font-bold text-gray-800 dark:text-slate-100">${escapeHtml(restaurant.name)}</h2>
           <div class="flex items-center gap-2 flex-shrink-0">
-            <!-- Refresh Data Button -->
-            <button id="reindex-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Refresh data from sources" aria-label="Refresh data from sources">
+            <!-- Re-index Button -->
+            <button id="reindex-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Re-index: fetch latest data from all sources" aria-label="Re-index restaurant data">
               <svg id="reindex-icon" class="w-6 h-6 text-gray-600 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>

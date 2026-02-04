@@ -158,11 +158,17 @@ class IndexRestaurantsServiceTest < Minitest::Test
   def test_passes_categories_to_adapter
     # Create a mock adapter that captures the categories parameter
     captured_categories = nil
+    captured_limit = nil
     mock_adapter = Minitest::Mock.new
     mock_adapter.expect(:configured?, true)
-    mock_adapter.expect(:source_name, "mock")
-    mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:|
+    # source_name is called multiple times for adapter_phase logging and progress tracking
+    mock_adapter.expect(:source_name, "mock")  # for adapter_phase :starting
+    mock_adapter.expect(:source_name, "mock")  # for index_with_adapter
+    mock_adapter.expect(:source_name, "mock")  # for adapter_phase :completed
+    mock_adapter.expect(:source_name, "mock")  # for adapters hash key
+    mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:, limit:|
       captured_categories = categories
+      captured_limit = limit
       # Don't yield any businesses
       0
     end
@@ -175,12 +181,13 @@ class IndexRestaurantsServiceTest < Minitest::Test
       external_id_repo: @external_id_repo,
       matcher: @matcher,
       adapters: [mock_adapter],
-      logger: GrubStars::Logger.new
+      logger: GrubStars::Logger.silent
     )
 
     service.index(location: "Test City", categories: "bakery")
 
     assert_equal "bakery", captured_categories
+    assert_equal 100, captured_limit  # Default limit
     mock_adapter.verify
   end
 
@@ -288,6 +295,186 @@ class IndexRestaurantsServiceTest < Minitest::Test
 
     # Verify only one restaurant exists
     assert_equal 1, @db[:restaurants].count
+  end
+
+  def test_fetch_business_details_merges_photos_from_details
+    # Mock adapter that returns empty photos from search, but photos from get_business
+    mock_adapter = Object.new
+    def mock_adapter.source_name; "test"; end
+    def mock_adapter.get_business(id)
+      {
+        external_id: "test:#{id}",
+        name: "Test Restaurant",
+        photos: ["detail_photo1.jpg", "detail_photo2.jpg"],
+        phone: "555-9999"
+      }
+    end
+
+    # Search data has no photos
+    search_data = {
+      external_id: "test:123",
+      name: "Test Restaurant",
+      address: "123 Test St",
+      photos: []
+    }
+
+    result = @service.send(:fetch_business_details, mock_adapter, search_data)
+
+    # Photos should be fetched from details
+    assert_equal ["detail_photo1.jpg", "detail_photo2.jpg"], result[:photos]
+    # Original search data fields should be preserved
+    assert_equal "123 Test St", result[:address]
+    # Phone from details should fill in missing value
+    assert_equal "555-9999", result[:phone]
+  end
+
+  def test_fetch_business_details_handles_api_errors_gracefully
+    # Mock adapter that raises an error
+    mock_adapter = Object.new
+    def mock_adapter.source_name; "test"; end
+    def mock_adapter.get_business(_id)
+      raise StandardError, "API error"
+    end
+
+    search_data = {
+      external_id: "test:123",
+      name: "Test Restaurant",
+      photos: []
+    }
+
+    # Should return original search data on error
+    result = @service.send(:fetch_business_details, mock_adapter, search_data)
+
+    assert_equal search_data, result
+  end
+
+  def test_index_fetches_details_for_photos
+    # Create a mock adapter that tracks whether get_business was called
+    mock_adapter = Minitest::Mock.new
+    mock_adapter.expect(:configured?, true)
+    # source_name is called multiple times for logging and progress tracking
+    mock_adapter.expect(:source_name, "mock")  # for adapter_phase :starting
+    mock_adapter.expect(:source_name, "mock")  # for index_with_adapter
+
+    # search_all_businesses yields one business without photos
+    mock_adapter.expect(:search_all_businesses, 1) do |location:, categories:, limit:, &block|
+      block.call(
+        { external_id: "mock:123", name: "Test Place", photos: [], latitude: 44.5, longitude: -79.5 },
+        { current: 1, total: 1, percent: 100 }
+      )
+      1
+    end
+
+    # get_business should be called to fetch details with photos
+    mock_adapter.expect(:source_name, "mock")  # for fetch_business_details
+    mock_adapter.expect(:get_business, {
+      external_id: "mock:123",
+      name: "Test Place",
+      photos: ["photo1.jpg", "photo2.jpg"],
+      latitude: 44.5,
+      longitude: -79.5
+    }, ["123"])
+    mock_adapter.expect(:source_name, "mock")  # for adapter_phase :completed
+    mock_adapter.expect(:source_name, "mock")  # for adapters hash key
+
+    service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [mock_adapter],
+      logger: GrubStars::Logger.silent
+    )
+
+    stats = service.index(location: "Test City")
+
+    assert_equal 1, stats[:total]
+
+    # Verify photos were stored
+    restaurant = @restaurant_repo.find_by_external_id("mock", "mock:123")
+    photos = @media_repo.find_photos(restaurant.id)
+    assert_equal 2, photos.length
+
+    mock_adapter.verify
+  end
+
+  def test_limit_applies_per_adapter_not_shared
+    # This test verifies that each adapter gets its own limit of 100
+    # rather than sharing a single pool of 100 across all adapters
+
+    # Track what limit each adapter receives
+    captured_limits = {}
+
+    # Create mock adapter class that properly handles blocks
+    mock_adapter1 = MockAdapter.new("adapter1", 60, captured_limits)
+    mock_adapter2 = MockAdapter.new("adapter2", 50, captured_limits)
+
+    service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [mock_adapter1, mock_adapter2],
+      logger: GrubStars::Logger.new
+    )
+
+    stats = service.index(location: "Test City", limit: 100)
+
+    # Each adapter should receive the full limit of 100
+    assert_equal 100, captured_limits["adapter1"], "Adapter 1 should receive limit of 100"
+    assert_equal 100, captured_limits["adapter2"], "Adapter 2 should receive limit of 100 (per adapter, not shared)"
+
+    # Total should be 110 (60 from adapter1 + 50 from adapter2)
+    assert_equal 110, stats[:total], "Total should include all restaurants from both adapters"
+  end
+
+  # Helper class for testing adapter behavior
+  class MockAdapter
+    attr_reader :source_name
+
+    def initialize(name, num_results, captured_limits)
+      @source_name = name
+      @num_results = num_results
+      @captured_limits = captured_limits
+    end
+
+    def configured?
+      true
+    end
+
+    def search_all_businesses(location:, categories:, limit:)
+      @captured_limits[@source_name] = limit
+
+      @num_results.times do |i|
+        yield(
+          {
+            external_id: "#{@source_name}-#{i}",
+            name: "Restaurant #{@source_name} #{i}",
+            address: "#{i} Main St",
+            latitude: 44.0 + (i * 0.01),
+            longitude: -79.0 + (i * 0.01),
+            rating: 4.0,
+            categories: ["Restaurant"]
+          },
+          { current: i + 1, total: @num_results, percent: ((i + 1).to_f / @num_results * 100).to_i }
+        )
+      end
+    end
+
+    # Returns details with photos (simulates real API behavior where photos come from details endpoint)
+    def get_business(id)
+      {
+        external_id: "#{@source_name}:#{id}",
+        name: "Restaurant #{id}",
+        photos: ["https://example.com/#{id}/photo1.jpg", "https://example.com/#{id}/photo2.jpg"],
+        latitude: 44.0,
+        longitude: -79.0
+      }
+    end
   end
 
   private

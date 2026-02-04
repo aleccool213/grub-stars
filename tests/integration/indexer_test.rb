@@ -10,6 +10,8 @@ class IndexerTest < GrubStars::IntegrationTest
     WebMock.disable_net_connect!
     # Stub all reviews endpoints to return empty reviews by default
     stub_all_reviews_endpoints
+    # Stub business details endpoints (for fetch_business_details)
+    stub_business_details_endpoints
   end
 
   def stub_all_reviews_endpoints
@@ -38,6 +40,43 @@ class IndexerTest < GrubStars::IntegrationTest
       )
   end
 
+  def stub_business_details_endpoints
+    # Stub Yelp business details endpoint (for fetch_business_details)
+    stub_request(:get, /api\.yelp\.com.*businesses\/[^\/]+$/)
+      .to_return(
+        status: 200,
+        body: {
+          "id" => "test-business",
+          "name" => "Test Business",
+          "rating" => 4.5,
+          "review_count" => 100,
+          "coordinates" => { "latitude" => 44.3894, "longitude" => -79.6903 },
+          "location" => {
+            "address1" => "123 Main St",
+            "city" => "Barrie",
+            "state" => "ON",
+            "zip_code" => "L4M 1A6",
+            "country" => "CA"
+          },
+          "categories" => [{ "alias" => "bakeries", "title" => "Bakeries" }],
+          "photos" => ["https://example.com/photo1.jpg"],
+          "phone" => "+17055551234"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Stub Google place details endpoint (for fetch_business_details)
+    stub_request(:get, /maps\.googleapis\.com.*details\/json/)
+      .to_return(
+        status: 200,
+        body: {
+          status: "OK",
+          result: google_details_data("test-place")
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+  end
+
   def teardown
     WebMock.allow_net_connect!
     super
@@ -62,6 +101,7 @@ class IndexerTest < GrubStars::IntegrationTest
     stub_yelp_search
     stub_google_search
     stub_yelp_business("bakery-barrie")
+    stub_google_details("ChIJtest123")
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     google = GrubStars::Adapters::Google.new(api_key: "test_key")
@@ -98,6 +138,7 @@ class IndexerTest < GrubStars::IntegrationTest
     stub_google_search_different
     stub_yelp_business("bakery-barrie")
     stub_yelp_business("coffee-barrie")
+    stub_google_details("ChIJdifferent")
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     google = GrubStars::Adapters::Google.new(api_key: "test_key")
@@ -136,6 +177,7 @@ class IndexerTest < GrubStars::IntegrationTest
         }.to_json,
         headers: { "Content-Type" => "application/json" }
       )
+    stub_yelp_business("bakery-barrie")
 
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     service = create_service(adapters: [yelp])
@@ -304,6 +346,19 @@ class IndexerTest < GrubStars::IntegrationTest
       )
   end
 
+  def stub_google_details(place_id)
+    stub_request(:get, /maps\.googleapis\.com.*details/)
+      .with(query: hash_including(placeid: place_id))
+      .to_return(
+        status: 200,
+        body: {
+          status: "OK",
+          result: google_details_data(place_id)
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+  end
+
   def yelp_business_data(id, name, lat, lng, address: "123 Main St", phone: "+17055551234")
     {
       "id" => id,
@@ -414,5 +469,22 @@ class IndexerTest < GrubStars::IntegrationTest
         }.to_json,
         headers: { "Content-Type" => "application/json" }
       )
+  end
+
+  def google_details_data(place_id)
+    {
+      "place_id" => place_id,
+      "name" => "Test Place",
+      "rating" => 4.6,
+      "user_ratings_total" => 150,
+      "geometry" => { "location" => { "lat" => 44.3894, "lng" => -79.6903 } },
+      "formatted_address" => "123 Main St, Barrie, ON L4M 1A6, Canada",
+      "formatted_phone_number" => "(705) 555-1234",
+      "types" => %w[bakery food establishment],
+      "photos" => [
+        { "photo_reference" => "photo1", "url" => "https://example.com/photo1.jpg" },
+        { "photo_reference" => "photo2", "url" => "https://example.com/photo2.jpg" }
+      ]
+    }
   end
 end

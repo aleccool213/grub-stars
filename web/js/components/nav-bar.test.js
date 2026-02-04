@@ -25,7 +25,7 @@ test('navBar renders all navigation links', () => {
   const html = navBar();
 
   assertTruthy(html.includes('href="/"'), 'Should include search link');
-  assertTruthy(html.includes('href="/categories.html"'), 'Should include categories link');
+  assertTruthy(html.includes('href="/bookmarks.html"'), 'Should include bookmarks link');
   assertTruthy(html.includes('href="/index-location.html"'), 'Should include add area link');
 });
 
@@ -33,12 +33,12 @@ test('navBar renders navigation labels', () => {
   const html = navBar();
 
   assertTruthy(html.includes('Search'), 'Should include Search label');
-  assertTruthy(html.includes('Categories'), 'Should include Categories label');
+  assertTruthy(html.includes('Bookmarks'), 'Should include Bookmarks label');
   assertTruthy(html.includes('Add Area'), 'Should include Add Area label');
 });
 
 test('navBar highlights current page when specified', () => {
-  const html = navBar({ currentPage: 'categories' });
+  const html = navBar({ currentPage: 'bookmarks' });
 
   assertTruthy(html.includes('aria-current="page"'), 'Should mark current page');
   assertTruthy(html.includes('text-electric'), 'Should apply active styling');
