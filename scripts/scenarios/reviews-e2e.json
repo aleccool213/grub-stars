@@ -1,0 +1,32 @@
+{
+  "name": "reviews-and-descriptions",
+  "description": "Test that reviews and descriptions are displayed after indexing",
+  "baseUrl": "http://localhost:9292",
+  "viewport": { "width": 1280, "height": 800 },
+  "steps": [
+    { "action": "goto", "path": "/index-location.html" },
+    { "action": "wait", "ms": 500 },
+    { "action": "screenshot", "name": "01-index-page", "description": "Index location page" },
+
+    { "action": "type", "selector": "#location-input", "text": "barrie, ontario" },
+    { "action": "wait", "ms": 300 },
+    { "action": "screenshot", "name": "02-location-entered", "description": "Location entered" },
+
+    { "action": "click", "selector": "#index-button" },
+    { "action": "wait", "selector": "#indexing-status:not(:empty)", "timeout": 5000 },
+    { "action": "wait", "ms": 15000 },
+    { "action": "screenshot", "name": "03-indexing-complete", "description": "Indexing complete" },
+
+    { "action": "goto", "path": "/" },
+    { "action": "wait", "ms": 1000 },
+    { "action": "screenshot", "name": "04-search-page", "description": "Search page with restaurants" },
+
+    { "action": "click", "selector": "article a" },
+    { "action": "wait", "ms": 1500 },
+    { "action": "screenshot", "name": "05-restaurant-details", "description": "Restaurant details with description and reviews" },
+
+    { "action": "scroll", "y": 600 },
+    { "action": "wait", "ms": 500 },
+    { "action": "screenshot", "name": "06-reviews-section", "description": "Reviews section" }
+  ]
+}

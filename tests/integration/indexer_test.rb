@@ -151,6 +151,74 @@ class IndexerTest < GrubStars::IntegrationTest
                      times: 1
   end
 
+  def test_index_stores_reviews_and_generates_description
+    stub_yelp_search
+    stub_yelp_business("bakery-barrie")
+    stub_yelp_reviews_with_content("bakery-barrie")
+
+    yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
+    service = create_service(adapters: [yelp])
+
+    stats = service.index(location: "barrie, ontario")
+
+    assert_equal 1, stats[:created]
+
+    # Verify reviews are stored
+    restaurant = @db[:restaurants].first
+    reviews = @db[:reviews].where(restaurant_id: restaurant[:id]).all
+    assert_equal 2, reviews.length
+    assert_equal "yelp", reviews.first[:source]
+    assert_includes reviews.first[:snippet], "Amazing bakery"
+
+    # Verify description is generated from first review
+    refute_nil restaurant[:description]
+    assert_includes restaurant[:description], "Amazing bakery"
+  end
+
+  def test_index_stores_reviews_from_multiple_sources
+    stub_yelp_search
+    stub_google_search
+    stub_yelp_business("bakery-barrie")
+    stub_yelp_reviews_with_content("bakery-barrie")
+    stub_google_reviews_with_content("ChIJtest123")
+
+    yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
+    google = GrubStars::Adapters::Google.new(api_key: "test_key")
+    service = create_service(adapters: [yelp, google])
+
+    stats = service.index(location: "barrie, ontario")
+
+    # Restaurant should be merged (same location)
+    assert_equal 1, @db[:restaurants].count
+
+    # Should have reviews from both sources
+    restaurant = @db[:restaurants].first
+    reviews = @db[:reviews].where(restaurant_id: restaurant[:id]).all
+
+    yelp_reviews = reviews.select { |r| r[:source] == "yelp" }
+    google_reviews = reviews.select { |r| r[:source] == "google" }
+
+    assert_equal 2, yelp_reviews.length
+    assert_equal 2, google_reviews.length
+  end
+
+  def test_description_truncates_long_reviews
+    stub_yelp_search
+    stub_yelp_business("bakery-barrie")
+    stub_yelp_reviews_with_long_content("bakery-barrie")
+
+    yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
+    service = create_service(adapters: [yelp])
+
+    service.index(location: "barrie, ontario")
+
+    restaurant = @db[:restaurants].first
+    refute_nil restaurant[:description]
+    # Description should be truncated to ~200 chars
+    assert restaurant[:description].length <= 210
+    assert restaurant[:description].end_with?("...")
+  end
+
   private
 
   def create_service(adapters:)
@@ -267,5 +335,84 @@ class IndexerTest < GrubStars::IntegrationTest
       "types" => %w[bakery food establishment],
       "photos" => [{ "photo_reference" => "photo123" }]
     }
+  end
+
+  def stub_yelp_reviews_with_content(business_id)
+    stub_request(:get, /api\.yelp\.com.*businesses\/#{business_id}\/reviews/)
+      .to_return(
+        status: 200,
+        body: {
+          reviews: [
+            {
+              "id" => "review1",
+              "rating" => 5,
+              "text" => "Amazing bakery! The croissants are to die for. Best in town.",
+              "url" => "https://www.yelp.com/biz/test?hrid=review1",
+              "time_created" => "2024-01-15 10:30:00"
+            },
+            {
+              "id" => "review2",
+              "rating" => 4,
+              "text" => "Great selection of breads and pastries. Friendly staff.",
+              "url" => "https://www.yelp.com/biz/test?hrid=review2",
+              "time_created" => "2024-01-10 14:20:00"
+            }
+          ],
+          total: 2
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+  end
+
+  def stub_yelp_reviews_with_long_content(business_id)
+    long_review = "This bakery is absolutely incredible! " * 10 # ~380 chars
+    stub_request(:get, /api\.yelp\.com.*businesses\/#{business_id}\/reviews/)
+      .to_return(
+        status: 200,
+        body: {
+          reviews: [
+            {
+              "id" => "review1",
+              "rating" => 5,
+              "text" => long_review,
+              "url" => "https://www.yelp.com/biz/test?hrid=review1",
+              "time_created" => "2024-01-15 10:30:00"
+            }
+          ],
+          total: 1
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+  end
+
+  def stub_google_reviews_with_content(place_id)
+    # Match Google details API with reviews field
+    stub_request(:get, /maps\.googleapis\.com.*details\/json/)
+      .with(query: hash_including(placeid: place_id, fields: "reviews"))
+      .to_return(
+        status: 200,
+        body: {
+          status: "OK",
+          result: {
+            reviews: [
+              {
+                "author_name" => "John D.",
+                "rating" => 5,
+                "text" => "Wonderful place! Fresh bread every morning.",
+                "time" => 1705312800,
+                "relative_time_description" => "a month ago"
+              },
+              {
+                "author_name" => "Jane S.",
+                "rating" => 4,
+                "text" => "Good pastries, nice atmosphere.",
+                "time" => 1704708000,
+                "relative_time_description" => "2 months ago"
+              }
+            ]
+          }
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
   end
 end
