@@ -2,11 +2,24 @@
 
 require "sinatra/base"
 require "json"
+require "logger"
 require_relative "../grub_stars"
+
+# Only load Sentry in non-test environments to avoid Ruby 4.0 bundled gem issues
+# In test environment, we don't need error tracking anyway
+unless ENV["RACK_ENV"] == "test" || ENV["RAILS_ENV"] == "test"
+  require "sentry-ruby"
+  require_relative "../config/sentry"
+  
+  # Initialize Sentry before Sinatra loads
+  GrubStars::SentryConfig.init
+end
 
 module GrubStars
   module API
     class Server < Sinatra::Base
+      # Only use Sentry middleware if Sentry is loaded
+      use Sentry::Rack::CaptureExceptions if defined?(Sentry)
       configure do
         set :show_exceptions, false
         set :raise_errors, false
@@ -90,6 +103,35 @@ module GrubStars
         halt 400, json_error("LOCATION_NOT_INDEXED", e.message)
       end
 
+      # Get restaurants within geographic bounds (for map view)
+      # NOTE: This route MUST be defined before /restaurants/:id to avoid the :id capturing "bounds"
+      get "/restaurants/bounds" do
+        sw_lat = params[:sw_lat]&.to_f
+        sw_lng = params[:sw_lng]&.to_f
+        ne_lat = params[:ne_lat]&.to_f
+        ne_lng = params[:ne_lng]&.to_f
+        limit = [(params[:limit] || 100).to_i, 500].min
+
+        unless sw_lat && sw_lng && ne_lat && ne_lng
+          halt 400, json_error("INVALID_REQUEST", "Required: sw_lat, sw_lng, ne_lat, ne_lng (bounding box coordinates)")
+        end
+
+        repo = Infrastructure::Repositories::RestaurantRepository.new
+        results = repo.find_within_bounds(
+          sw_lat: sw_lat,
+          sw_lng: sw_lng,
+          ne_lat: ne_lat,
+          ne_lng: ne_lng,
+          limit: limit
+        )
+
+        json_response(
+          results.map { |r| serialize_restaurant_summary(r) },
+          count: results.length,
+          bounds: { sw_lat: sw_lat, sw_lng: sw_lng, ne_lat: ne_lat, ne_lng: ne_lng }
+        )
+      end
+
       # Search external APIs by restaurant name
       # NOTE: This route MUST be defined before /restaurants/:id to avoid the :id capturing "search-external"
       get "/restaurants/search-external" do
@@ -161,24 +203,118 @@ module GrubStars
         json_response(restaurant.to_h)
       end
 
-      # Index restaurants
+      # Index restaurants (returns detailed results)
+      # Accepts optional "limit" parameter (default: 100) to control max restaurants indexed
       post "/index" do
         body = parse_json_body
         location = body["location"]
         category = body["category"]
+        limit = body["limit"]&.to_i
 
         unless location
           halt 400, json_error("INVALID_REQUEST", "location is required")
         end
 
-        service = Services::IndexRestaurantsService.new
-        stats = service.index(location: location, categories: category)
+        # Validate limit if provided (must be positive, max 500)
+        if limit
+          if limit < 1
+            halt 400, json_error("INVALID_REQUEST", "limit must be at least 1")
+          elsif limit > 500
+            halt 400, json_error("INVALID_REQUEST", "limit cannot exceed 500")
+          end
+        end
 
-        json_response(stats, location: location, category: category)
+        service = Services::IndexRestaurantsService.new
+
+        # Use provided limit or fall back to service default
+        stats = if limit
+                  service.index(location: location, categories: category, limit: limit)
+                else
+                  service.index(location: location, categories: category)
+                end
+
+        # Format detailed response
+        response_data = {
+          total: stats[:total],
+          created: stats[:created],
+          updated: stats[:updated],
+          merged: stats[:merged],
+          limit: stats[:limit],
+          limit_per_adapter: stats[:limit_per_adapter],
+          limit_reached: stats[:limit_reached],
+          adapters: stats[:adapters],
+          restaurants_created: stats[:restaurants_created] || [],
+          restaurants_updated: stats[:restaurants_updated] || [],
+          restaurants_merged: stats[:restaurants_merged] || []
+        }
+
+        json_response(response_data, location: location, category: category)
       rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
         halt 503, json_error("NO_ADAPTERS", e.message)
       rescue GrubStars::Adapters::Base::APIError => e
         halt 502, json_error("API_ERROR", e.message)
+      end
+
+      # Index restaurants with Server-Sent Events for progress
+      get "/index/stream" do
+        location = params[:location]
+        category = params[:category]
+
+        unless location
+          halt 400, json_error("INVALID_REQUEST", "location is required")
+        end
+
+        content_type "text/event-stream"
+        headers "Cache-Control" => "no-cache",
+                "Connection" => "keep-alive",
+                "X-Accel-Buffering" => "no"  # Disable nginx buffering
+
+        stream(:keep_open) do |out|
+          begin
+            service = Services::IndexRestaurantsService.new
+
+            # Progress callback for SSE
+            on_progress = lambda do |progress|
+              event_data = {
+                adapter: progress[:adapter],
+                phase: progress[:phase].to_s,
+                current: progress[:current],
+                total: progress[:total],
+                percent: progress[:percent],
+                restaurant_name: progress[:restaurant_name]
+              }
+              out << "event: progress\n"
+              out << "data: #{event_data.to_json}\n\n"
+            end
+
+            stats = service.index(location: location, categories: category, on_progress: on_progress)
+
+            # Send final results
+            result_data = {
+              total: stats[:total],
+              created: stats[:created],
+              updated: stats[:updated],
+              merged: stats[:merged],
+              adapters: stats[:adapters],
+              restaurants_created: stats[:restaurants_created] || [],
+              restaurants_updated: stats[:restaurants_updated] || [],
+              restaurants_merged: stats[:restaurants_merged] || []
+            }
+            out << "event: complete\n"
+            out << "data: #{result_data.to_json}\n\n"
+          rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
+            out << "event: error\n"
+            out << "data: #{{ code: 'NO_ADAPTERS', message: e.message }.to_json}\n\n"
+          rescue GrubStars::Adapters::Base::APIError => e
+            out << "event: error\n"
+            out << "data: #{{ code: 'API_ERROR', message: e.message }.to_json}\n\n"
+          rescue StandardError => e
+            out << "event: error\n"
+            out << "data: #{{ code: 'INTERNAL_ERROR', message: e.message }.to_json}\n\n"
+          ensure
+            out.close
+          end
+        end
       end
 
       # List available adapters
@@ -191,6 +327,14 @@ module GrubStars
         end
 
         json_response(adapters, count: adapters.length)
+      end
+
+      # Get application statistics (admin stats page)
+      get "/stats" do
+        service = Services::StatsService.new
+        stats = service.get_all_stats
+
+        json_response(stats)
       end
 
       # Index a single restaurant from external search results

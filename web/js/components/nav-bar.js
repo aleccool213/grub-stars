@@ -16,10 +16,11 @@ export function navBar(options = {}) {
 
   const navLinks = [
     { href: '/', label: 'Search', icon: '🔍', id: 'search' },
-    { href: '/categories.html', label: 'Categories', icon: '📂', id: 'categories' },
+    { href: '/map.html', label: 'Map', icon: '🗺️', id: 'map' },
     { href: '/bookmarks.html', label: 'Bookmarks', icon: '💖', id: 'bookmarks' },
     { href: '/index-location.html', label: 'Add Area', icon: '📍', id: 'index' },
-    { href: '/add-restaurant.html', label: 'Add Restaurant', icon: '🍽️', id: 'add-restaurant' }
+    { href: '/add-restaurant.html', label: 'Add Restaurant', icon: '🍽️', id: 'add-restaurant' },
+    { href: '/stats.html', label: 'Stats', icon: '📊', id: 'stats' }
   ];
 
   const linkHtml = navLinks.map(link => {

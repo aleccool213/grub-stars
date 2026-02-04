@@ -67,6 +67,15 @@ module Domain
       calculate_component_scores(business_data, restaurant).values.sum
     end
 
+    # Calculate match score between two business data hashes
+    # Used when comparing search results from different sources
+    # @param data1 [Hash] First business data with keys: name, address, latitude, longitude, phone
+    # @param data2 [Hash] Second business data with keys: name, address, latitude, longitude, phone
+    # @return [Integer] Score (0-100)
+    def calculate_match_score(data1, data2)
+      calculate_component_scores_for_hashes(data1, data2).values.sum
+    end
+
     # Calculate individual component scores for debugging
     # @param business_data [Hash] Business data with keys: name, address, latitude, longitude, phone
     # @param restaurant [Domain::Models::Restaurant] Restaurant to compare against
@@ -77,6 +86,19 @@ module Domain
         address: address_score(business_data[:address], restaurant.address),
         gps: gps_score(business_data, restaurant),
         phone: phone_score(business_data[:phone], restaurant.phone)
+      }
+    end
+
+    # Calculate individual component scores between two hashes
+    # @param data1 [Hash] First business data with keys: name, address, latitude, longitude, phone
+    # @param data2 [Hash] Second business data with keys: name, address, latitude, longitude, phone
+    # @return [Hash] Individual scores { name:, address:, gps:, phone: }
+    def calculate_component_scores_for_hashes(data1, data2)
+      {
+        name: name_score(data1[:name], data2[:name]),
+        address: address_score(data1[:address], data2[:address]),
+        gps: gps_score_for_hashes(data1, data2),
+        phone: phone_score(data1[:phone], data2[:phone])
       }
     end
 
@@ -112,6 +134,25 @@ module Domain
       distance = haversine_distance(
         business_data[:latitude], business_data[:longitude],
         restaurant.latitude, restaurant.longitude
+      )
+
+      return 0 if distance > MAX_GPS_DISTANCE
+
+      # Linear scale: 0m = full points, MAX_GPS_DISTANCE = 0 points
+      ratio = 1.0 - (distance / MAX_GPS_DISTANCE)
+      (ratio * GPS_WEIGHT).round
+    end
+
+    # Score based on GPS proximity between two hashes (0-25 points)
+    # @param data1 [Hash] First data with latitude and longitude
+    # @param data2 [Hash] Second data with latitude and longitude
+    def gps_score_for_hashes(data1, data2)
+      return 0 if data1[:latitude].nil? || data1[:longitude].nil?
+      return 0 if data2[:latitude].nil? || data2[:longitude].nil?
+
+      distance = haversine_distance(
+        data1[:latitude], data1[:longitude],
+        data2[:latitude], data2[:longitude]
       )
 
       return 0 if distance > MAX_GPS_DISTANCE

@@ -326,6 +326,8 @@ bundle _2.5.23_ exec rackup                            # Start on default port 9
 bundle _2.5.23_ exec rackup -p 3000                    # Start on custom port
 ```
 
+**Note:** With Sentry integration and Ruby 4.0, if you encounter `uninitialized constant Logger` errors, see the "Sentry Integration with Ruby 4.0" section in Development Friction below.
+
 ### API Endpoints
 
 | Endpoint | Method | Description |
@@ -944,3 +946,340 @@ node scripts/screenshot.js --url "http://localhost:9292/page" --name "section" -
 - Handles API errors gracefully with fallback to search data
 
 **Lesson:** When working with external APIs, always verify that mock/fixture data accurately reflects the real API response structure. The discrepancy between mock data and real API behavior can hide bugs that only manifest in production.
+
+### Sentry Integration with Ruby 4.0
+
+**Issue:** When using Sentry with Ruby 4.0, you may encounter `uninitialized constant Logger (NameError)` because Logger was moved out of Ruby's standard library in Ruby 4.0 and is now a bundled gem.
+
+**Solution:** The `config.ru` file has been updated to require `logger` before loading Sentry. If you still encounter issues, use this workaround:
+
+```bash
+# Start server with explicit logger loading
+ruby -I lib -r logger -r bundler/setup -e "require 'dotenv'; Dotenv.load; require_relative 'lib/api/server'; require 'rack'; Rack::Server.start(app: GrubStars::API::Server, Port: 9292, Host: '0.0.0.0')"
+```
+
+Or use the provided startup script approach that ensures proper loading order.
+
+---
+
+### Production Debugging on Fly.io
+
+When investigating issues in production, you'll need to access logs and the database from the Fly.io deployment.
+
+**Prerequisites:**
+```bash
+# Install Fly.io CLI (if not already installed)
+curl -L https://fly.io/install.sh | sh
+
+# Login to Fly.io
+fly auth login
+```
+
+**Viewing Production Logs:**
+```bash
+# Stream logs in real-time
+fly logs --config fly.prod.toml
+
+# Get recent logs without tailing (useful for one-time inspection)
+fly logs --config fly.prod.toml -n
+
+# Filter by time (get last hour)
+fly logs --config fly.prod.toml -n | grep "2026-02-02T00:"
+```
+
+**Accessing the Production Database:**
+
+The production database is stored in a persistent volume mounted at `/data`:
+
+```bash
+# Check if the app is running
+fly status --config fly.prod.toml
+
+# Start the machine if it's stopped
+fly machine start <MACHINE_ID> --config fly.prod.toml
+
+# SSH into the container and query the database
+fly ssh console --config fly.prod.toml --command "sqlite3 /data/grub_stars.db 'SELECT * FROM restaurants WHERE name LIKE \"%Off the Hook%\";'"
+
+# Export the entire database as SQL
+fly ssh console --config fly.prod.toml --command "sqlite3 /data/grub_stars.db '.dump'" > /tmp/prod_dump.sql
+
+# Download the binary database file
+fly ssh console --config fly.prod.toml --command "cat /data/grub_stars.db" > /tmp/grub_stars_prod.db
+```
+
+**Analyzing Production Data Locally:**
+```bash
+# Clean up the SQL dump (remove SSH connection messages)
+grep -v "^Connecting\|^Warning\|^Error" /tmp/prod_dump.sql > /tmp/clean.sql
+
+# Create a local database from the dump
+sqlite3 /tmp/prod.db < /tmp/clean.sql
+
+# Query the local copy
+sqlite3 /tmp/prod.db "SELECT r.*, e.source, e.external_id 
+  FROM restaurants r 
+  JOIN external_ids e ON r.id = e.restaurant_id 
+  WHERE r.name LIKE '%search_term%';"
+```
+
+**Debugging Restaurant Merging Issues:**
+
+When investigating why restaurants didn't merge (e.g., "Off the Hook Poke Market" appearing twice):
+
+1. **Check the logs for matcher activity:**
+   ```bash
+   fly logs --config fly.prod.toml -n | grep -i "off the hook\|matcher"
+   ```
+
+2. **Look for key log patterns:**
+   - `Matcher: Looking for match for 'Restaurant Name'` - When matching starts
+   - `Matcher: X candidate(s) to compare` - How many nearby restaurants were found
+   - `Matcher: Comparing 'New' with 'Existing' (ID: N)` - Individual comparisons
+   - `Matcher: Scores - name: X/35, address: X/20, gps: X/25, phone: X/20` - Scoring breakdown
+   - `Matcher: Total: X/100 (threshold: 50)` - Final score vs threshold
+   - `Matcher: MATCH FOUND` or `Matcher: No candidates available` - Result
+
+3. **Common issues to look for:**
+   - **"0 candidate(s) to compare"** - GPS coordinates missing, can't find nearby restaurants
+   - **Low GPS scores** - Restaurants are farther than 200m apart
+   - **Name mismatch** - Different capitalization or wording (e.g., "the" vs "The")
+   - **Missing phone numbers** - Can't use phone matching (20 points)
+
+4. **Query the database for duplicates:**
+   ```sql
+   -- Find restaurants with similar names
+   SELECT r1.id, r1.name, r1.address, r1.latitude, r1.longitude, r1.phone,
+          r2.id, r2.name, r2.address, r2.latitude, r2.longitude, r2.phone
+   FROM restaurants r1
+   JOIN restaurants r2 ON r1.id < r2.id
+   WHERE r1.name LIKE '%Off the Hook%' OR r2.name LIKE '%Off the Hook%';
+   
+   -- Check external IDs for suspected duplicates
+   SELECT r.name, r.id, e.source, e.external_id
+   FROM restaurants r
+   JOIN external_ids e ON r.id = e.restaurant_id
+   WHERE r.name LIKE '%Off the Hook%';
+   ```
+
+**Example Debugging Session:**
+
+```bash
+# 1. Get recent logs showing the indexing process
+fly logs --config fly.prod.toml -n 2>&1 | grep -i "off the hook" > /tmp/poke_logs.txt
+
+# 2. Analyze the logs
+cat /tmp/poke_logs.txt
+# Output shows:
+# - First "Off the Hook Poke Market" from Yelp: 0 candidates (new area, first restaurant)
+# - Second from Google: 1 candidate found, score 75/100, MATCHED
+# - Third from TripAdvisor: 0 candidates (no GPS coordinates in TripAdvisor search results!)
+
+# 3. Query database to confirm
+fly ssh console --config fly.prod.toml --command "sqlite3 /data/grub_stars.db '
+  SELECT r.id, r.name, r.latitude, r.longitude, r.phone, e.source 
+  FROM restaurants r 
+  JOIN external_ids e ON r.id = e.restaurant_id 
+  WHERE r.name LIKE \"%Off the Hook%\";'"
+
+# Result shows:
+# ID 334: GPS present, phone present, sources: yelp, google
+# ID 335: NO GPS, NO phone, source: tripadvisor (created as separate entry)
+```
+
+**Key Finding:** TripAdvisor search results don't include GPS coordinates, causing the matcher to find 0 candidates and create a duplicate restaurant instead of merging.
+
+---
+
+### Browser Automation with Agent Browser
+
+**Tool:** [agent-browser](https://agent-browser.dev) - Headless browser automation CLI by Vercel Labs designed for AI agents.
+
+**Installation:**
+```bash
+npm install -g agent-browser
+```
+
+**Key Features:**
+- Works with any AI agent (Claude Code, Cursor, Codex, Copilot, Gemini, opencode, etc.)
+- AI-first design - returns accessibility tree with refs for deterministic element selection
+- Fast Rust CLI with Node.js fallback
+- 50+ commands for navigation, forms, screenshots, network, storage
+- Multiple isolated browser sessions
+
+**Common Commands:**
+```bash
+# Navigate and get page snapshot
+agent-browser open http://localhost:9292
+agent-browser snapshot --json
+
+# Interact with elements using refs
+agent-browser click @e1
+agent-browser type @e2 "search query"
+agent-browser submit @e3
+
+# Screenshots
+agent-browser screenshot --full-page
+
+# Form handling
+agent-browser select @e4 "option-value"
+agent-browser check @e5
+agent-browser upload @e6 /path/to/file
+
+# Session management
+agent-browser new-session my-session
+agent-browser list-sessions
+agent-browser close-session my-session
+```
+
+**Usage with opencode:**
+The `--json` flag provides machine-readable output perfect for AI agents:
+```bash
+agent-browser snapshot --json
+# Returns: {"success":true,"data":{"snapshot":"...","refs":{...}}}
+```
+
+**Benefits:**
+- Saves ~93% of context window compared to traditional browser automation
+- Returns structured accessibility trees instead of raw HTML
+- Deterministic element selection via refs (not fragile CSS selectors)
+- Perfect for automated testing, screenshots, and UI validation
+
+**Example Workflow:**
+```bash
+# Start the server
+bundle _2.5.23_ exec rackup &
+
+# Navigate and capture state
+agent-browser open http://localhost:9292/categories.html
+agent-browser snapshot --json
+
+# Interact with UI
+agent-browser click @e3  # Click a category link
+agent-browser wait --selector "#search-results"
+agent-browser screenshot --name "categories-clicked"
+```
+
+---
+
+## Error Tracking with Sentry
+
+Sentry is configured for both the Ruby API server and the JavaScript Web UI.
+
+**Sentry CLI** is installed for managing releases and source maps.
+
+**Installation:**
+```bash
+# Sentry CLI (already installed)
+curl -sL https://sentry.io/get-cli/ | bash
+```
+
+### Ruby API Server Setup
+
+The API server uses the `sentry-ruby` gem with Rack middleware integration.
+
+**Configuration:**
+- Config file: `lib/config/sentry.rb`
+- Environment variables in `.env`:
+  - `SENTRY_DSN` - Your Sentry project DSN
+  - `SENTRY_ENVIRONMENT` - Environment name (development, production)
+  - `SENTRY_TRACES_SAMPLE_RATE` - Performance tracing sample rate (0.0-1.0)
+  - `SENTRY_PROFILES_SAMPLE_RATE` - Profiling sample rate (0.0-1.0)
+
+**Features:**
+- Automatic error capturing via `Sentry::Rack::CaptureExceptions` middleware
+- Breadcrumbs from HTTP requests and logs
+- Performance tracing with configurable sample rates
+- Release tracking with git commit SHA
+- Environment-specific filtering
+
+**Manual Error Capturing:**
+```ruby
+# Capture an exception
+Sentry.capture_exception(error)
+
+# Capture a message
+Sentry.capture_message("Something went wrong")
+
+# Capture with extra context
+Sentry.capture_exception(error, extra: { restaurant_id: 123 })
+```
+
+### JavaScript SDK Setup
+
+To add Sentry error tracking to the Web UI:
+
+1. Add the Sentry JavaScript SDK to your HTML:
+```html
+<script src="https://browser.sentry-cdn.com/7.100.1/bundle.min.js" crossorigin="anonymous"></script>
+```
+
+2. Initialize Sentry in your JavaScript:
+```javascript
+Sentry.init({
+  dsn: "https://43c2083e3a9d93430e19b51fec5a98f6@o4510802574835712.ingest.us.sentry.io/4510802575163392",
+  release: "grub-stars@0.1.0",
+  environment: "production"
+});
+```
+
+### Sentry CLI Commands
+
+```bash
+# Create a new release
+sentry-cli releases new VERSION
+
+# Associate commits with release
+sentry-cli releases set-commits VERSION --auto
+
+# Deploy release
+sentry-cli releases deploys VERSION new -e production
+
+# Upload source maps (for JavaScript)
+sentry-cli releases files VERSION upload-sourcemaps ./web/js
+```
+
+**Release Management Script:**
+```bash
+# Create and deploy a release
+./scripts/sentry-release.sh [version]
+
+# Uses git commit SHA as version if not specified
+./scripts/sentry-release.sh
+```
+
+**Production Setup:**
+1. Set `SENTRY_DSN` in your environment
+2. Configure `SENTRY_ENVIRONMENT` as "production"
+3. Run `./scripts/sentry-release.sh` after deployment
+4. For JavaScript: Upload source maps with Sentry CLI
+
+### Automated Deployment Integration
+
+Sentry releases are automatically created during Fly.io deployments via GitHub Actions.
+
+**GitHub Actions Workflows:**
+- `.github/workflows/deploy-test.yml` - Creates Sentry release for test environment
+- `.github/workflows/deploy-prod.yml` - Creates Sentry release for production environment
+
+**Required Secret:**
+Add `SENTRY_AUTH_TOKEN` to your GitHub repository secrets:
+1. Go to: https://github.com/aleccool213/grub-stars/settings/secrets/actions
+2. Click "New repository secret"
+3. Name: `SENTRY_AUTH_TOKEN`
+4. Value: Get your token from https://sentry.io/settings/account/api/auth-tokens/
+5. Click "Add secret"
+
+**Manual Deployment Scripts:**
+The deployment scripts also support Sentry releases:
+```bash
+# Test deployment with Sentry release
+export SENTRY_AUTH_TOKEN=your_token_here
+./scripts/deploy-test.sh
+
+# Production deployment with Sentry release
+export SENTRY_AUTH_TOKEN=your_token_here
+./scripts/deploy-prod.sh
+```
+
+If `SENTRY_AUTH_TOKEN` is not set, the deployment will proceed but skip the Sentry release step.

@@ -37,16 +37,7 @@
       },
       "phone": "+17052565329",
       "display_phone": "(705) 256-5329",
-      "distance": 870,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 870
     },
     {
       "id": "casa-cantina-barrie",
@@ -84,8 +75,7 @@
       },
       "phone": "+14373414615",
       "display_phone": "(437) 341-4615",
-      "distance": 1903,
-      "photos": []
+      "distance": 1903
     },
     {
       "id": "nonna-s-cucina-barrie",
@@ -123,8 +113,7 @@
       },
       "phone": "+14379425746",
       "display_phone": "(437) 942-5746",
-      "distance": 4753,
-      "photos": []
+      "distance": 4753
     },
     {
       "id": "brew-coffee-co--barrie",
@@ -162,15 +151,7 @@
       },
       "phone": "+14371939726",
       "display_phone": "(437) 193-9726",
-      "distance": 4318,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+9",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+10",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+11",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+12",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+13",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+14"
-      ]
+      "distance": 4318
     },
     {
       "id": "the-burger-joint-restaurant-barrie",
@@ -208,13 +189,7 @@
       },
       "phone": "+14167770438",
       "display_phone": "(416) 777-0438",
-      "distance": 2748,
-      "photos": [
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+16",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+17",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+18",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+19"
-      ]
+      "distance": 2748
     },
     {
       "id": "hop-craft-brewery-co--barrie",
@@ -252,34 +227,7 @@
       },
       "phone": "+14163391594",
       "display_phone": "(416) 339-1594",
-      "distance": 1378,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+21",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+22",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+23",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+24",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+25",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+26",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+27",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+28",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+29",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+30",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+31",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+32",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+33",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+34",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+35",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+36",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+37",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+38",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+39",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+40",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+41",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+42",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+43",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+44",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+45"
-      ]
+      "distance": 1378
     },
     {
       "id": "taj-masala-restaurant-barrie",
@@ -317,8 +265,7 @@
       },
       "phone": "+16474400787",
       "display_phone": "(647) 440-0787",
-      "distance": 2993,
-      "photos": []
+      "distance": 2993
     },
     {
       "id": "royal-thai-house-restaurant-barrie",
@@ -356,18 +303,7 @@
       },
       "phone": "+14374357077",
       "display_phone": "(437) 435-7077",
-      "distance": 3932,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+47",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+48",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+49",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+50",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+51",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+52",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+53",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+54",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+55"
-      ]
+      "distance": 3932
     },
     {
       "id": "bean-espresso-bar-co--barrie",
@@ -405,10 +341,7 @@
       },
       "phone": "+14378436521",
       "display_phone": "(437) 843-6521",
-      "distance": 3010,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+57"
-      ]
+      "distance": 3010
     },
     {
       "id": "casa-burrito-bar-barrie",
@@ -446,10 +379,7 @@
       },
       "phone": "+14167584429",
       "display_phone": "(416) 758-4429",
-      "distance": 329,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+59"
-      ]
+      "distance": 329
     },
     {
       "id": "tokyo-sushi-barrie",
@@ -487,14 +417,7 @@
       },
       "phone": "+14371850063",
       "display_phone": "(437) 185-0063",
-      "distance": 2013,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+61",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+62",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+63",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+64",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+65"
-      ]
+      "distance": 2013
     },
     {
       "id": "tokyo-japanese-restaurant-barrie",
@@ -532,10 +455,7 @@
       },
       "phone": "+14378565737",
       "display_phone": "(437) 856-5737",
-      "distance": 4459,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+67"
-      ]
+      "distance": 4459
     },
     {
       "id": "barrel-taproom-grill-barrie",
@@ -573,26 +493,7 @@
       },
       "phone": "+16474518164",
       "display_phone": "(647) 451-8164",
-      "distance": 1683,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+69",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+70",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+71",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+72",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+73",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+74",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+75",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+76",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+77",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+78",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+79",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+80",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+81",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+82",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+83",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+84",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+85"
-      ]
+      "distance": 1683
     },
     {
       "id": "hop-taproom-barrie",
@@ -630,10 +531,7 @@
       },
       "phone": "+16472111247",
       "display_phone": "(647) 211-1247",
-      "distance": 2234,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+87"
-      ]
+      "distance": 2234
     },
     {
       "id": "sweet-bakery-co--barrie",
@@ -671,12 +569,7 @@
       },
       "phone": "+17057301766",
       "display_phone": "(705) 730-1766",
-      "distance": 2347,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+89",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+90",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+91"
-      ]
+      "distance": 2347
     },
     {
       "id": "taj-indian-restaurant-co--barrie",
@@ -714,36 +607,7 @@
       },
       "phone": "+16478646981",
       "display_phone": "(647) 864-6981",
-      "distance": 3796,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+93",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+94",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+95",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+96",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+97",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+98",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+99",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+100",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+101",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+102",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+103",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+104",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+105",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+106",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+107",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+108",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+109",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+110",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+111",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+112",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+113",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+114",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+115",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+116",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+117",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+118",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+119"
-      ]
+      "distance": 3796
     },
     {
       "id": "bella-osteria-barrie",
@@ -781,11 +645,7 @@
       },
       "phone": "+17054410810",
       "display_phone": "(705) 441-0810",
-      "distance": 605,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+121",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+122"
-      ]
+      "distance": 605
     },
     {
       "id": "burger-burger-bar-co--barrie",
@@ -823,23 +683,7 @@
       },
       "phone": "+16472100528",
       "display_phone": "(647) 210-0528",
-      "distance": 3273,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+124",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+125",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+126",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+127",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+128",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+129",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+130",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+131",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+132",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+133",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+134",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+135",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+136",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+137"
-      ]
+      "distance": 3273
     },
     {
       "id": "dragon-izakaya-co--barrie",
@@ -877,10 +721,7 @@
       },
       "phone": "+14376851775",
       "display_phone": "(437) 685-1775",
-      "distance": 298,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+139"
-      ]
+      "distance": 298
     },
     {
       "id": "se-or-tacos-co--barrie",
@@ -918,8 +759,7 @@
       },
       "phone": "+16477682783",
       "display_phone": "(647) 768-2783",
-      "distance": 2821,
-      "photos": []
+      "distance": 2821
     },
     {
       "id": "osaka-izakaya-co--barrie",
@@ -957,15 +797,7 @@
       },
       "phone": "+14169895259",
       "display_phone": "(416) 989-5259",
-      "distance": 4184,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+141",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+142",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+143",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+144",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+145",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+146"
-      ]
+      "distance": 4184
     },
     {
       "id": "luigi-s-osteria-co--barrie",
@@ -1003,11 +835,7 @@
       },
       "phone": "+16475927591",
       "display_phone": "(647) 592-7591",
-      "distance": 1029,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+148",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+149"
-      ]
+      "distance": 1029
     },
     {
       "id": "burger-burgers-barrie",
@@ -1045,19 +873,7 @@
       },
       "phone": "+17056584702",
       "display_phone": "(705) 658-4702",
-      "distance": 1103,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+151",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+152",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+153",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+154",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+155",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+156",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+157",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+158",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+159",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+160"
-      ]
+      "distance": 1103
     },
     {
       "id": "india-curry-house-grill-barrie",
@@ -1095,12 +911,7 @@
       },
       "phone": "+16471095741",
       "display_phone": "(647) 109-5741",
-      "distance": 554,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+162",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+163",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+164"
-      ]
+      "distance": 554
     },
     {
       "id": "flying-craft-brewery-restaurant-barrie",
@@ -1138,16 +949,7 @@
       },
       "phone": "+14164266093",
       "display_phone": "(416) 426-6093",
-      "distance": 2535,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+166",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+167",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+168",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+169",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+170",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+171",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+172"
-      ]
+      "distance": 2535
     },
     {
       "id": "casa-tacos-restaurant-barrie",
@@ -1185,8 +987,7 @@
       },
       "phone": "+16471373322",
       "display_phone": "(647) 137-3322",
-      "distance": 2890,
-      "photos": []
+      "distance": 2890
     },
     {
       "id": "spice-thai-restaurant-co--barrie",
@@ -1224,11 +1025,7 @@
       },
       "phone": "+14379781198",
       "display_phone": "(437) 978-1198",
-      "distance": 2238,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+174",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+175"
-      ]
+      "distance": 2238
     },
     {
       "id": "pho-vietnamese-restaurant-barrie",
@@ -1266,8 +1063,7 @@
       },
       "phone": "+17051645602",
       "display_phone": "(705) 164-5602",
-      "distance": 3773,
-      "photos": []
+      "distance": 3773
     },
     {
       "id": "urban-boulangerie-restaurant-barrie",
@@ -1305,8 +1101,7 @@
       },
       "phone": "+14373490838",
       "display_phone": "(437) 349-0838",
-      "distance": 2525,
-      "photos": []
+      "distance": 2525
     },
     {
       "id": "india-tandoori-barrie",
@@ -1344,14 +1139,7 @@
       },
       "phone": "+14378623313",
       "display_phone": "(437) 862-3313",
-      "distance": 900,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+177",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+178",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+179",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+180",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+181"
-      ]
+      "distance": 900
     },
     {
       "id": "pho-pho-house-co--barrie",
@@ -1389,23 +1177,7 @@
       },
       "phone": "+14375190138",
       "display_phone": "(437) 519-0138",
-      "distance": 3344,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+183",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+184",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+185",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+186",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+187",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+188",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+189",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+190",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+191",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+192",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+193",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+194",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+195",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+196"
-      ]
+      "distance": 3344
     },
     {
       "id": "casa-cantina-restaurant-barrie",
@@ -1443,13 +1215,7 @@
       },
       "phone": "+14373455381",
       "display_phone": "(437) 345-5381",
-      "distance": 4848,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+198",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+199",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+200",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+201"
-      ]
+      "distance": 4848
     },
     {
       "id": "samurai-ramen-house-grill-barrie",
@@ -1487,8 +1253,7 @@
       },
       "phone": "+14168282021",
       "display_phone": "(416) 828-2021",
-      "distance": 721,
-      "photos": []
+      "distance": 721
     },
     {
       "id": "golden-thai-house-barrie",
@@ -1526,17 +1291,7 @@
       },
       "phone": "+17058173337",
       "display_phone": "(705) 817-3337",
-      "distance": 1728,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+203",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+204",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+205",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+206",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+207",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+208",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+209",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+210"
-      ]
+      "distance": 1728
     },
     {
       "id": "rising-artisan-bakery-co--barrie",
@@ -1574,22 +1329,7 @@
       },
       "phone": "+17053393854",
       "display_phone": "(705) 339-3854",
-      "distance": 3826,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+212",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+213",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+214",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+215",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+216",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+217",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+218",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+219",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+220",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+221",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+222",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+223",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+224"
-      ]
+      "distance": 3826
     },
     {
       "id": "bangkok-thai-house-restaurant-barrie",
@@ -1627,8 +1367,7 @@
       },
       "phone": "+17055264314",
       "display_phone": "(705) 526-4314",
-      "distance": 2205,
-      "photos": []
+      "distance": 2205
     },
     {
       "id": "java-coffee-barrie",
@@ -1666,28 +1405,7 @@
       },
       "phone": "+14164067628",
       "display_phone": "(416) 406-7628",
-      "distance": 1545,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+226",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+227",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+228",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+229",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+230",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+231",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+232",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+233",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+234",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+235",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+236",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+237",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+238",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+239",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+240",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+241",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+242",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+243",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+244"
-      ]
+      "distance": 1545
     },
     {
       "id": "se-or-cantina-co--barrie",
@@ -1725,16 +1443,7 @@
       },
       "phone": "+16478852192",
       "display_phone": "(647) 885-2192",
-      "distance": 3805,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+246",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+247",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+248",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+249",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+250",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+251",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+252"
-      ]
+      "distance": 3805
     },
     {
       "id": "mario-s-trattoria-barrie",
@@ -1772,15 +1481,7 @@
       },
       "phone": "+14378815139",
       "display_phone": "(437) 881-5139",
-      "distance": 1888,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+254",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+255",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+256",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+257",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+258",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+259"
-      ]
+      "distance": 1888
     },
     {
       "id": "koi-ramen-house-barrie",
@@ -1818,10 +1519,7 @@
       },
       "phone": "+17059341879",
       "display_phone": "(705) 934-1879",
-      "distance": 3423,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+261"
-      ]
+      "distance": 3423
     },
     {
       "id": "big-burger-bar-barrie",
@@ -1859,8 +1557,7 @@
       },
       "phone": "+16471740845",
       "display_phone": "(647) 174-0845",
-      "distance": 427,
-      "photos": []
+      "distance": 427
     },
     {
       "id": "java-espresso-bar-co--barrie",
@@ -1898,8 +1595,7 @@
       },
       "phone": "+14375227757",
       "display_phone": "(437) 522-7757",
-      "distance": 4053,
-      "photos": []
+      "distance": 4053
     },
     {
       "id": "flying-brewing-co--barrie",
@@ -1937,11 +1633,7 @@
       },
       "phone": "+17053421751",
       "display_phone": "(705) 342-1751",
-      "distance": 4731,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+263",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+264"
-      ]
+      "distance": 4731
     },
     {
       "id": "golden-thai-house-restaurant-barrie",
@@ -1979,8 +1671,7 @@
       },
       "phone": "+16472712666",
       "display_phone": "(647) 271-2666",
-      "distance": 1530,
-      "photos": []
+      "distance": 1530
     },
     {
       "id": "morning-coffee-restaurant-barrie",
@@ -2018,12 +1709,7 @@
       },
       "phone": "+17052065505",
       "display_phone": "(705) 206-5505",
-      "distance": 2018,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+266",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+267",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+268"
-      ]
+      "distance": 2018
     },
     {
       "id": "casa-osteria-barrie",
@@ -2061,15 +1747,7 @@
       },
       "phone": "+14372398511",
       "display_phone": "(437) 239-8511",
-      "distance": 298,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+270",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+271",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+272",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+273",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+274",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+275"
-      ]
+      "distance": 298
     },
     {
       "id": "taj-curry-house-restaurant-barrie",
@@ -2107,11 +1785,7 @@
       },
       "phone": "+17053515389",
       "display_phone": "(705) 351-5389",
-      "distance": 4827,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+277",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+278"
-      ]
+      "distance": 4827
     },
     {
       "id": "osaka-japanese-restaurant-grill-barrie",
@@ -2149,8 +1823,7 @@
       },
       "phone": "+17053426444",
       "display_phone": "(705) 342-6444",
-      "distance": 2887,
-      "photos": []
+      "distance": 2887
     },
     {
       "id": "hanoi-vietnamese-restaurant-grill-barrie",
@@ -2188,12 +1861,7 @@
       },
       "phone": "+17058612516",
       "display_phone": "(705) 861-2516",
-      "distance": 2125,
-      "photos": [
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+280",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+281",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+282"
-      ]
+      "distance": 2125
     },
     {
       "id": "java-coffee-co-restaurant-barrie",
@@ -2231,15 +1899,7 @@
       },
       "phone": "+17055544431",
       "display_phone": "(705) 554-4431",
-      "distance": 2702,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+284",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+285",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+286",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+287",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+288",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+289"
-      ]
+      "distance": 2702
     },
     {
       "id": "los-tacos-restaurant-toronto",
@@ -2277,8 +1937,7 @@
       },
       "phone": "+14377814023",
       "display_phone": "(437) 781-4023",
-      "distance": 821,
-      "photos": []
+      "distance": 821
     },
     {
       "id": "zen-izakaya-toronto",
@@ -2316,8 +1975,7 @@
       },
       "phone": "+14371735548",
       "display_phone": "(437) 173-5548",
-      "distance": 2693,
-      "photos": []
+      "distance": 2693
     },
     {
       "id": "spice-tandoori-toronto",
@@ -2355,8 +2013,7 @@
       },
       "phone": "+14166268988",
       "display_phone": "(416) 626-8988",
-      "distance": 1541,
-      "photos": []
+      "distance": 1541
     },
     {
       "id": "juicy-grill-toronto",
@@ -2394,10 +2051,7 @@
       },
       "phone": "+16471424389",
       "display_phone": "(647) 142-4389",
-      "distance": 1508,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+291"
-      ]
+      "distance": 1508
     },
     {
       "id": "la-cantina-grill-toronto",
@@ -2435,10 +2089,7 @@
       },
       "phone": "+14165796119",
       "display_phone": "(416) 579-6119",
-      "distance": 586,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+293"
-      ]
+      "distance": 586
     },
     {
       "id": "delhi-masala-grill-toronto",
@@ -2476,38 +2127,7 @@
       },
       "phone": "+14378375175",
       "display_phone": "(437) 837-5175",
-      "distance": 3455,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+295",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+296",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+297",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+298",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+299",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+300",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+301",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+302",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+303",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+304",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+305",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+306",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+307",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+308",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+309",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+310",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+311",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+312",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+313",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+314",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+315",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+316",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+317",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+318",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+319",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+320",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+321",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+322",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+323"
-      ]
+      "distance": 3455
     },
     {
       "id": "la-ristorante-toronto",
@@ -2545,11 +2165,7 @@
       },
       "phone": "+14372091551",
       "display_phone": "(437) 209-1551",
-      "distance": 101,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+325",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+326"
-      ]
+      "distance": 101
     },
     {
       "id": "tokyo-izakaya-restaurant-toronto",
@@ -2587,10 +2203,7 @@
       },
       "phone": "+14169327607",
       "display_phone": "(416) 932-7607",
-      "distance": 3185,
-      "photos": [
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+328"
-      ]
+      "distance": 3185
     },
     {
       "id": "rustic-daily-bread-co--toronto",
@@ -2628,15 +2241,7 @@
       },
       "phone": "+14162078049",
       "display_phone": "(416) 207-8049",
-      "distance": 1545,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+330",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+331",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+332",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+333",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+334",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+335"
-      ]
+      "distance": 1545
     },
     {
       "id": "spice-curry-house-grill-toronto",
@@ -2674,8 +2279,7 @@
       },
       "phone": "+14161362644",
       "display_phone": "(416) 136-2644",
-      "distance": 2466,
-      "photos": []
+      "distance": 2466
     },
     {
       "id": "samurai-sushi-bar-co--toronto",
@@ -2713,20 +2317,7 @@
       },
       "phone": "+16478514689",
       "display_phone": "(647) 851-4689",
-      "distance": 2118,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+337",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+338",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+339",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+340",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+341",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+342",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+343",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+344",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+345",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+346",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+347"
-      ]
+      "distance": 2118
     },
     {
       "id": "osaka-sushi-co--toronto",
@@ -2764,8 +2355,7 @@
       },
       "phone": "+16476665676",
       "display_phone": "(647) 666-5676",
-      "distance": 4063,
-      "photos": []
+      "distance": 4063
     },
     {
       "id": "pho-banh-mi-grill-toronto",
@@ -2803,36 +2393,7 @@
       },
       "phone": "+14168949530",
       "display_phone": "(416) 894-9530",
-      "distance": 4588,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+349",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+350",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+351",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+352",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+353",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+354",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+355",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+356",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+357",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+358",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+359",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+360",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+361",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+362",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+363",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+364",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+365",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+366",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+367",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+368",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+369",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+370",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+371",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+372",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+373",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+374",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+375"
-      ]
+      "distance": 4588
     },
     {
       "id": "spice-thai-house-toronto",
@@ -2870,11 +2431,7 @@
       },
       "phone": "+14166225437",
       "display_phone": "(416) 622-5437",
-      "distance": 2532,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+377",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+378"
-      ]
+      "distance": 2532
     },
     {
       "id": "barrel-brewing-co-co--toronto",
@@ -2912,15 +2469,7 @@
       },
       "phone": "+14164707522",
       "display_phone": "(416) 470-7522",
-      "distance": 2237,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+380",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+381",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+382",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+383",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+384",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+385"
-      ]
+      "distance": 2237
     },
     {
       "id": "golden-thai-cuisine-co--toronto",
@@ -2958,8 +2507,7 @@
       },
       "phone": "+16471869251",
       "display_phone": "(647) 186-9251",
-      "distance": 3052,
-      "photos": []
+      "distance": 3052
     },
     {
       "id": "java-coffee-restaurant-toronto",
@@ -2997,15 +2545,7 @@
       },
       "phone": "+14162585028",
       "display_phone": "(416) 258-5028",
-      "distance": 1815,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+387",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+388",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+389",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+390",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+391",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+392"
-      ]
+      "distance": 1815
     },
     {
       "id": "big-burger-bar-restaurant-toronto",
@@ -3043,11 +2583,7 @@
       },
       "phone": "+16479935690",
       "display_phone": "(647) 993-5690",
-      "distance": 273,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+394",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+395"
-      ]
+      "distance": 273
     },
     {
       "id": "spice-tandoori-toronto",
@@ -3085,38 +2621,7 @@
       },
       "phone": "+17057750365",
       "display_phone": "(705) 775-0365",
-      "distance": 545,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+397",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+398",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+399",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+400",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+401",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+402",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+403",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+404",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+405",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+406",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+407",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+408",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+409",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+410",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+411",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+412",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+413",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+414",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+415",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+416",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+417",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+418",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+419",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+420",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+421",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+422",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+423",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+424",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+425"
-      ]
+      "distance": 545
     },
     {
       "id": "siam-thai-restaurant-restaurant-toronto",
@@ -3154,8 +2659,7 @@
       },
       "phone": "+14168901448",
       "display_phone": "(416) 890-1448",
-      "distance": 3416,
-      "photos": []
+      "distance": 3416
     },
     {
       "id": "spice-tandoori-grill-toronto",
@@ -3193,35 +2697,7 @@
       },
       "phone": "+16473914597",
       "display_phone": "(647) 391-4597",
-      "distance": 3980,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+427",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+428",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+429",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+430",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+431",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+432",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+433",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+434",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+435",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+436",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+437",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+438",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+439",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+440",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+441",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+442",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+443",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+444",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+445",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+446",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+447",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+448",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+449",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+450",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+451",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+452"
-      ]
+      "distance": 3980
     },
     {
       "id": "bean-cafe-toronto",
@@ -3259,8 +2735,7 @@
       },
       "phone": "+14163703035",
       "display_phone": "(416) 370-3035",
-      "distance": 3978,
-      "photos": []
+      "distance": 3978
     },
     {
       "id": "bella-trattoria-restaurant-toronto",
@@ -3298,8 +2773,7 @@
       },
       "phone": "+14161980306",
       "display_phone": "(416) 198-0306",
-      "distance": 3104,
-      "photos": []
+      "distance": 3104
     },
     {
       "id": "rustic-bread-co-grill-toronto",
@@ -3337,37 +2811,7 @@
       },
       "phone": "+17057619488",
       "display_phone": "(705) 761-9488",
-      "distance": 2361,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+454",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+455",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+456",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+457",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+458",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+459",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+460",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+461",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+462",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+463",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+464",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+465",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+466",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+467",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+468",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+469",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+470",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+471",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+472",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+473",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+474",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+475",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+476",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+477",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+478",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+479",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+480",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+481"
-      ]
+      "distance": 2361
     },
     {
       "id": "burger-burger-bar-toronto",
@@ -3405,15 +2849,7 @@
       },
       "phone": "+16479983457",
       "display_phone": "(647) 998-3457",
-      "distance": 742,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+483",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+484",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+485",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+486",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+487",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+488"
-      ]
+      "distance": 742
     },
     {
       "id": "juicy-burger-bar-co--toronto",
@@ -3451,13 +2887,7 @@
       },
       "phone": "+14377752013",
       "display_phone": "(437) 775-2013",
-      "distance": 3893,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+490",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+491",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+492",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+493"
-      ]
+      "distance": 3893
     },
     {
       "id": "iron-taproom-co--toronto",
@@ -3495,8 +2925,7 @@
       },
       "phone": "+16475199704",
       "display_phone": "(647) 519-9704",
-      "distance": 652,
-      "photos": []
+      "distance": 652
     },
     {
       "id": "village-daily-bread-toronto",
@@ -3534,36 +2963,7 @@
       },
       "phone": "+16472422695",
       "display_phone": "(647) 242-2695",
-      "distance": 531,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+495",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+496",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+497",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+498",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+499",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+500",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+501",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+502",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+503",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+504",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+505",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+506",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+507",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+508",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+509",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+510",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+511",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+512",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+513",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+514",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+515",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+516",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+517",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+518",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+519",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+520",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+521"
-      ]
+      "distance": 531
     },
     {
       "id": "royal-masala-toronto",
@@ -3601,17 +3001,7 @@
       },
       "phone": "+17055382785",
       "display_phone": "(705) 538-2785",
-      "distance": 1838,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+523",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+524",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+525",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+526",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+527",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+528",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+529",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+530"
-      ]
+      "distance": 1838
     },
     {
       "id": "big-burger-bar-toronto",
@@ -3649,8 +3039,7 @@
       },
       "phone": "+16474039565",
       "display_phone": "(647) 403-9565",
-      "distance": 2713,
-      "photos": []
+      "distance": 2713
     },
     {
       "id": "bella-pizzeria-toronto",
@@ -3688,10 +3077,7 @@
       },
       "phone": "+14165341661",
       "display_phone": "(416) 534-1661",
-      "distance": 1156,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+532"
-      ]
+      "distance": 1156
     },
     {
       "id": "se-or-burrito-bar-toronto",
@@ -3729,8 +3115,7 @@
       },
       "phone": "+17054625903",
       "display_phone": "(705) 462-5903",
-      "distance": 2847,
-      "photos": []
+      "distance": 2847
     },
     {
       "id": "morning-coffee-toronto",
@@ -3768,16 +3153,7 @@
       },
       "phone": "+14162563931",
       "display_phone": "(416) 256-3931",
-      "distance": 4944,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+534",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+535",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+536",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+537",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+538",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+539",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+540"
-      ]
+      "distance": 4944
     },
     {
       "id": "daily-espresso-bar-restaurant-toronto",
@@ -3815,22 +3191,7 @@
       },
       "phone": "+17053921904",
       "display_phone": "(705) 392-1904",
-      "distance": 1530,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+542",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+543",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+544",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+545",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+546",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+547",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+548",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+549",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+550",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+551",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+552",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+553",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+554"
-      ]
+      "distance": 1530
     },
     {
       "id": "spice-indian-restaurant-grill-toronto",
@@ -3868,37 +3229,7 @@
       },
       "phone": "+14372909735",
       "display_phone": "(437) 290-9735",
-      "distance": 2264,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+556",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+557",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+558",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+559",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+560",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+561",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+562",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+563",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+564",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+565",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+566",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+567",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+568",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+569",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+570",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+571",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+572",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+573",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+574",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+575",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+576",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+577",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+578",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+579",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+580",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+581",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+582",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+583"
-      ]
+      "distance": 2264
     },
     {
       "id": "spice-tandoori-toronto",
@@ -3936,8 +3267,7 @@
       },
       "phone": "+17056238838",
       "display_phone": "(705) 623-8838",
-      "distance": 3525,
-      "photos": []
+      "distance": 3525
     },
     {
       "id": "iron-craft-brewery-co--toronto",
@@ -3975,15 +3305,7 @@
       },
       "phone": "+14371907604",
       "display_phone": "(437) 190-7604",
-      "distance": 1865,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+585",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+586",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+587",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+588",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+589",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+590"
-      ]
+      "distance": 1865
     },
     {
       "id": "delhi-tandoori-grill-toronto",
@@ -4021,10 +3343,7 @@
       },
       "phone": "+14169410582",
       "display_phone": "(416) 941-0582",
-      "distance": 845,
-      "photos": [
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+592"
-      ]
+      "distance": 845
     },
     {
       "id": "bean-cafe-restaurant-toronto",
@@ -4062,18 +3381,7 @@
       },
       "phone": "+16477339875",
       "display_phone": "(647) 733-9875",
-      "distance": 3081,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+594",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+595",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+596",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+597",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+598",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+599",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+600",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+601",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+602"
-      ]
+      "distance": 3081
     },
     {
       "id": "luigi-s-ristorante-grill-toronto",
@@ -4111,8 +3419,7 @@
       },
       "phone": "+14168158579",
       "display_phone": "(416) 815-8579",
-      "distance": 3678,
-      "photos": []
+      "distance": 3678
     },
     {
       "id": "mumbai-curry-house-toronto",
@@ -4150,8 +3457,7 @@
       },
       "phone": "+14374398953",
       "display_phone": "(437) 439-8953",
-      "distance": 2938,
-      "photos": []
+      "distance": 2938
     },
     {
       "id": "bean-cafe-toronto",
@@ -4189,18 +3495,7 @@
       },
       "phone": "+16478381472",
       "display_phone": "(647) 838-1472",
-      "distance": 1587,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+604",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+605",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+606",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+607",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+608",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+609",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+610",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+611",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+612"
-      ]
+      "distance": 1587
     },
     {
       "id": "hanoi-pho-house-co--toronto",
@@ -4238,14 +3533,7 @@
       },
       "phone": "+17055698183",
       "display_phone": "(705) 569-8183",
-      "distance": 3523,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+614",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+615",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+616",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+617",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+618"
-      ]
+      "distance": 3523
     },
     {
       "id": "barking-brewing-co-co--toronto",
@@ -4283,10 +3571,7 @@
       },
       "phone": "+17052870080",
       "display_phone": "(705) 287-0080",
-      "distance": 1618,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+620"
-      ]
+      "distance": 1618
     },
     {
       "id": "bella-ristorante-co--toronto",
@@ -4324,8 +3609,7 @@
       },
       "phone": "+14167859877",
       "display_phone": "(416) 785-9877",
-      "distance": 1449,
-      "photos": []
+      "distance": 1449
     },
     {
       "id": "mumbai-indian-restaurant-restaurant-toronto",
@@ -4363,12 +3647,7 @@
       },
       "phone": "+14165812467",
       "display_phone": "(416) 581-2467",
-      "distance": 4322,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+622",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+623",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+624"
-      ]
+      "distance": 4322
     },
     {
       "id": "hop-taproom-grill-toronto",
@@ -4406,10 +3685,7 @@
       },
       "phone": "+17057217431",
       "display_phone": "(705) 721-7431",
-      "distance": 714,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+626"
-      ]
+      "distance": 714
     },
     {
       "id": "golden-bakery-toronto",
@@ -4447,19 +3723,7 @@
       },
       "phone": "+17055843528",
       "display_phone": "(705) 584-3528",
-      "distance": 4848,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+628",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+629",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+630",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+631",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+632",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+633",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+634",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+635",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+636",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+637"
-      ]
+      "distance": 4848
     },
     {
       "id": "warm-patisserie-co--toronto",
@@ -4497,38 +3761,7 @@
       },
       "phone": "+14164339928",
       "display_phone": "(416) 433-9928",
-      "distance": 3978,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+639",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+640",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+641",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+642",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+643",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+644",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+645",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+646",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+647",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+648",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+649",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+650",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+651",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+652",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+653",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+654",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+655",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+656",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+657",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+658",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+659",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+660",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+661",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+662",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+663",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+664",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+665",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+666",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+667"
-      ]
+      "distance": 3978
     },
     {
       "id": "burger-burger-bar-toronto",
@@ -4566,27 +3799,7 @@
       },
       "phone": "+17054485823",
       "display_phone": "(705) 448-5823",
-      "distance": 1556,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+669",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+670",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+671",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+672",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+673",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+674",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+675",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+676",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+677",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+678",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+679",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+680",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+681",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+682",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+683",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+684",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+685",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+686"
-      ]
+      "distance": 1556
     },
     {
       "id": "bangkok-thai-cuisine-grill-vancouver",
@@ -4624,17 +3837,7 @@
       },
       "phone": "+17783215420",
       "display_phone": "(778) 321-5420",
-      "distance": 3325,
-      "photos": [
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+688",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+689",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+690",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+691",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+692",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+693",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+694",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+695"
-      ]
+      "distance": 3325
     },
     {
       "id": "mario-s-cucina-restaurant-vancouver",
@@ -4672,8 +3875,7 @@
       },
       "phone": "+16048245923",
       "display_phone": "(604) 824-5923",
-      "distance": 1771,
-      "photos": []
+      "distance": 1771
     },
     {
       "id": "prime-grill-vancouver",
@@ -4711,12 +3913,7 @@
       },
       "phone": "+12366057686",
       "display_phone": "(236) 605-7686",
-      "distance": 2188,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+697",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+698",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+699"
-      ]
+      "distance": 2188
     },
     {
       "id": "burger-burgers-vancouver",
@@ -4754,8 +3951,7 @@
       },
       "phone": "+17785868073",
       "display_phone": "(778) 586-8073",
-      "distance": 2969,
-      "photos": []
+      "distance": 2969
     },
     {
       "id": "corner-bread-co-co--vancouver",
@@ -4793,8 +3989,7 @@
       },
       "phone": "+12367567810",
       "display_phone": "(236) 756-7810",
-      "distance": 3010,
-      "photos": []
+      "distance": 3010
     },
     {
       "id": "golden-the-oven-vancouver",
@@ -4832,12 +4027,7 @@
       },
       "phone": "+17785939535",
       "display_phone": "(778) 593-9535",
-      "distance": 389,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+701",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+702",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+703"
-      ]
+      "distance": 389
     },
     {
       "id": "bangkok-thai-restaurant-vancouver",
@@ -4875,10 +4065,7 @@
       },
       "phone": "+16046573961",
       "display_phone": "(604) 657-3961",
-      "distance": 527,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+705"
-      ]
+      "distance": 527
     },
     {
       "id": "casa-burrito-bar-co--vancouver",
@@ -4916,12 +4103,7 @@
       },
       "phone": "+12362068031",
       "display_phone": "(236) 206-8031",
-      "distance": 3651,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+707",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+708",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+709"
-      ]
+      "distance": 3651
     },
     {
       "id": "prime-burger-joint-vancouver",
@@ -4959,11 +4141,7 @@
       },
       "phone": "+12369964014",
       "display_phone": "(236) 996-4014",
-      "distance": 3533,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+711",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+712"
-      ]
+      "distance": 3533
     },
     {
       "id": "casa-osteria-vancouver",
@@ -5001,29 +4179,7 @@
       },
       "phone": "+16045479002",
       "display_phone": "(604) 547-9002",
-      "distance": 4907,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+714",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+715",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+716",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+717",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+718",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+719",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+720",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+721",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+722",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+723",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+724",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+725",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+726",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+727",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+728",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+729",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+730",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+731",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+732",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+733"
-      ]
+      "distance": 4907
     },
     {
       "id": "golden-banh-mi-restaurant-vancouver",
@@ -5061,8 +4217,7 @@
       },
       "phone": "+16042657706",
       "display_phone": "(604) 265-7706",
-      "distance": 4316,
-      "photos": []
+      "distance": 4316
     },
     {
       "id": "sweet-bread-co--vancouver",
@@ -5100,10 +4255,7 @@
       },
       "phone": "+12363792023",
       "display_phone": "(236) 379-2023",
-      "distance": 4944,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+735"
-      ]
+      "distance": 4944
     },
     {
       "id": "mario-s-casa-co--vancouver",
@@ -5141,22 +4293,7 @@
       },
       "phone": "+16045769776",
       "display_phone": "(604) 576-9776",
-      "distance": 4796,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+737",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+738",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+739",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+740",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+741",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+742",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+743",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+744",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+745",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+746",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+747",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+748",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+749"
-      ]
+      "distance": 4796
     },
     {
       "id": "saigon-vietnamese-restaurant-vancouver",
@@ -5194,8 +4331,7 @@
       },
       "phone": "+16046780728",
       "display_phone": "(604) 678-0728",
-      "distance": 2172,
-      "photos": []
+      "distance": 2172
     },
     {
       "id": "brew-roasters-restaurant-vancouver",
@@ -5233,24 +4369,7 @@
       },
       "phone": "+12365764998",
       "display_phone": "(236) 576-4998",
-      "distance": 4897,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+751",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+752",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+753",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+754",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+755",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+756",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+757",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+758",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+759",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+760",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+761",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+762",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+763",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+764",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+765"
-      ]
+      "distance": 4897
     },
     {
       "id": "saigon-banh-mi-grill-vancouver",
@@ -5288,8 +4407,7 @@
       },
       "phone": "+17782276524",
       "display_phone": "(778) 227-6524",
-      "distance": 3299,
-      "photos": []
+      "distance": 3299
     },
     {
       "id": "royal-thai-cuisine-restaurant-vancouver",
@@ -5327,10 +4445,7 @@
       },
       "phone": "+17783456296",
       "display_phone": "(778) 345-6296",
-      "distance": 440,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+767"
-      ]
+      "distance": 440
     },
     {
       "id": "el-taqueria-restaurant-vancouver",
@@ -5368,17 +4483,7 @@
       },
       "phone": "+16047551508",
       "display_phone": "(604) 755-1508",
-      "distance": 3998,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+769",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+770",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+771",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+772",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+773",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+774",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+775",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+776"
-      ]
+      "distance": 3998
     },
     {
       "id": "steaming-roasters-vancouver",
@@ -5416,11 +4521,7 @@
       },
       "phone": "+16041010853",
       "display_phone": "(604) 101-0853",
-      "distance": 3151,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+778",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+779"
-      ]
+      "distance": 3151
     },
     {
       "id": "tokyo-sushi-vancouver",
@@ -5458,13 +4559,7 @@
       },
       "phone": "+12363628334",
       "display_phone": "(236) 362-8334",
-      "distance": 3183,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+781",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+782",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+783",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+784"
-      ]
+      "distance": 3183
     },
     {
       "id": "sakura-izakaya-vancouver",
@@ -5502,16 +4597,7 @@
       },
       "phone": "+16049399531",
       "display_phone": "(604) 939-9531",
-      "distance": 3659,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+786",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+787",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+788",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+789",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+790",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+791",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+792"
-      ]
+      "distance": 3659
     },
     {
       "id": "royal-curry-house-vancouver",
@@ -5549,8 +4635,7 @@
       },
       "phone": "+17788052087",
       "display_phone": "(778) 805-2087",
-      "distance": 3019,
-      "photos": []
+      "distance": 3019
     },
     {
       "id": "morning-coffee-house-grill-vancouver",
@@ -5588,12 +4673,7 @@
       },
       "phone": "+17785266272",
       "display_phone": "(778) 526-6272",
-      "distance": 1963,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+794",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+795",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+796"
-      ]
+      "distance": 1963
     },
     {
       "id": "golden-thai-cuisine-vancouver",
@@ -5631,8 +4711,7 @@
       },
       "phone": "+12362874801",
       "display_phone": "(236) 287-4801",
-      "distance": 3629,
-      "photos": []
+      "distance": 3629
     },
     {
       "id": "spice-masala-grill-vancouver",
@@ -5670,8 +4749,7 @@
       },
       "phone": "+16046242036",
       "display_phone": "(604) 624-2036",
-      "distance": 177,
-      "photos": []
+      "distance": 177
     },
     {
       "id": "the-burger-bar-grill-vancouver",
@@ -5709,11 +4787,7 @@
       },
       "phone": "+16046138441",
       "display_phone": "(604) 613-8441",
-      "distance": 1925,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+798",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+799"
-      ]
+      "distance": 1925
     },
     {
       "id": "la-cantina-vancouver",
@@ -5751,18 +4825,7 @@
       },
       "phone": "+12365197706",
       "display_phone": "(236) 519-7706",
-      "distance": 4673,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+801",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+802",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+803",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+804",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+805",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+806",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+807",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+808",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+809"
-      ]
+      "distance": 4673
     },
     {
       "id": "mario-s-trattoria-grill-vancouver",
@@ -5800,8 +4863,7 @@
       },
       "phone": "+17788801411",
       "display_phone": "(778) 880-1411",
-      "distance": 4671,
-      "photos": []
+      "distance": 4671
     },
     {
       "id": "golden-pho-house-restaurant-vancouver",
@@ -5839,10 +4901,7 @@
       },
       "phone": "+17789953493",
       "display_phone": "(778) 995-3493",
-      "distance": 2475,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+811"
-      ]
+      "distance": 2475
     },
     {
       "id": "brew-coffee-co--vancouver",
@@ -5880,11 +4939,7 @@
       },
       "phone": "+12363188605",
       "display_phone": "(236) 318-8605",
-      "distance": 4743,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+813",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+814"
-      ]
+      "distance": 4743
     },
     {
       "id": "barrel-brewery-grill-vancouver",
@@ -5922,15 +4977,7 @@
       },
       "phone": "+12365802887",
       "display_phone": "(236) 580-2887",
-      "distance": 2158,
-      "photos": [
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+816",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+817",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+818",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+819",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+820",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+821"
-      ]
+      "distance": 2158
     },
     {
       "id": "hanoi-banh-mi-grill-vancouver",
@@ -5968,13 +5015,7 @@
       },
       "phone": "+12369058909",
       "display_phone": "(236) 905-8909",
-      "distance": 2259,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+823",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+824",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+825",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+826"
-      ]
+      "distance": 2259
     },
     {
       "id": "brew-roasters-grill-vancouver",
@@ -6012,8 +5053,7 @@
       },
       "phone": "+17789193777",
       "display_phone": "(778) 919-3777",
-      "distance": 234,
-      "photos": []
+      "distance": 234
     },
     {
       "id": "hanoi-banh-mi-co--vancouver",
@@ -6051,28 +5091,7 @@
       },
       "phone": "+12362476206",
       "display_phone": "(236) 247-6206",
-      "distance": 4726,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+828",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+829",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+830",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+831",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+832",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+833",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+834",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+835",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+836",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+837",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+838",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+839",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+840",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+841",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+842",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+843",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+844",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+845",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+846"
-      ]
+      "distance": 4726
     },
     {
       "id": "bangkok-thai-cuisine-restaurant-vancouver",
@@ -6110,12 +5129,7 @@
       },
       "phone": "+12367954727",
       "display_phone": "(236) 795-4727",
-      "distance": 2721,
-      "photos": [
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+848",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+849",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+850"
-      ]
+      "distance": 2721
     },
     {
       "id": "burger-burgers-vancouver",
@@ -6153,16 +5167,7 @@
       },
       "phone": "+12364392120",
       "display_phone": "(236) 439-2120",
-      "distance": 222,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+852",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+853",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+854",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+855",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+856",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+857",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+858"
-      ]
+      "distance": 222
     },
     {
       "id": "village-the-oven-co--vancouver",
@@ -6200,11 +5205,7 @@
       },
       "phone": "+12368470294",
       "display_phone": "(236) 847-0294",
-      "distance": 2272,
-      "photos": [
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+860",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+861"
-      ]
+      "distance": 2272
     },
     {
       "id": "prime-grill-co--vancouver",
@@ -6242,11 +5243,7 @@
       },
       "phone": "+16049172170",
       "display_phone": "(604) 917-2170",
-      "distance": 1957,
-      "photos": [
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+863",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+864"
-      ]
+      "distance": 1957
     },
     {
       "id": "casa-tacos-restaurant-vancouver",
@@ -6284,8 +5281,7 @@
       },
       "phone": "+16049783748",
       "display_phone": "(604) 978-3748",
-      "distance": 1280,
-      "photos": []
+      "distance": 1280
     },
     {
       "id": "fresh-bakery-co--vancouver",
@@ -6323,12 +5319,7 @@
       },
       "phone": "+16044407847",
       "display_phone": "(604) 440-7847",
-      "distance": 1075,
-      "photos": [
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+866",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+867",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+868"
-      ]
+      "distance": 1075
     },
     {
       "id": "bella-ristorante-grill-vancouver",
@@ -6366,8 +5357,7 @@
       },
       "phone": "+16046702077",
       "display_phone": "(604) 670-2077",
-      "distance": 4755,
-      "photos": []
+      "distance": 4755
     },
     {
       "id": "bangkok-thai-cuisine-restaurant-vancouver",
@@ -6405,8 +5395,7 @@
       },
       "phone": "+17781277155",
       "display_phone": "(778) 127-7155",
-      "distance": 4155,
-      "photos": []
+      "distance": 4155
     },
     {
       "id": "zen-izakaya-grill-vancouver",
@@ -6444,8 +5433,7 @@
       },
       "phone": "+17784963189",
       "display_phone": "(778) 496-3189",
-      "distance": 2851,
-      "photos": []
+      "distance": 2851
     },
     {
       "id": "bangkok-thai-kitchen-vancouver",
@@ -6483,23 +5471,7 @@
       },
       "phone": "+16041065534",
       "display_phone": "(604) 106-5534",
-      "distance": 1303,
-      "photos": [
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+870",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+871",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+872",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+873",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+874",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+875",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+876",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+877",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+878",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+879",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+880",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+881",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+882",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+883"
-      ]
+      "distance": 1303
     },
     {
       "id": "tokyo-izakaya-restaurant-vancouver",
@@ -6537,14 +5509,7 @@
       },
       "phone": "+16047977685",
       "display_phone": "(604) 797-7685",
-      "distance": 4258,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+885",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+886",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+887",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+888",
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+889"
-      ]
+      "distance": 4258
     },
     {
       "id": "mumbai-masala-co--vancouver",
@@ -6582,10 +5547,7 @@
       },
       "phone": "+17789164450",
       "display_phone": "(778) 916-4450",
-      "distance": 2833,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+891"
-      ]
+      "distance": 2833
     },
     {
       "id": "fresh-bread-co-restaurant-vancouver",
@@ -6623,8 +5585,7 @@
       },
       "phone": "+16047181110",
       "display_phone": "(604) 718-1110",
-      "distance": 3249,
-      "photos": []
+      "distance": 3249
     },
     {
       "id": "los-burrito-bar-restaurant-vancouver",
@@ -6662,12 +5623,7 @@
       },
       "phone": "+17788174038",
       "display_phone": "(778) 817-4038",
-      "distance": 647,
-      "photos": [
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+893",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+894",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+895"
-      ]
+      "distance": 647
     },
     {
       "id": "the-burgers-restaurant-vancouver",
@@ -6705,10 +5661,7 @@
       },
       "phone": "+16042334560",
       "display_phone": "(604) 233-4560",
-      "distance": 1314,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+897"
-      ]
+      "distance": 1314
     },
     {
       "id": "ground-coffee-co-grill-vancouver",
@@ -6746,15 +5699,7 @@
       },
       "phone": "+12366100523",
       "display_phone": "(236) 610-0523",
-      "distance": 2166,
-      "photos": [
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+899",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+900",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+901",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+902",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+903",
-        "https://placehold.co/400x400/e0ffff/333333?text=Photo+904"
-      ]
+      "distance": 2166
     },
     {
       "id": "rainbow-drive-in-honolulu",
@@ -6796,16 +5741,7 @@
       },
       "phone": "+18087377766",
       "display_phone": "(808) 737-7766",
-      "distance": 2368,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 2368
     },
     {
       "id": "marukame-udon-honolulu",
@@ -6851,16 +5787,7 @@
       },
       "phone": "+18089310200",
       "display_phone": "(808) 931-0200",
-      "distance": 2722,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 2722
     },
     {
       "id": "leonard-s-bakery-honolulu",
@@ -6906,16 +5833,7 @@
       },
       "phone": "+18087377865",
       "display_phone": "(808) 737-7865",
-      "distance": 1054,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 1054
     },
     {
       "id": "ono-seafood-honolulu",
@@ -6961,16 +5879,7 @@
       },
       "phone": "+18089559050",
       "display_phone": "(808) 955-9050",
-      "distance": 1201,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 1201
     },
     {
       "id": "helena-s-hawaiian-food-honolulu",
@@ -7012,16 +5921,7 @@
       },
       "phone": "+18088455044",
       "display_phone": "(808) 845-5044",
-      "distance": 4848,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 4848
     },
     {
       "id": "koko-head-cafe-honolulu",
@@ -7067,16 +5967,7 @@
       },
       "phone": "+18087327486",
       "display_phone": "(808) 732-7486",
-      "distance": 2809,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 2809
     },
     {
       "id": "roy-s-waikiki-honolulu",
@@ -7122,16 +6013,7 @@
       },
       "phone": "+18089234321",
       "display_phone": "(808) 923-4321",
-      "distance": 1219,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 1219
     },
     {
       "id": "the-pig-and-the-lady-honolulu",
@@ -7173,16 +6055,7 @@
       },
       "phone": "+18088854325",
       "display_phone": "(808) 885-4325",
-      "distance": 1477,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 1477
     },
     {
       "id": "haleiwa-joe-s-seafood-grill-honolulu",
@@ -7228,16 +6101,7 @@
       },
       "phone": "+18086377777",
       "display_phone": "(808) 637-7777",
-      "distance": 3070,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 3070
     },
     {
       "id": "giovanni-s-shrimp-truck-honolulu",
@@ -7283,16 +6147,7 @@
       },
       "phone": "+18082937838",
       "display_phone": "(808) 293-7838",
-      "distance": 3265,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 3265
     },
     {
       "id": "musubi-cafe-iyasume-honolulu",
@@ -7338,16 +6193,7 @@
       },
       "phone": "+18089229868",
       "display_phone": "(808) 922-9868",
-      "distance": 3057,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 3057
     },
     {
       "id": "cinnamon-s-restaurant-honolulu",
@@ -7389,16 +6235,7 @@
       },
       "phone": "+18082619724",
       "display_phone": "(808) 261-9724",
-      "distance": 4792,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 4792
     },
     {
       "id": "ted-s-bakery-honolulu",
@@ -7444,16 +6281,7 @@
       },
       "phone": "+18086387333",
       "display_phone": "(808) 638-7333",
-      "distance": 908,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 908
     },
     {
       "id": "nico-s-pier-38-honolulu",
@@ -7499,16 +6327,7 @@
       },
       "phone": "+18085404466",
       "display_phone": "(808) 540-4466",
-      "distance": 3194,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 3194
     },
     {
       "id": "hula-grill-waikiki-honolulu",
@@ -7554,16 +6373,7 @@
       },
       "phone": "+18089234852",
       "display_phone": "(808) 923-4852",
-      "distance": 3169,
-      "photos": [
-        "https://placehold.co/400x400/f0e68c/333333?text=Photo+1",
-        "https://placehold.co/400x400/ffa07a/333333?text=Photo+2",
-        "https://placehold.co/400x400/98fb98/333333?text=Photo+3",
-        "https://placehold.co/400x400/87ceeb/333333?text=Photo+4",
-        "https://placehold.co/400x400/dda0dd/333333?text=Photo+5",
-        "https://placehold.co/400x400/f5deb3/333333?text=Photo+6",
-        "https://placehold.co/400x400/ffc0cb/333333?text=Photo+7"
-      ]
+      "distance": 3169
     }
   ],
   "region": {

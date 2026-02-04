@@ -88,6 +88,7 @@ module GrubStars
     desc "index", "Search and retrieve data for a specific area"
     option :location, type: :string, required: true, desc: "Location to index (e.g., 'barrie, ontario')"
     option :category, type: :string, desc: "Optional category filter (e.g., 'bakery', 'cafe')"
+    option :verbose, type: :boolean, default: false, aliases: "-v", desc: "Show detailed restaurant lists"
     def index
       p = self.class.pastel
 
@@ -105,6 +106,29 @@ module GrubStars
       puts
       puts p.green("✅ Done! #{p.bold(stats[:total])} restaurants processed")
       puts "   #{p.green(stats[:created])} new | #{p.yellow(stats[:updated])} updated | #{p.cyan(stats[:merged])} merged"
+
+      # Show per-adapter breakdown
+      if stats[:adapters] && !stats[:adapters].empty?
+        puts
+        puts p.bold("📊 Per-source breakdown:")
+        stats[:adapters].each do |source, adapter_stats|
+          puts "   #{p.magenta(source)}: #{adapter_stats[:total]} total " \
+               "(#{p.green(adapter_stats[:created])} new, " \
+               "#{p.cyan(adapter_stats[:merged])} merged, " \
+               "#{p.yellow(adapter_stats[:updated])} updated)"
+        end
+      end
+
+      # Show detailed restaurant lists in verbose mode
+      if options[:verbose]
+        show_restaurant_lists(stats, p)
+      else
+        # Show hint about verbose mode if there are results
+        if stats[:total] > 0
+          puts
+          puts p.dim("   Use --verbose (-v) to see restaurant lists")
+        end
+      end
     rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
       puts p.red("❌ Error: #{e.message}")
       exit 1
@@ -446,6 +470,38 @@ module GrubStars
         color = score >= 4.0 ? :green : (score >= 3.0 ? :yellow : :red)
         "#{r[:source]}: #{p.send(color, "#{score}/5")}"
       end.join(", ")
+    end
+
+    def show_restaurant_lists(stats, p)
+      # Show created restaurants
+      if stats[:restaurants_created] && !stats[:restaurants_created].empty?
+        puts
+        puts p.bold("🆕 New restaurants (#{stats[:restaurants_created].length}):")
+        stats[:restaurants_created].each do |r|
+          address_str = r[:address] ? " - #{r[:address][0..40]}..." : ""
+          puts "   #{p.green("+")} #{r[:name]}#{p.dim(address_str)}"
+        end
+      end
+
+      # Show merged restaurants
+      if stats[:restaurants_merged] && !stats[:restaurants_merged].empty?
+        puts
+        puts p.bold("🔀 Merged restaurants (#{stats[:restaurants_merged].length}):")
+        stats[:restaurants_merged].each do |r|
+          address_str = r[:address] ? " - #{r[:address][0..40]}..." : ""
+          puts "   #{p.cyan("~")} #{r[:name]}#{p.dim(address_str)}"
+        end
+      end
+
+      # Show updated restaurants
+      if stats[:restaurants_updated] && !stats[:restaurants_updated].empty?
+        puts
+        puts p.bold("📝 Updated restaurants (#{stats[:restaurants_updated].length}):")
+        stats[:restaurants_updated].each do |r|
+          address_str = r[:address] ? " - #{r[:address][0..40]}..." : ""
+          puts "   #{p.yellow("*")} #{r[:name]}#{p.dim(address_str)}"
+        end
+      end
     end
   end
 end

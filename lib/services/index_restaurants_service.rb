@@ -34,28 +34,104 @@ module Services
       @adapters = adapters || default_adapters
     end
 
+    # Default limit for restaurants per index operation
+    # This helps manage API costs across adapters (Yelp, Google, TripAdvisor)
+    DEFAULT_LIMIT = 100
+
     # Index restaurants from all configured adapters
     # @param location [String] Location to index (e.g., "barrie, ontario")
     # @param categories [String, nil] Optional category filter (e.g., "bakery")
-    # @return [Hash] Statistics: { total:, created:, updated:, merged: }
-    def index(location:, categories: nil)
+    # @param limit [Integer] Maximum restaurants to index per adapter (default: 100)
+    # @param on_progress [Proc, nil] Optional callback for progress updates
+    #   Called with { adapter:, current:, total:, percent:, restaurant_name:, phase: }
+    # @return [Hash] Detailed statistics including restaurant lists:
+    #   { total:, created:, updated:, merged:, limit:, limit_per_adapter:, limit_reached:,
+    #     restaurants_created: [], restaurants_updated: [], restaurants_merged: [],
+    #     adapters: { source_name => { total:, created:, updated:, merged: } } }
+    def index(location:, categories: nil, limit: DEFAULT_LIMIT, on_progress: nil)
       configured_adapters = @adapters.select(&:configured?)
 
       if configured_adapters.empty?
         raise NoAdaptersConfiguredError, "No adapters configured. Set API keys in .env file."
       end
 
-      stats = { total: 0, created: 0, updated: 0, merged: 0 }
+      stats = {
+        total: 0,
+        created: 0,
+        updated: 0,
+        merged: 0,
+        restaurants_created: [],
+        restaurants_updated: [],
+        restaurants_merged: [],
+        adapters: {}
+      }
+      any_limit_reached = false
 
+      # Each adapter gets its own limit (not shared across adapters)
       configured_adapters.each do |adapter|
-        adapter_stats = index_with_adapter(adapter, location, categories)
+        # Log adapter starting
+        @logger.adapter_phase(adapter: adapter.source_name, phase: :starting)
+
+        # Notify progress callback that we're starting a new adapter
+        on_progress&.call({
+          adapter: adapter.source_name,
+          phase: :starting,
+          current: 0,
+          total: 0,
+          percent: 0,
+          restaurant_name: nil
+        })
+
+        adapter_stats = index_with_adapter(adapter, location, categories, limit: limit, on_progress: on_progress)
+
+        # Clear progress line before showing completion
+        @logger.clear_line
+
+        # Aggregate totals
         stats[:total] += adapter_stats[:total]
         stats[:created] += adapter_stats[:created]
         stats[:updated] += adapter_stats[:updated]
         stats[:merged] += adapter_stats[:merged]
+        any_limit_reached ||= adapter_stats[:limit_reached]
+
+        # Aggregate restaurant lists
+        stats[:restaurants_created].concat(adapter_stats[:restaurants_created])
+        stats[:restaurants_updated].concat(adapter_stats[:restaurants_updated])
+        stats[:restaurants_merged].concat(adapter_stats[:restaurants_merged])
+
+        # Store per-adapter stats
+        adapter_summary = {
+          total: adapter_stats[:total],
+          created: adapter_stats[:created],
+          updated: adapter_stats[:updated],
+          merged: adapter_stats[:merged]
+        }
+        stats[:adapters][adapter.source_name] = adapter_summary
+
+        # Log adapter completion with stats
+        @logger.adapter_phase(adapter: adapter.source_name, phase: :completed, stats: adapter_summary)
+
+        # Notify progress callback that adapter is complete
+        on_progress&.call({
+          adapter: adapter.source_name,
+          phase: :completed,
+          current: adapter_stats[:total],
+          total: adapter_stats[:total],
+          percent: 100,
+          restaurant_name: nil
+        })
       end
 
       @logger.clear_line
+
+      # Add limit info to response
+      # limit_per_adapter: The limit given to each adapter (new, more accurate name)
+      # limit: Same as limit_per_adapter (for backward compatibility)
+      # limit_reached: True if any adapter hit its limit
+      stats[:limit_per_adapter] = limit
+      stats[:limit] = limit
+      stats[:limit_reached] = any_limit_reached
+
       stats
     end
 
@@ -69,24 +145,25 @@ module Services
     end
 
     # Re-index a single restaurant by fetching fresh data from all known sources
+    # AND searching for data on sources that don't yet have an external ID
     # This updates the existing restaurant without creating a new one
     # @param restaurant_id [Integer] Restaurant ID to re-index
-    # @return [Hash] Result with sources_updated, sources_failed, and changes
+    # @return [Hash] Result with sources_updated, sources_failed, sources_added, and changes
     def reindex_restaurant(restaurant_id)
       restaurant = @restaurant_repo.find_by_id_with_associations(restaurant_id)
       raise ArgumentError, "Restaurant with ID #{restaurant_id} not found" unless restaurant
 
       external_ids = restaurant.external_ids || []
-      if external_ids.empty?
-        return { sources_updated: [], sources_failed: [], changes: {}, message: "No external sources to refresh" }
-      end
+      existing_sources = external_ids.map(&:source)
 
       # Store old values for comparison
       old_data = capture_restaurant_state(restaurant)
 
       sources_updated = []
+      sources_added = []
       sources_failed = []
 
+      # Step 1: Refresh from existing external IDs
       external_ids.each do |ext_id|
         adapter = find_adapter_by_name(ext_id.source)
         next unless adapter&.configured?
@@ -109,6 +186,34 @@ module Services
         end
       end
 
+      # Step 2: Search for the restaurant on adapters that don't have an external ID yet
+      configured_adapters = @adapters.select(&:configured?)
+      new_adapters = configured_adapters.reject { |a| existing_sources.include?(a.source_name) }
+
+      new_adapters.each do |adapter|
+        begin
+          # Search by restaurant name with location context
+          search_results = adapter.search_by_name(
+            name: restaurant.name,
+            location: restaurant.location,
+            limit: 5
+          )
+
+          next if search_results.nil? || search_results.empty?
+
+          # Use the matcher to find the best match among search results
+          best_match = find_best_match_for_restaurant(restaurant, search_results)
+          next unless best_match
+
+          # Merge data from the new source
+          merge_restaurant(restaurant, best_match, adapter.source_name, restaurant.location)
+          sources_added << adapter.source_name
+        rescue StandardError => e
+          @logger.warn("Failed to search #{adapter.source_name}: #{e.message}")
+          sources_failed << { source: adapter.source_name, error: e.message }
+        end
+      end
+
       # Reload restaurant to get updated data
       updated_restaurant = @restaurant_repo.find_by_id_with_associations(restaurant_id)
       new_data = capture_restaurant_state(updated_restaurant)
@@ -118,13 +223,44 @@ module Services
 
       {
         sources_updated: sources_updated,
+        sources_added: sources_added,
         sources_failed: sources_failed,
         changes: changes,
-        message: build_result_message(sources_updated, sources_failed, changes)
+        message: build_result_message(sources_updated, sources_failed, changes, sources_added)
       }
     end
 
     private
+
+    # Find the best matching result from search results for an existing restaurant
+    # Uses the matcher to compare candidates against the restaurant's data
+    # @param restaurant [Domain::Models::Restaurant] Existing restaurant to match against
+    # @param search_results [Array<Hash>] Search results from adapter
+    # @return [Hash, nil] Best matching result or nil if no good match
+    def find_best_match_for_restaurant(restaurant, search_results)
+      # Convert restaurant to the format expected by matcher
+      restaurant_data = {
+        name: restaurant.name,
+        address: restaurant.address,
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
+        phone: restaurant.phone
+      }
+
+      # Use matcher to find the best match among search results
+      best_match = nil
+      best_score = 0
+
+      search_results.each do |result|
+        score = @matcher.calculate_match_score(restaurant_data, result)
+        if score > best_score && score > 50 # Use same threshold as regular matching
+          best_score = score
+          best_match = result
+        end
+      end
+
+      best_match
+    end
 
     def find_adapter_by_name(name)
       @adapters.find { |a| a.source_name == name }
@@ -185,11 +321,15 @@ module Services
       changes
     end
 
-    def build_result_message(sources_updated, sources_failed, changes)
+    def build_result_message(sources_updated, sources_failed, changes, sources_added = [])
       parts = []
 
       if sources_updated.any?
         parts << "Updated from #{sources_updated.join(', ')}"
+      end
+
+      if sources_added.any?
+        parts << "Added data from #{sources_added.join(', ')}"
       end
 
       if sources_failed.any?
@@ -255,27 +395,67 @@ module Services
       end
     end
 
-    def index_with_adapter(adapter, location, categories = nil)
-      stats = { total: 0, created: 0, updated: 0, merged: 0 }
+    def index_with_adapter(adapter, location, categories = nil, limit: nil, on_progress: nil)
+      stats = {
+        total: 0,
+        created: 0,
+        updated: 0,
+        merged: 0,
+        limit_reached: false,
+        restaurants_created: [],
+        restaurants_updated: [],
+        restaurants_merged: []
+      }
       source = adapter.source_name
 
-      adapter.search_all_businesses(location: location, categories: categories) do |biz, progress|
+      adapter.search_all_businesses(location: location, categories: categories, limit: limit) do |biz, progress|
+        # Stop if we've reached the limit
+        if limit && stats[:total] >= limit
+          stats[:limit_reached] = true
+          break
+        end
+
         @logger.progress(
           name: biz[:name],
           current: progress[:current],
           total: progress[:total],
-          percent: progress[:percent]
+          percent: progress[:percent],
+          adapter: source
         )
+
+        # Call progress callback if provided
+        on_progress&.call({
+          adapter: source,
+          phase: :indexing,
+          current: progress[:current],
+          total: progress[:total],
+          percent: progress[:percent],
+          restaurant_name: biz[:name]
+        })
 
         # Fetch detailed business info to get photos (search endpoints don't return photos)
         biz_with_details = fetch_business_details(adapter, biz)
 
         result = store_business(biz_with_details, source, location)
         stats[:total] += 1
-        stats[:created] += 1 if result == :created
-        stats[:updated] += 1 if result == :updated
-        stats[:merged] += 1 if result == :merged
+
+        restaurant_info = { name: biz[:name], address: biz[:address] }
+
+        case result
+        when :created
+          stats[:created] += 1
+          stats[:restaurants_created] << restaurant_info
+        when :updated
+          stats[:updated] += 1
+          stats[:restaurants_updated] << restaurant_info
+        when :merged
+          stats[:merged] += 1
+          stats[:restaurants_merged] << restaurant_info
+        end
       end
+
+      # Also mark limit_reached if we processed exactly the limit amount
+      stats[:limit_reached] = true if limit && stats[:total] >= limit
 
       stats
     end
