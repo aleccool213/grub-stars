@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+# Set test environment before loading server to skip Sentry initialization
+# This avoids Ruby 4.0 bundled gem issues with Logger
+ENV["RACK_ENV"] = "test"
+
 require_relative "../test_helper"
 require "rack/test"
 require_relative "../../lib/api/server"

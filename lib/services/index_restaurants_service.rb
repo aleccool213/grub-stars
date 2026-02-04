@@ -2,12 +2,14 @@
 
 require_relative "../infrastructure/repositories/restaurant_repository"
 require_relative "../infrastructure/repositories/rating_repository"
+require_relative "../infrastructure/repositories/review_repository"
 require_relative "../infrastructure/repositories/media_repository"
 require_relative "../infrastructure/repositories/category_repository"
 require_relative "../infrastructure/repositories/external_id_repository"
 require_relative "../domain/matcher"
 require_relative "../domain/models/restaurant"
 require_relative "../domain/models/external_id"
+require_relative "../domain/models/review"
 
 module Services
   # Service for indexing restaurants from external adapters
@@ -17,6 +19,7 @@ module Services
     def initialize(
       restaurant_repo: nil,
       rating_repo: nil,
+      review_repo: nil,
       media_repo: nil,
       category_repo: nil,
       external_id_repo: nil,
@@ -26,6 +29,7 @@ module Services
     )
       @restaurant_repo = restaurant_repo || Infrastructure::Repositories::RestaurantRepository.new
       @rating_repo = rating_repo || Infrastructure::Repositories::RatingRepository.new
+      @review_repo = review_repo || Infrastructure::Repositories::ReviewRepository.new
       @media_repo = media_repo || Infrastructure::Repositories::MediaRepository.new
       @category_repo = category_repo || Infrastructure::Repositories::CategoryRepository.new
       @external_id_repo = external_id_repo || Infrastructure::Repositories::ExternalIdRepository.new
@@ -278,6 +282,7 @@ module Services
         name: restaurant.name,
         address: restaurant.address,
         phone: restaurant.phone,
+        description: restaurant.description,
         ratings: restaurant.ratings.map { |r| { source: r.source, score: r.score, review_count: r.review_count } },
         photos_count: restaurant.photos.size,
         reviews_count: restaurant.reviews.size
@@ -288,7 +293,7 @@ module Services
       changes = {}
 
       # Check basic fields
-      %i[name address phone].each do |field|
+      %i[name address phone description].each do |field|
         if old_data[field] != new_data[field]
           changes[field] = { old: old_data[field], new: new_data[field] }
         end
@@ -436,7 +441,7 @@ module Services
         # Fetch detailed business info to get photos (search endpoints don't return photos)
         biz_with_details = fetch_business_details(adapter, biz)
 
-        result = store_business(biz_with_details, source, location)
+        result = store_business(biz_with_details, source, location, adapter: adapter)
         stats[:total] += 1
 
         restaurant_info = { name: biz[:name], address: biz[:address] }
@@ -460,12 +465,12 @@ module Services
       stats
     end
 
-    def store_business(data, source, location = nil)
+    def store_business(data, source, location = nil, adapter: nil)
       # First, check if we already have this exact external ID from this source
       existing_by_id = find_by_external_id(data[:external_id], source)
 
       if existing_by_id
-        update_restaurant(existing_by_id, data, source, location)
+        update_restaurant(existing_by_id, data, source, location, adapter: adapter)
         return :updated
       end
 
@@ -473,12 +478,12 @@ module Services
       match_result = find_match(data)
 
       if match_result
-        merge_restaurant(match_result[:restaurant], data, source, location)
+        merge_restaurant(match_result[:restaurant], data, source, location, adapter: adapter)
         return :merged
       end
 
       # No match found, create new restaurant
-      create_restaurant(data, source, location)
+      create_restaurant(data, source, location, adapter: adapter)
       :created
     end
 
@@ -503,8 +508,14 @@ module Services
       @matcher.find_match(data, candidates)
     end
 
-    def create_restaurant(data, source, location = nil)
+    def create_restaurant(data, source, location = nil, adapter: nil)
       now = Time.now
+
+      # Fetch reviews from API if adapter available
+      reviews = fetch_reviews(adapter, data[:external_id])
+
+      # Generate description from first review if available
+      description = generate_description(reviews)
 
       # Create restaurant domain model
       restaurant = Domain::Models::Restaurant.new(
@@ -513,7 +524,8 @@ module Services
         latitude: data[:latitude],
         longitude: data[:longitude],
         phone: data[:phone],
-        location: location
+        location: location,
+        description: description
       )
 
       # Save to repository
@@ -524,11 +536,20 @@ module Services
       store_categories(restaurant.id, data[:categories])
       store_rating(restaurant.id, source, data)
       store_photos(restaurant.id, source, data[:photos])
+      store_reviews(restaurant.id, source, reviews)
 
       restaurant.id
     end
 
-    def update_restaurant(existing, data, source, location = nil)
+    def update_restaurant(existing, data, source, location = nil, adapter: nil)
+      # Fetch reviews from API if adapter available
+      reviews = fetch_reviews(adapter, data[:external_id])
+
+      # Generate description from first review if not already set
+      if existing.description.nil? || existing.description.empty?
+        existing.description = generate_description(reviews)
+      end
+
       # Update restaurant
       existing.name = data[:name]
       existing.address = data[:address]
@@ -544,11 +565,15 @@ module Services
       store_categories(existing.id, data[:categories])
       store_rating(existing.id, source, data)
       store_photos(existing.id, source, data[:photos])
+      store_reviews(existing.id, source, reviews)
 
       existing.id
     end
 
-    def merge_restaurant(existing, data, source, location = nil)
+    def merge_restaurant(existing, data, source, location = nil, adapter: nil)
+      # Fetch reviews from API if adapter available
+      reviews = fetch_reviews(adapter, data[:external_id])
+
       # Only fill in missing core data from new source
       updates = {}
       updates[:phone] = data[:phone] if existing.phone.nil? && data[:phone]
@@ -557,6 +582,10 @@ module Services
       updates[:longitude] = data[:longitude] if existing.longitude.nil? && data[:longitude]
       # Set location if not already set
       updates[:location] = location if existing.location.nil? && location
+      # Set description from reviews if not already set
+      if (existing.description.nil? || existing.description.empty?) && reviews.any?
+        updates[:description] = generate_description(reviews)
+      end
 
       @restaurant_repo.update_fields(existing.id, updates) unless updates.empty?
 
@@ -565,6 +594,7 @@ module Services
       store_categories(existing.id, data[:categories])
       store_rating(existing.id, source, data)
       store_photos(existing.id, source, data[:photos])
+      store_reviews(existing.id, source, reviews)
 
       existing.id
     end
@@ -602,6 +632,57 @@ module Services
       return if photos.nil? || photos.empty?
 
       @media_repo.replace_media(restaurant_id, source, "photo", photos)
+    end
+
+    def store_reviews(restaurant_id, source, reviews)
+      return if reviews.nil? || reviews.empty?
+
+      reviews.each do |review_data|
+        review = Domain::Models::Review.new(
+          restaurant_id: restaurant_id,
+          source: source,
+          snippet: review_data[:text],
+          url: review_data[:url],
+          fetched_at: Time.now
+        )
+        @review_repo.save(review)
+      end
+    end
+
+    def fetch_reviews(adapter, external_id)
+      return [] unless adapter && external_id
+
+      # Return empty array if adapter doesn't support get_reviews
+      return [] unless adapter.respond_to?(:get_reviews)
+
+      # Strip source prefix from external_id (e.g., "yelp:abc123" -> "abc123")
+      raw_id = strip_source_prefix(external_id, adapter.source_name)
+
+      reviews = adapter.get_reviews(raw_id)
+      reviews || []
+    rescue StandardError => e
+      @logger.warn("Failed to fetch reviews: #{e.message}")
+      []
+    end
+
+    def generate_description(reviews)
+      return nil if reviews.nil? || reviews.empty?
+
+      # Use the first review's text as description, truncated to ~200 chars
+      first_review = reviews.first
+      text = first_review[:text]
+      return nil if text.nil? || text.empty?
+
+      # Truncate at word boundary if too long
+      if text.length > 200
+        truncated = text[0, 200]
+        # Find last space to avoid cutting mid-word
+        last_space = truncated.rindex(" ")
+        truncated = truncated[0, last_space] if last_space && last_space > 150
+        "#{truncated}..."
+      else
+        text
+      end
     end
   end
 end

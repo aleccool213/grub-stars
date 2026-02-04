@@ -115,6 +115,7 @@ module GrubStars
         Float :longitude
         String :phone
         String :location  # Location where this restaurant was indexed (e.g., "barrie, ontario")
+        Text :description  # Short description of the restaurant
         DateTime :created_at
         DateTime :updated_at
       end
@@ -174,6 +175,19 @@ module GrubStars
         Integer :request_count, null: false, default: 0
         DateTime :reset_at  # Optional: for future monthly reset feature
         DateTime :updated_at
+      end
+
+      db
+    end
+
+    # Run migrations for existing databases
+    # This adds any new columns that may not exist in older schemas
+    def self.migrate(db)
+      # Add description column to restaurants table if it doesn't exist
+      unless db[:restaurants].columns.include?(:description)
+        db.alter_table(:restaurants) do
+          add_column :description, :text
+        end
       end
 
       db

@@ -62,6 +62,7 @@ module GrubStars
         FileUtils.mkdir_p(db_dir) unless File.directory?(db_dir)
         db = Database.connect(db_path)
         Database.create_schema(db)
+        Database.migrate(db)
         db
       end
     end
