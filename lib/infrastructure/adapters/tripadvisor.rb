@@ -88,7 +88,7 @@ module GrubStars
           language: "en"
         }
 
-        response = connection.get("location/#{location_id}", params)
+        response = connection.get("location/#{location_id}/details", params)
         handle_response(response)
 
         data = JSON.parse(response.body)
