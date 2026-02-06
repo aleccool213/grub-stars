@@ -131,9 +131,31 @@ function showProgressUI(location, category) {
         </h3>
       </div>
 
-      <!-- Progress info -->
+      <!-- Progress info with progress bar -->
       <div id="progress-info" class="space-y-3">
-        <p class="text-gray-600 dark:text-slate-300 text-sm">Connecting to data sources...</p>
+        <div class="space-y-3">
+          <p class="text-blue-700 dark:text-blue-300 font-medium">
+            🔄 Initializing...
+          </p>
+
+          <!-- Progress bar container - visible immediately -->
+          <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-4 border border-gray-300 dark:border-slate-600">
+            <div
+              id="progress-fill"
+              class="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 h-4 rounded-full transition-all duration-300 ease-out"
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <div class="flex justify-between text-sm font-medium text-gray-700 dark:text-slate-300">
+            <span id="progress-count">Connecting to data sources...</span>
+            <span id="progress-percent">0%</span>
+          </div>
+
+          <div id="current-restaurant" class="text-sm text-gray-500 dark:text-slate-400 truncate italic">
+            Please wait while we search for restaurants in your area
+          </div>
+        </div>
       </div>
 
       <!-- Cancel button -->
@@ -164,14 +186,29 @@ function updateProgressUI(progress) {
   const { adapter, phase, current, total, percent, restaurant_name } = progress;
 
   if (phase === 'starting') {
-    // Show adapter starting message
+    // Show adapter starting message with empty progress bar
     progressInfo.innerHTML = `
-      <div class="space-y-2">
+      <div class="space-y-3">
         <p class="text-blue-700 dark:text-blue-300 font-medium">
           📡 Searching ${escapeHtml(adapter)}...
         </p>
-        <div class="text-sm text-gray-500 dark:text-slate-400">
-          Fetching restaurant data...
+
+        <!-- Progress bar container - always visible -->
+        <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-4 border border-gray-300 dark:border-slate-600">
+          <div
+            id="progress-fill"
+            class="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 h-4 rounded-full transition-all duration-300 ease-out"
+            style="width: 0%"
+          ></div>
+        </div>
+
+        <div class="flex justify-between text-sm font-medium text-gray-700 dark:text-slate-300">
+          <span id="progress-count">Starting...</span>
+          <span id="progress-percent">0%</span>
+        </div>
+
+        <div id="current-restaurant" class="text-sm text-gray-500 dark:text-slate-400 truncate italic">
+          Connecting to data source...
         </div>
       </div>
     `;
@@ -183,25 +220,26 @@ function updateProgressUI(progress) {
       : 'Processing...';
 
     progressInfo.innerHTML = `
-      <div class="space-y-2">
+      <div class="space-y-3">
         <p class="text-blue-700 dark:text-blue-300 font-medium">
           📡 Indexing from ${escapeHtml(adapter)}
         </p>
 
-        <!-- Progress bar -->
-        <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3">
+        <!-- Progress bar container -->
+        <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-4 border border-gray-300 dark:border-slate-600">
           <div
-            class="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-200"
+            id="progress-fill"
+            class="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 h-4 rounded-full transition-all duration-300 ease-out"
             style="width: ${progressPercent}%"
           ></div>
         </div>
 
-        <div class="flex justify-between text-sm text-gray-600 dark:text-slate-300">
-          <span>${current || 0} / ${total || '?'} restaurants</span>
-          <span>${progressPercent.toFixed(1)}%</span>
+        <div class="flex justify-between text-sm font-medium text-gray-700 dark:text-slate-300">
+          <span id="progress-count">${current || 0} / ${total || '?'} restaurants</span>
+          <span id="progress-percent">${progressPercent.toFixed(1)}%</span>
         </div>
 
-        <div class="text-sm text-gray-500 dark:text-slate-400 truncate">
+        <div id="current-restaurant" class="text-sm text-gray-500 dark:text-slate-400 truncate italic">
           ${escapeHtml(displayName)}
         </div>
       </div>
