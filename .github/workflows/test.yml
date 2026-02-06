@@ -19,10 +19,11 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '4.0'
+          bundler: '2.5.23'
           bundler-cache: true
 
       - name: Run Ruby tests
-        run: bundle exec rake test
+        run: ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test
 
   javascript-tests:
     runs-on: ubuntu-latest
