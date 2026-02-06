@@ -196,6 +196,9 @@ class LocationSearchTest < GrubStars::IntegrationTest
         headers: { "Content-Type" => "application/json" }
       )
 
+    stub_yelp_business("bakery-barrie")
+    stub_yelp_business("bakery-toronto")
+
     yelp = GrubStars::Adapters::Yelp.new(api_key: "test_key")
     index_service = create_index_service(adapters: [yelp])
 
