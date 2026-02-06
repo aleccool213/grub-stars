@@ -46,6 +46,11 @@ ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake TEST=tests/integration/cli_tes
 ruby -I lib -I tests tests/integration/cli_test.rb
 ```
 
+**IMPORTANT - Always run Ruby tests before pushing:**
+- Before pushing any commit that touches Ruby files (`.rb`, `Gemfile`, `Gemfile.lock`), run the full test suite and confirm 0 failures and 0 errors.
+- Command: `ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test`
+- Do NOT push if any tests fail. Fix the failures first.
+
 **Running CLI:**
 ```bash
 ruby -I lib bin/grst --help        # Run CLI locally
