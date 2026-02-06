@@ -42,4 +42,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
   CMD curl -f http://localhost:9292/health || exit 1
 
 # Start server
-CMD ["bundle", "_2.5.23_", "exec", "rackup", "-o", "0.0.0.0", "-p", "9292"]
+CMD ["bundle", "_2.5.23_", "exec", "puma", "-b", "tcp://0.0.0.0:9292"]

@@ -22,4 +22,4 @@ fi
 echo "Mock server started (PID: $MOCK_PID)"
 
 echo "Starting main API server on port 9292..."
-exec bundle _2.5.23_ exec rackup -o 0.0.0.0 -p 9292
+exec bundle _2.5.23_ exec puma -b tcp://0.0.0.0:9292

@@ -18,6 +18,7 @@ gem "tty-spinner", "~> 0.9"
 gem "tty-prompt", "~> 0.23"
 gem "sinatra", "~> 3.0"
 gem "rackup", "~> 1.0"
+gem "puma", "~> 6.0"
 gem "sentry-ruby", "~> 5.22"
 
 group :development do
