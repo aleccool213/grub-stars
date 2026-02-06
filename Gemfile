@@ -10,7 +10,7 @@ gem "logger", require: true
 
 gem "thor", "~> 1.4"
 gem "sequel", "~> 5.99"
-gem "sqlite3", "~> 1.6"
+gem "sqlite3", "~> 2.0"
 gem "faraday", "~> 2.7"
 gem "dotenv", "~> 2.8"
 gem "pastel", "~> 0.8"
