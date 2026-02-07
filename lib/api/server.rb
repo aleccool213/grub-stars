@@ -269,7 +269,7 @@ module GrubStars
                 "Connection" => "keep-alive",
                 "X-Accel-Buffering" => "no"  # Disable nginx buffering
 
-        stream(:keep_open) do |out|
+        stream do |out|
           begin
             service = Services::IndexRestaurantsService.new
 
@@ -283,8 +283,7 @@ module GrubStars
                 percent: progress[:percent],
                 restaurant_name: progress[:restaurant_name]
               }
-              out << "event: progress\n"
-              out << "data: #{event_data.to_json}\n\n"
+              out << "event: progress\ndata: #{event_data.to_json}\n\n"
             end
 
             stats = service.index(location: location, categories: category, on_progress: on_progress)
@@ -300,19 +299,13 @@ module GrubStars
               restaurants_updated: stats[:restaurants_updated] || [],
               restaurants_merged: stats[:restaurants_merged] || []
             }
-            out << "event: complete\n"
-            out << "data: #{result_data.to_json}\n\n"
+            out << "event: complete\ndata: #{result_data.to_json}\n\n"
           rescue Services::IndexRestaurantsService::NoAdaptersConfiguredError => e
-            out << "event: error\n"
-            out << "data: #{{ code: 'NO_ADAPTERS', message: e.message }.to_json}\n\n"
+            out << "event: error\ndata: #{{ code: 'NO_ADAPTERS', message: e.message }.to_json}\n\n"
           rescue GrubStars::Adapters::Base::APIError => e
-            out << "event: error\n"
-            out << "data: #{{ code: 'API_ERROR', message: e.message }.to_json}\n\n"
+            out << "event: error\ndata: #{{ code: 'API_ERROR', message: e.message }.to_json}\n\n"
           rescue StandardError => e
-            out << "event: error\n"
-            out << "data: #{{ code: 'INTERNAL_ERROR', message: e.message }.to_json}\n\n"
-          ensure
-            out.close
+            out << "event: error\ndata: #{{ code: 'INTERNAL_ERROR', message: e.message }.to_json}\n\n"
           end
         end
       end

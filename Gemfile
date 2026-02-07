@@ -10,7 +10,7 @@ gem "logger", require: true
 
 gem "thor", "~> 1.4"
 gem "sequel", "~> 5.99"
-gem "sqlite3", "~> 1.6"
+gem "sqlite3", "~> 2.0"
 gem "faraday", "~> 2.7"
 gem "dotenv", "~> 2.8"
 gem "pastel", "~> 0.8"
@@ -18,6 +18,7 @@ gem "tty-spinner", "~> 0.9"
 gem "tty-prompt", "~> 0.23"
 gem "sinatra", "~> 3.0"
 gem "rackup", "~> 1.0"
+gem "puma", "~> 6.0"
 gem "sentry-ruby", "~> 5.22"
 
 group :development do

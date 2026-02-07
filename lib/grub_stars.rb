@@ -5,7 +5,7 @@ require "logger"
 
 require "fileutils"
 require_relative "config"
-require_relative "logger"
+require_relative "app_logger"
 
 # Infrastructure Layer
 require_relative "infrastructure/database"
