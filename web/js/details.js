@@ -526,9 +526,10 @@ function getDirectionsUrl(restaurant) {
  */
 function getSourceUrl(source, externalId, restaurantName) {
   const cleanId = stripSourcePrefix(externalId);
+  const encodedName = encodeURIComponent(restaurantName || '');
   const urls = {
     yelp: `https://www.yelp.com/biz/${cleanId}`,
-    google: `https://www.google.com/maps/place/?q=place_id:${cleanId}`,
+    google: `https://www.google.com/maps/search/?api=1&query=${encodedName}&query_place_id=${cleanId}`,
     tripadvisor: `https://www.tripadvisor.com/${cleanId}`
   };
   return urls[source.toLowerCase()];

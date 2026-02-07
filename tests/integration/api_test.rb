@@ -916,7 +916,7 @@ class APITest < GrubStars::IntegrationTest
     # Seed a restaurant with yelp external ID
     seed_restaurant_with_external_id("yelp", "test-bakery-yelp-123")
 
-    # Stub the Yelp API to return updated data
+    # Stub the Yelp API to return updated data (including a different name)
     stub_request(:get, /api\.yelp\.com.*businesses\/test-bakery-yelp-123/)
       .to_return(
         status: 200,
@@ -950,16 +950,16 @@ class APITest < GrubStars::IntegrationTest
     assert_equal [], body["data"]["result"]["sources_failed"]
     assert body["data"]["result"]["message"]
 
-    # Check that updated restaurant is returned
+    # Check that restaurant identity is preserved (name and address should NOT change)
     assert body["data"]["restaurant"]
-    assert_equal "Test Bakery Updated", body["data"]["restaurant"]["name"]
-    assert_equal "123 Main St Updated, Barrie, ON", body["data"]["restaurant"]["address"]
+    assert_equal "Test Bakery", body["data"]["restaurant"]["name"]
+    assert_equal "123 Main St", body["data"]["restaurant"]["address"]
 
-    # Verify database was updated
+    # Verify database identity was NOT changed
     restaurant = GrubStars.db[:restaurants].first
-    assert_equal "Test Bakery Updated", restaurant[:name]
+    assert_equal "Test Bakery", restaurant[:name]
 
-    # Verify rating was updated
+    # Verify rating was updated (data fields should refresh)
     rating = GrubStars.db[:ratings].where(source: "yelp").first
     assert_in_delta 4.8, rating[:score], 0.01
     assert_equal 150, rating[:review_count]
@@ -1101,7 +1101,7 @@ class APITest < GrubStars::IntegrationTest
     assert_includes sources_updated, "google"
   end
 
-  def test_reindex_single_source_restaurant_adds_new_sources
+  def test_reindex_does_not_search_for_new_sources_by_name
     GrubStars.reset_db!
     # Seed a restaurant with only a Yelp external ID (no Google)
     db = GrubStars.db
@@ -1128,28 +1128,9 @@ class APITest < GrubStars::IntegrationTest
         headers: { "Content-Type" => "application/json" }
       )
 
-    # Stub Google API text search for finding the restaurant on a new source
-    # The search query will be "Single Source Bakery in barrie, ontario"
+    # Google text search should NOT be called — reindex uses external IDs only
     stub_request(:get, /maps\.googleapis\.com.*textsearch\/json/)
-      .to_return(
-        status: 200,
-        body: {
-          results: [
-            {
-              place_id: "google-new-place-789",
-              name: "Single Source Bakery",
-              rating: 4.3,
-              user_ratings_total: 75,
-              geometry: { location: { lat: 44.390, lng: -79.691 } },
-              formatted_address: "456 Oak Ave, Barrie, ON",
-              formatted_phone_number: "+1 705-555-1234",
-              photos: [{ photo_reference: "photo123" }]
-            }
-          ],
-          status: "OK"
-        }.to_json,
-        headers: { "Content-Type" => "application/json" }
-      )
+      .to_return(status: 200, body: { results: [], status: "OK" }.to_json)
 
     with_env("YELP_API_KEY" => "test_key", "GOOGLE_API_KEY" => "test_key") do
       post "/restaurants/#{restaurant_id}/reindex"
@@ -1162,18 +1143,16 @@ class APITest < GrubStars::IntegrationTest
     sources_updated = body["data"]["result"]["sources_updated"]
     assert_includes sources_updated, "yelp", "Yelp should be in sources_updated"
 
-    # Google should be added (new source discovered via search)
+    # No new sources should be added — reindex only refreshes existing external IDs
     sources_added = body["data"]["result"]["sources_added"]
-    assert_includes sources_added, "google", "Google should be in sources_added"
+    assert_equal [], sources_added, "Reindex should not add new sources by name search"
 
-    # Verify the restaurant now has a Google external ID
+    # Google text search should NOT have been called
+    assert_not_requested :get, /maps\.googleapis\.com.*textsearch\/json/
+
+    # Verify the restaurant still has no Google external ID
     google_ext_id = db[:external_ids].where(restaurant_id: restaurant_id, source: "google").first
-    assert google_ext_id, "Restaurant should now have a Google external ID"
-
-    # Verify Google rating was added
-    google_rating = db[:ratings].where(restaurant_id: restaurant_id, source: "google").first
-    assert google_rating, "Restaurant should now have a Google rating"
-    assert_equal 4.3, google_rating[:score]
+    assert_nil google_ext_id, "Restaurant should NOT have a Google external ID after reindex"
   end
 
   # Stats endpoint tests
