@@ -148,9 +148,10 @@ module Services
       store_business(business_data, source, location)
     end
 
-    # Re-index a single restaurant by fetching fresh data from all known sources
-    # AND searching for data on sources that don't yet have an external ID
-    # This updates the existing restaurant without creating a new one
+    # Re-index a single restaurant by fetching fresh data from its known external sources
+    # AND cautiously searching for data on sources that don't yet have an external ID
+    # Preserves restaurant identity (name, address, coordinates) and only updates
+    # ratings, photos, reviews, and categories from fresh adapter data
     # @param restaurant_id [Integer] Restaurant ID to re-index
     # @return [Hash] Result with sources_updated, sources_failed, sources_added, and changes
     def reindex_restaurant(restaurant_id)
@@ -181,8 +182,9 @@ module Services
           fresh_data = adapter.get_business(raw_external_id)
           next unless fresh_data
 
-          # Update using existing index_restaurant logic (will update, not create)
-          store_business(fresh_data, ext_id.source, restaurant.location)
+          # Refresh only data fields (ratings, photos, reviews, categories)
+          # while preserving the restaurant's identity (name, address, coordinates)
+          refresh_restaurant_data(restaurant, fresh_data, ext_id.source, adapter)
           sources_updated << ext_id.source
         rescue StandardError => e
           @logger.warn("Failed to refresh from #{ext_id.source}: #{e.message}")
@@ -191,6 +193,7 @@ module Services
       end
 
       # Step 2: Search for the restaurant on adapters that don't have an external ID yet
+      # Uses strict matching (>=90% name similarity) to avoid matching the wrong restaurant
       configured_adapters = @adapters.select(&:configured?)
       new_adapters = configured_adapters.reject { |a| existing_sources.include?(a.source_name) }
 
@@ -205,11 +208,11 @@ module Services
 
           next if search_results.nil? || search_results.empty?
 
-          # Use the matcher to find the best match among search results
-          best_match = find_best_match_for_restaurant(restaurant, search_results)
+          # Use strict matching to find a high-confidence match
+          best_match = find_strict_match_for_restaurant(restaurant, search_results)
           next unless best_match
 
-          # Merge data from the new source
+          # Merge data from the new source (only fills in missing fields, never overwrites identity)
           merge_restaurant(restaurant, best_match, adapter.source_name, restaurant.location)
           sources_added << adapter.source_name
         rescue StandardError => e
@@ -236,13 +239,17 @@ module Services
 
     private
 
-    # Find the best matching result from search results for an existing restaurant
-    # Uses the matcher to compare candidates against the restaurant's data
+    # Minimum name similarity required for reindex discovery (90%)
+    REINDEX_NAME_SIMILARITY_THRESHOLD = 0.9
+    # Minimum overall match score for reindex discovery (out of 100)
+    REINDEX_MATCH_THRESHOLD = 80
+
+    # Find a strict match from search results for an existing restaurant during reindex
+    # Requires >=90% name similarity AND high overall score to avoid false matches
     # @param restaurant [Domain::Models::Restaurant] Existing restaurant to match against
     # @param search_results [Array<Hash>] Search results from adapter
-    # @return [Hash, nil] Best matching result or nil if no good match
-    def find_best_match_for_restaurant(restaurant, search_results)
-      # Convert restaurant to the format expected by matcher
+    # @return [Hash, nil] Best matching result or nil if no confident match
+    def find_strict_match_for_restaurant(restaurant, search_results)
       restaurant_data = {
         name: restaurant.name,
         address: restaurant.address,
@@ -251,19 +258,46 @@ module Services
         phone: restaurant.phone
       }
 
-      # Use matcher to find the best match among search results
       best_match = nil
       best_score = 0
 
       search_results.each do |result|
-        score = @matcher.calculate_match_score(restaurant_data, result)
-        if score > best_score && score > 50 # Use same threshold as regular matching
-          best_score = score
+        scores = @matcher.calculate_component_scores_for_hashes(restaurant_data, result)
+        total_score = scores.values.sum
+
+        # Require name similarity >= 90% (name_score / NAME_WEIGHT)
+        name_similarity = scores[:name].to_f / Domain::Matcher::NAME_WEIGHT
+        next if name_similarity < REINDEX_NAME_SIMILARITY_THRESHOLD
+
+        # Require high overall score
+        next if total_score < REINDEX_MATCH_THRESHOLD
+
+        if total_score > best_score
+          best_score = total_score
           best_match = result
         end
       end
 
       best_match
+    end
+
+    # Refresh only data fields for an existing restaurant from fresh adapter data
+    # Preserves identity (name, address, coordinates) — only updates ratings, photos,
+    # reviews, and categories
+    def refresh_restaurant_data(restaurant, fresh_data, source, adapter)
+      reviews = fetch_reviews(adapter, fresh_data[:external_id])
+
+      # Update description from reviews if not already set
+      if (restaurant.description.nil? || restaurant.description.empty?) && reviews.any?
+        description = generate_description(reviews)
+        @restaurant_repo.update_fields(restaurant.id, { description: description }) if description
+      end
+
+      # Refresh associated data
+      store_categories(restaurant.id, fresh_data[:categories])
+      store_rating(restaurant.id, source, fresh_data)
+      store_photos(restaurant.id, source, fresh_data[:photos])
+      store_reviews(restaurant.id, source, reviews)
     end
 
     def find_adapter_by_name(name)
