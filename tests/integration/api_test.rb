@@ -1101,7 +1101,7 @@ class APITest < GrubStars::IntegrationTest
     assert_includes sources_updated, "google"
   end
 
-  def test_reindex_does_not_search_for_new_sources_by_name
+  def test_reindex_adds_new_source_with_strict_name_match
     GrubStars.reset_db!
     # Seed a restaurant with only a Yelp external ID (no Google)
     db = GrubStars.db
@@ -1116,7 +1116,6 @@ class APITest < GrubStars::IntegrationTest
       updated_at: Time.now
     )
 
-    # Only Yelp external ID - no Google external ID
     db[:external_ids].insert(restaurant_id: restaurant_id, source: "yelp", external_id: "yelp:single-source-yelp-123")
     db[:ratings].insert(restaurant_id: restaurant_id, source: "yelp", score: 4.0, review_count: 50, fetched_at: Time.now)
 
@@ -1128,9 +1127,27 @@ class APITest < GrubStars::IntegrationTest
         headers: { "Content-Type" => "application/json" }
       )
 
-    # Google text search should NOT be called — reindex uses external IDs only
+    # Google returns an exact name match at the same location — should pass strict threshold
     stub_request(:get, /maps\.googleapis\.com.*textsearch\/json/)
-      .to_return(status: 200, body: { results: [], status: "OK" }.to_json)
+      .to_return(
+        status: 200,
+        body: {
+          results: [
+            {
+              place_id: "google-new-place-789",
+              name: "Single Source Bakery",
+              rating: 4.3,
+              user_ratings_total: 75,
+              geometry: { location: { lat: 44.390, lng: -79.691 } },
+              formatted_address: "456 Oak Ave, Barrie, ON",
+              formatted_phone_number: "+1 705-555-1234",
+              photos: [{ photo_reference: "photo123" }]
+            }
+          ],
+          status: "OK"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
 
     with_env("YELP_API_KEY" => "test_key", "GOOGLE_API_KEY" => "test_key") do
       post "/restaurants/#{restaurant_id}/reindex"
@@ -1140,19 +1157,85 @@ class APITest < GrubStars::IntegrationTest
     body = JSON.parse(last_response.body)
 
     # Yelp should be updated (existing source refreshed)
-    sources_updated = body["data"]["result"]["sources_updated"]
-    assert_includes sources_updated, "yelp", "Yelp should be in sources_updated"
+    assert_includes body["data"]["result"]["sources_updated"], "yelp"
 
-    # No new sources should be added — reindex only refreshes existing external IDs
-    sources_added = body["data"]["result"]["sources_added"]
-    assert_equal [], sources_added, "Reindex should not add new sources by name search"
+    # Google should be added (exact name match passes strict threshold)
+    assert_includes body["data"]["result"]["sources_added"], "google"
 
-    # Google text search should NOT have been called
-    assert_not_requested :get, /maps\.googleapis\.com.*textsearch\/json/
-
-    # Verify the restaurant still has no Google external ID
+    # Verify the restaurant now has a Google external ID
     google_ext_id = db[:external_ids].where(restaurant_id: restaurant_id, source: "google").first
-    assert_nil google_ext_id, "Restaurant should NOT have a Google external ID after reindex"
+    assert google_ext_id, "Restaurant should now have a Google external ID"
+
+    # Restaurant name should be preserved (merge doesn't overwrite identity)
+    restaurant = db[:restaurants].where(id: restaurant_id).first
+    assert_equal "Single Source Bakery", restaurant[:name]
+  end
+
+  def test_reindex_rejects_poor_name_match_from_new_source
+    GrubStars.reset_db!
+    db = GrubStars.db
+    restaurant_id = db[:restaurants].insert(
+      name: "Salty Blonde Bagel",
+      address: "123 Main St",
+      latitude: 44.390,
+      longitude: -79.691,
+      phone: "+17055551234",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    db[:external_ids].insert(restaurant_id: restaurant_id, source: "yelp", external_id: "yelp:salty-blonde-bagel")
+    db[:ratings].insert(restaurant_id: restaurant_id, source: "yelp", score: 4.5, review_count: 80, fetched_at: Time.now)
+
+    # Stub Yelp API for refreshing
+    stub_request(:get, /api\.yelp\.com.*businesses\/salty-blonde-bagel/)
+      .to_return(
+        status: 200,
+        body: yelp_business_data("salty-blonde-bagel", "Salty Blonde Bagel").to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    # Google returns a DIFFERENT restaurant nearby — name doesn't match
+    stub_request(:get, /maps\.googleapis\.com.*textsearch\/json/)
+      .to_return(
+        status: 200,
+        body: {
+          results: [
+            {
+              place_id: "google-ninos-456",
+              name: "Ninos Italian Restaurant",
+              rating: 4.2,
+              user_ratings_total: 120,
+              geometry: { location: { lat: 44.391, lng: -79.690 } },
+              formatted_address: "125 Main St, Barrie, ON",
+              formatted_phone_number: "+1 705-555-9999",
+              photos: [{ photo_reference: "photo456" }]
+            }
+          ],
+          status: "OK"
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    with_env("YELP_API_KEY" => "test_key", "GOOGLE_API_KEY" => "test_key") do
+      post "/restaurants/#{restaurant_id}/reindex"
+    end
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+
+    # Google should NOT be added (name doesn't match strictly)
+    assert_equal [], body["data"]["result"]["sources_added"],
+      "Should not add Google source for a different restaurant"
+
+    # Restaurant name must be preserved
+    restaurant = db[:restaurants].where(id: restaurant_id).first
+    assert_equal "Salty Blonde Bagel", restaurant[:name]
+
+    # No Google external ID should be stored
+    google_ext_id = db[:external_ids].where(restaurant_id: restaurant_id, source: "google").first
+    assert_nil google_ext_id, "Should not store external ID for a mismatched restaurant"
   end
 
   # Stats endpoint tests

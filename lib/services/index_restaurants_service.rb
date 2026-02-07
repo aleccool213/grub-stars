@@ -149,25 +149,26 @@ module Services
     end
 
     # Re-index a single restaurant by fetching fresh data from its known external sources
-    # Only refreshes sources that already have an external ID stored — does NOT search
-    # for new sources by name, to avoid matching the wrong restaurant
+    # AND cautiously searching for data on sources that don't yet have an external ID
     # Preserves restaurant identity (name, address, coordinates) and only updates
     # ratings, photos, reviews, and categories from fresh adapter data
     # @param restaurant_id [Integer] Restaurant ID to re-index
-    # @return [Hash] Result with sources_updated, sources_failed, and changes
+    # @return [Hash] Result with sources_updated, sources_failed, sources_added, and changes
     def reindex_restaurant(restaurant_id)
       restaurant = @restaurant_repo.find_by_id_with_associations(restaurant_id)
       raise ArgumentError, "Restaurant with ID #{restaurant_id} not found" unless restaurant
 
       external_ids = restaurant.external_ids || []
+      existing_sources = external_ids.map(&:source)
 
       # Store old values for comparison
       old_data = capture_restaurant_state(restaurant)
 
       sources_updated = []
+      sources_added = []
       sources_failed = []
 
-      # Refresh from existing external IDs only — no search-by-name discovery
+      # Step 1: Refresh from existing external IDs
       external_ids.each do |ext_id|
         adapter = find_adapter_by_name(ext_id.source)
         next unless adapter&.configured?
@@ -191,6 +192,35 @@ module Services
         end
       end
 
+      # Step 2: Search for the restaurant on adapters that don't have an external ID yet
+      # Uses strict matching (>=90% name similarity) to avoid matching the wrong restaurant
+      configured_adapters = @adapters.select(&:configured?)
+      new_adapters = configured_adapters.reject { |a| existing_sources.include?(a.source_name) }
+
+      new_adapters.each do |adapter|
+        begin
+          # Search by restaurant name with location context
+          search_results = adapter.search_by_name(
+            name: restaurant.name,
+            location: restaurant.location,
+            limit: 5
+          )
+
+          next if search_results.nil? || search_results.empty?
+
+          # Use strict matching to find a high-confidence match
+          best_match = find_strict_match_for_restaurant(restaurant, search_results)
+          next unless best_match
+
+          # Merge data from the new source (only fills in missing fields, never overwrites identity)
+          merge_restaurant(restaurant, best_match, adapter.source_name, restaurant.location)
+          sources_added << adapter.source_name
+        rescue StandardError => e
+          @logger.warn("Failed to search #{adapter.source_name}: #{e.message}")
+          sources_failed << { source: adapter.source_name, error: e.message }
+        end
+      end
+
       # Reload restaurant to get updated data
       updated_restaurant = @restaurant_repo.find_by_id_with_associations(restaurant_id)
       new_data = capture_restaurant_state(updated_restaurant)
@@ -200,14 +230,56 @@ module Services
 
       {
         sources_updated: sources_updated,
-        sources_added: [],
+        sources_added: sources_added,
         sources_failed: sources_failed,
         changes: changes,
-        message: build_result_message(sources_updated, sources_failed, changes)
+        message: build_result_message(sources_updated, sources_failed, changes, sources_added)
       }
     end
 
     private
+
+    # Minimum name similarity required for reindex discovery (90%)
+    REINDEX_NAME_SIMILARITY_THRESHOLD = 0.9
+    # Minimum overall match score for reindex discovery (out of 100)
+    REINDEX_MATCH_THRESHOLD = 80
+
+    # Find a strict match from search results for an existing restaurant during reindex
+    # Requires >=90% name similarity AND high overall score to avoid false matches
+    # @param restaurant [Domain::Models::Restaurant] Existing restaurant to match against
+    # @param search_results [Array<Hash>] Search results from adapter
+    # @return [Hash, nil] Best matching result or nil if no confident match
+    def find_strict_match_for_restaurant(restaurant, search_results)
+      restaurant_data = {
+        name: restaurant.name,
+        address: restaurant.address,
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
+        phone: restaurant.phone
+      }
+
+      best_match = nil
+      best_score = 0
+
+      search_results.each do |result|
+        scores = @matcher.calculate_component_scores_for_hashes(restaurant_data, result)
+        total_score = scores.values.sum
+
+        # Require name similarity >= 90% (name_score / NAME_WEIGHT)
+        name_similarity = scores[:name].to_f / Domain::Matcher::NAME_WEIGHT
+        next if name_similarity < REINDEX_NAME_SIMILARITY_THRESHOLD
+
+        # Require high overall score
+        next if total_score < REINDEX_MATCH_THRESHOLD
+
+        if total_score > best_score
+          best_score = total_score
+          best_match = result
+        end
+      end
+
+      best_match
+    end
 
     # Refresh only data fields for an existing restaurant from fresh adapter data
     # Preserves identity (name, address, coordinates) — only updates ratings, photos,
