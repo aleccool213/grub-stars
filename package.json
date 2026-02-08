@@ -10,6 +10,7 @@
     "screenshot:post": "node scripts/post-screenshots-to-pr.js"
   },
   "devDependencies": {
-    "playwright": "^1.41.0"
+    "playwright": "^1.41.0",
+    "sharp": "^0.34.5"
   }
 }
