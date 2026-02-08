@@ -37,6 +37,10 @@ module GrubStars
           limit: [limit, 50].min,  # API max is 50
           offset: offset
         }
+        # Use categories as both a text search term and category filter.
+        # The term parameter handles free-text like "bubble tea", while
+        # the categories parameter handles exact Yelp aliases like "bubbletea".
+        params[:term] = categories if categories
         params[:categories] = categories if categories
 
         response = connection.get("businesses/search", params)
@@ -113,6 +117,11 @@ module GrubStars
             limit: page_limit,
             offset: offset
           }
+          # Always use categories as a text search term so free-text queries
+          # like "bubble tea" filter results correctly. Yelp's categories
+          # parameter requires exact aliases (e.g. "bubbletea") and silently
+          # ignores invalid values, returning all restaurants in the area.
+          params[:term] = categories if categories
           params[:categories] = categories if categories
 
           response = connection.get("businesses/search", params)
@@ -184,7 +193,7 @@ module GrubStars
           rating: data["rating"],
           review_count: data["review_count"],
           categories: extract_categories(data["categories"]),
-          photos: data["photos"] || [],
+          photos: data["photos"] || (data["image_url"] ? [data["image_url"]] : []),
           url: data["url"],
           is_closed: data["is_closed"]
         }
