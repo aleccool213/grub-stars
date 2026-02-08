@@ -33,8 +33,11 @@ module GrubStars
                 "Access-Control-Allow-Methods" => "GET, POST, OPTIONS",
                 "Access-Control-Allow-Headers" => "Content-Type"
 
-        # Only set JSON content type for API routes
-        content_type :json unless request.path_info.start_with?("/js", "/css") || request.path_info.end_with?(".html")
+        # Only set JSON content type for API routes (skip static assets)
+        unless request.path_info.start_with?("/js", "/css", "/images") ||
+               request.path_info.end_with?(".html", ".webmanifest", ".svg", ".png")
+          content_type :json
+        end
       end
 
       # Handle CORS preflight requests
