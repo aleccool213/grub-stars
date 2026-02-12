@@ -435,7 +435,7 @@ class APITest < GrubStars::IntegrationTest
     body = JSON.parse(last_response.body)
 
     # Should include limit info in response
-    assert_equal 100, body["data"]["limit"], "Should return default limit of 100"
+    assert_equal 50, body["data"]["limit"], "Should return default limit of 50"
     assert_equal false, body["data"]["limit_reached"], "limit_reached should be false when under limit"
   end
 

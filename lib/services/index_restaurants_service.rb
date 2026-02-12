@@ -40,12 +40,12 @@ module Services
 
     # Default limit for restaurants per index operation
     # This helps manage API costs across adapters (Yelp, Google, TripAdvisor)
-    DEFAULT_LIMIT = 100
+    DEFAULT_LIMIT = 50
 
     # Index restaurants from all configured adapters
     # @param location [String] Location to index (e.g., "barrie, ontario")
     # @param categories [String, nil] Optional category filter (e.g., "bakery")
-    # @param limit [Integer] Maximum restaurants to index per adapter (default: 100)
+    # @param limit [Integer] Maximum restaurants to index per adapter (default: 50)
     # @param on_progress [Proc, nil] Optional callback for progress updates
     #   Called with { adapter:, current:, total:, percent:, restaurant_name:, phase: }
     # @return [Hash] Detailed statistics including restaurant lists:
