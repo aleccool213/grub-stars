@@ -166,7 +166,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
     mock_adapter.expect(:source_name, "mock")  # for index_with_adapter
     mock_adapter.expect(:source_name, "mock")  # for adapter_phase :completed
     mock_adapter.expect(:source_name, "mock")  # for adapters hash key
-    mock_adapter.expect(:source_name, "mock")  # for reverse_lookup phase
+    mock_adapter.expect(:source_name, "mock")  # for reverse_lookup adapter filter
     mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:, limit:|
       captured_categories = categories
       captured_limit = limit
@@ -377,7 +377,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
     }, ["123"])
     mock_adapter.expect(:source_name, "mock")  # for adapter_phase :completed
     mock_adapter.expect(:source_name, "mock")  # for adapters hash key
-    mock_adapter.expect(:source_name, "mock")  # for reverse_lookup phase
+    mock_adapter.expect(:source_name, "mock")  # for reverse_lookup adapter filter
 
     service = Services::IndexRestaurantsService.new(
       restaurant_repo: @restaurant_repo,
@@ -657,9 +657,6 @@ class IndexRestaurantsServiceTest < Minitest::Test
         longitude: -79.0
       }
     end
-
-    def search_by_name(name:, location:, limit:) = []
-    def get_reviews(_id) = []
   end
 
   private

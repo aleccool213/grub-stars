@@ -128,11 +128,11 @@ module Services
 
       @logger.clear_line
 
-      # Phase 2: Reverse-lookup pass
-      # For each adapter, find restaurants that are missing data from that source
-      # and search the adapter by name to try to fill in the gap.
-      # This is most impactful for TripAdvisor which returns ~10 results in forward search.
-      reverse_stats = reverse_lookup(location, configured_adapters, on_progress: on_progress)
+      # Phase 2: Reverse-lookup pass (TripAdvisor only)
+      # TripAdvisor's forward search returns ~10 results vs Yelp's 240 and Google's 60.
+      # For restaurants missing TripAdvisor data, search by name to fill the gap.
+      reverse_adapters = configured_adapters.select { |a| a.source_name == "tripadvisor" }
+      reverse_stats = reverse_lookup(location, reverse_adapters, on_progress: on_progress)
       stats[:merged] += reverse_stats[:merged]
       stats[:total] += reverse_stats[:total]
       reverse_stats[:per_adapter].each do |source_name, adapter_reverse|

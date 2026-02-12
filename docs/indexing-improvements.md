@@ -14,9 +14,9 @@ Restaurants rarely have data from all 3 sources (Yelp, Google, TripAdvisor). The
 
 After Yelp/Google populate 100+ restaurants, TripAdvisor's ~10 results can only match a small fraction.
 
-## Implemented: Reverse-Lookup Pass
+## Implemented: Reverse-Lookup Pass (TripAdvisor only)
 
-After all adapters finish their forward indexing, the service runs a reverse-lookup pass. For each adapter, it finds restaurants in the database that are missing an external ID for that source and calls `search_by_name` to try to find them. This is most impactful for TripAdvisor since its forward search returns so few results.
+After all adapters finish their forward indexing, the service runs a reverse-lookup pass for TripAdvisor. It finds restaurants in the database that are missing a TripAdvisor external ID and calls `search_by_name` on the TripAdvisor adapter for each one. This is scoped to TripAdvisor only since Yelp (240 results) and Google (60 results) already return enough data in forward search to not need it.
 
 The reverse lookup uses the same strict matching thresholds as `reindex_restaurant` (90% name similarity, 80 overall score) to avoid false matches.
 
