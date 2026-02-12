@@ -230,6 +230,34 @@ async function performSearch(params) {
 }
 
 /**
+ * Get display label for a sort option
+ * @param {string} sort - Sort key from API meta
+ * @returns {string} - Human-readable label
+ */
+function sortLabel(sort) {
+  switch (sort) {
+    case 'overall_rank': return 'Overall Rank';
+    case 'relevance': return 'Relevance';
+    default: return 'Overall Rank';
+  }
+}
+
+/**
+ * Build the sort info badge HTML
+ * @param {string} sort - Sort key from API meta
+ * @returns {string} - HTML string for the badge
+ */
+function sortBadge(sort) {
+  const label = sortLabel(sort);
+  return `<span class="inline-flex items-center gap-1 text-xs font-medium bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full">
+      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+      </svg>
+      Sorted by: ${escapeHtml(label)}
+    </span>`;
+}
+
+/**
  * Display search results
  * @param {Array} restaurants - Restaurant results
  * @param {Object} meta - Response metadata
@@ -237,10 +265,12 @@ async function performSearch(params) {
 function showResults(restaurants, meta) {
   const count = meta.count || restaurants.length;
   const countText = count === 1 ? '1 restaurant found' : `${count} restaurants found`;
+  const sort = meta.sort || 'overall_rank';
 
   resultsContainer.innerHTML = `
-    <div class="mb-4">
+    <div class="mb-4 flex flex-wrap items-center gap-3">
       <p class="text-gray-600 dark:text-slate-400">${countText}</p>
+      ${sortBadge(sort)}
     </div>
     ${restaurantList(restaurants)}
   `;

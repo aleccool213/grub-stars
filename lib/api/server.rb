@@ -89,18 +89,20 @@ module GrubStars
       get "/restaurants/search" do
         service = Services::SearchRestaurantsService.new
         location = params[:location]
+        sort = (params[:sort] || "overall_rank").to_sym
 
         results = if params[:name]
-                    service.search_by_name(params[:name], location: location)
+                    service.search_by_name(params[:name], location: location, sort: sort)
                   elsif params[:category]
-                    service.search_by_category(params[:category], location: location)
+                    service.search_by_category(params[:category], location: location, sort: sort)
                   else
                     halt 400, json_error("INVALID_REQUEST", "Provide 'name' or 'category' parameter")
                   end
 
         json_response(
           results.map { |r| serialize_restaurant_summary(r) },
-          count: results.length
+          count: results.length,
+          sort: sort.to_s
         )
       rescue Services::SearchRestaurantsService::LocationNotIndexedError => e
         halt 400, json_error("LOCATION_NOT_INDEXED", e.message)

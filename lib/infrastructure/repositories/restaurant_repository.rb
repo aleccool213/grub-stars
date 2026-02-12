@@ -46,10 +46,14 @@ module Infrastructure
         find_by_id(ext_record[:restaurant_id])
       end
 
+      # Valid sort options for search results
+      VALID_SORT_OPTIONS = %i[relevance overall_rank].freeze
+
       # Search restaurants by name
       # @param query [String] Name to search for
       # @param location [String, nil] Optional location filter (e.g., "barrie, ontario")
-      def search_by_name(query, location: nil)
+      # @param sort [Symbol] Sort order (:relevance or :overall_rank)
+      def search_by_name(query, location: nil, sort: :relevance)
         dataset = @db[:restaurants]
           .select_all(:restaurants)
           .select_append(Sequel.function(:fuzzy_match, :name, query).as(:match_score))
@@ -63,8 +67,14 @@ module Infrastructure
         # Add location filter if provided
         dataset = dataset.where(Sequel.ilike(:location, location)) if location
 
+        if sort == :overall_rank
+          dataset = append_rank_score(dataset)
+          dataset = dataset.order(Sequel.desc(:rank_score), Sequel.desc(:match_score), :name)
+        else
+          dataset = dataset.order(Sequel.desc(:match_score), :name)
+        end
+
         dataset
-          .order(Sequel.desc(:match_score), :name)
           .all
           .map { |row| to_domain_model_with_basic_associations(row) }
       end
@@ -72,7 +82,8 @@ module Infrastructure
       # Search restaurants by category
       # @param category [String] Category to search for
       # @param location [String, nil] Optional location filter (e.g., "barrie, ontario")
-      def search_by_category(category, location: nil)
+      # @param sort [Symbol] Sort order (:relevance or :overall_rank)
+      def search_by_category(category, location: nil, sort: :relevance)
         dataset = @db[:restaurants]
           .join(:restaurant_categories, restaurant_id: Sequel[:restaurants][:id])
           .join(:categories, id: Sequel[:restaurant_categories][:category_id])
@@ -90,9 +101,14 @@ module Infrastructure
         # Add location filter if provided
         dataset = dataset.where(Sequel.ilike(Sequel[:restaurants][:location], location)) if location
 
+        if sort == :overall_rank
+          dataset = append_rank_score(dataset)
+          dataset = dataset.distinct.order(Sequel.desc(:rank_score), Sequel.desc(:match_score), Sequel[:restaurants][:name])
+        else
+          dataset = dataset.distinct.order(Sequel.desc(:match_score), Sequel[:restaurants][:name])
+        end
+
         dataset
-          .distinct
-          .order(Sequel.desc(:match_score), Sequel[:restaurants][:name])
           .all
           .map { |row| to_domain_model_with_basic_associations(row) }
       end
@@ -263,6 +279,30 @@ module Infrastructure
       end
 
       private
+
+      # Append a rank_score column computed from average rating and total review count.
+      # Uses: avg_score * (1 + ln(1 + total_reviews) / 3) to balance quality and popularity.
+      # SQLite lacks LOG, so we compute this via a correlated subquery using a linear approximation.
+      # Restaurants with no ratings get rank_score = 0.
+      def append_rank_score(dataset)
+        avg_score_subquery = @db[:ratings]
+          .where(Sequel[:ratings][:restaurant_id] => Sequel[:restaurants][:id])
+          .where(Sequel.lit("ratings.score > 0"))
+          .select(Sequel.function(:avg, :score))
+
+        review_count_subquery = @db[:ratings]
+          .where(Sequel[:ratings][:restaurant_id] => Sequel[:restaurants][:id])
+          .select(Sequel.function(:coalesce, Sequel.function(:sum, :review_count), 0))
+
+        # Rank formula: avg_score * (1 + min(total_reviews, 1000) / 500.0)
+        # This gives a boost of up to 3x for restaurants with many reviews,
+        # while still primarily sorting by rating quality.
+        dataset.select_append(
+          Sequel.lit(
+            "(COALESCE((#{avg_score_subquery.sql}), 0)) * (1.0 + MIN(COALESCE((#{review_count_subquery.sql}), 0), 1000) / 500.0)"
+          ).as(:rank_score)
+        )
+      end
 
       # Convert database row to domain model (basic, no associations)
       def to_domain_model(row)
