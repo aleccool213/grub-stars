@@ -166,6 +166,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
     mock_adapter.expect(:source_name, "mock")  # for index_with_adapter
     mock_adapter.expect(:source_name, "mock")  # for adapter_phase :completed
     mock_adapter.expect(:source_name, "mock")  # for adapters hash key
+    mock_adapter.expect(:source_name, "mock")  # for reverse_lookup adapter filter
     mock_adapter.expect(:search_all_businesses, nil) do |location:, categories:, limit:|
       captured_categories = categories
       captured_limit = limit
@@ -376,6 +377,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
     }, ["123"])
     mock_adapter.expect(:source_name, "mock")  # for adapter_phase :completed
     mock_adapter.expect(:source_name, "mock")  # for adapters hash key
+    mock_adapter.expect(:source_name, "mock")  # for reverse_lookup adapter filter
 
     service = Services::IndexRestaurantsService.new(
       restaurant_repo: @restaurant_repo,
@@ -430,6 +432,186 @@ class IndexRestaurantsServiceTest < Minitest::Test
 
     # Total should be 110 (60 from adapter1 + 50 from adapter2)
     assert_equal 110, stats[:total], "Total should include all restaurants from both adapters"
+  end
+
+  def test_reverse_lookup_merges_missing_sources
+    # Simulate: adapter1 (yelp) indexes 3 restaurants via forward search.
+    # adapter2 (tripadvisor) indexes only 1 via forward search.
+    # Reverse lookup should search adapter2 by name for the 2 remaining restaurants.
+
+    # adapter1 yields 3 restaurants (forward search)
+    adapter1 = ReverseLookupForwardAdapter.new("yelp", [
+      { external_id: "yelp:r1", name: "Pizza Palace", address: "100 Main St", latitude: 44.5, longitude: -79.5, phone: "5551111111", rating: 4.0, categories: ["Pizza"] },
+      { external_id: "yelp:r2", name: "Burger Barn", address: "200 Main St", latitude: 44.51, longitude: -79.51, phone: "5552222222", rating: 4.2, categories: ["Burgers"] },
+      { external_id: "yelp:r3", name: "Sushi Spot", address: "300 Main St", latitude: 44.52, longitude: -79.52, phone: "5553333333", rating: 4.5, categories: ["Sushi"] }
+    ])
+
+    # adapter2 yields 1 restaurant (forward search) that matches r1, but has search_by_name for r2/r3
+    adapter2 = ReverseLookupTripadvisorAdapter.new("tripadvisor",
+      # Forward results (only Pizza Palace)
+      [{ external_id: "ta:r1", name: "Pizza Palace", address: "100 Main St", latitude: 44.5, longitude: -79.5, phone: "5551111111", rating: 3.9, categories: ["Pizza"] }],
+      # Reverse lookup search_by_name results keyed by restaurant name
+      {
+        "Burger Barn" => [
+          { external_id: "ta:r2", name: "Burger Barn", address: "200 Main St", latitude: 44.51, longitude: -79.51, phone: "5552222222", rating: 4.0, categories: ["Burgers"] }
+        ],
+        "Sushi Spot" => [
+          { external_id: "ta:r3", name: "Sushi Spot", address: "300 Main St", latitude: 44.52, longitude: -79.52, phone: "5553333333", rating: 4.3, categories: ["Sushi"] }
+        ]
+      }
+    )
+
+    service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [adapter1, adapter2],
+      logger: GrubStars::Logger.silent
+    )
+
+    stats = service.index(location: "Test City", limit: 50)
+
+    # Should still only have 3 restaurants (no duplicates)
+    assert_equal 3, @db[:restaurants].count
+
+    # All 3 should now have tripadvisor external IDs (1 from forward, 2 from reverse)
+    ta_ext_ids = @db[:external_ids].where(source: "tripadvisor").count
+    assert_equal 3, ta_ext_ids, "All 3 restaurants should have tripadvisor data after reverse lookup"
+
+    # Verify merged count includes reverse-lookup merges
+    assert_operator stats[:merged], :>=, 2, "At least 2 merges should come from reverse lookup"
+  end
+
+  def test_reverse_lookup_skips_restaurants_already_matched
+    # adapter1 yields 1 restaurant
+    adapter1 = ReverseLookupForwardAdapter.new("yelp", [
+      { external_id: "yelp:r1", name: "Pizza Palace", address: "100 Main St", latitude: 44.5, longitude: -79.5, phone: "5551111111", rating: 4.0, categories: ["Pizza"] }
+    ])
+
+    # adapter2 also matched this restaurant in forward search
+    adapter2 = ReverseLookupTripadvisorAdapter.new("tripadvisor",
+      [{ external_id: "ta:r1", name: "Pizza Palace", address: "100 Main St", latitude: 44.5, longitude: -79.5, phone: "5551111111", rating: 3.9, categories: ["Pizza"] }],
+      {}  # No reverse lookup needed
+    )
+
+    service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [adapter1, adapter2],
+      logger: GrubStars::Logger.silent
+    )
+
+    stats = service.index(location: "Test City", limit: 50)
+
+    # Only 1 restaurant should exist
+    assert_equal 1, @db[:restaurants].count
+
+    # Both sources should be present
+    ext_ids = @db[:external_ids].where(restaurant_id: @db[:restaurants].first[:id]).all
+    sources = ext_ids.map { |e| e[:source] }
+    assert_includes sources, "yelp"
+    assert_includes sources, "tripadvisor"
+  end
+
+  def test_reverse_lookup_does_not_match_wrong_restaurant
+    # adapter1 yields a restaurant
+    adapter1 = ReverseLookupForwardAdapter.new("yelp", [
+      { external_id: "yelp:r1", name: "Pizza Palace", address: "100 Main St", latitude: 44.5, longitude: -79.5, phone: "5551111111", rating: 4.0, categories: ["Pizza"] }
+    ])
+
+    # adapter2 returns a different restaurant in reverse lookup
+    adapter2 = ReverseLookupTripadvisorAdapter.new("tripadvisor", [],
+      {
+        "Pizza Palace" => [
+          { external_id: "ta:other", name: "Pizza Paradise Supreme", address: "999 Other Rd", latitude: 45.0, longitude: -80.0, phone: "5559999999", rating: 3.5, categories: ["Pizza"] }
+        ]
+      }
+    )
+
+    service = Services::IndexRestaurantsService.new(
+      restaurant_repo: @restaurant_repo,
+      rating_repo: @rating_repo,
+      media_repo: @media_repo,
+      category_repo: @category_repo,
+      external_id_repo: @external_id_repo,
+      matcher: @matcher,
+      adapters: [adapter1, adapter2],
+      logger: GrubStars::Logger.silent
+    )
+
+    stats = service.index(location: "Test City", limit: 50)
+
+    # Restaurant should still only have yelp source (no false match)
+    ext_ids = @db[:external_ids].where(restaurant_id: @db[:restaurants].first[:id]).all
+    sources = ext_ids.map { |e| e[:source] }
+    assert_includes sources, "yelp"
+    refute_includes sources, "tripadvisor"
+  end
+
+  # Mock adapter for forward-only search (like Yelp/Google)
+  class ReverseLookupForwardAdapter
+    attr_reader :source_name
+
+    def initialize(name, forward_results)
+      @source_name = name
+      @forward_results = forward_results
+    end
+
+    def configured? = true
+
+    def search_all_businesses(location:, categories:, limit:)
+      @forward_results.each_with_index do |biz, i|
+        yield(biz, { current: i + 1, total: @forward_results.length, percent: ((i + 1).to_f / @forward_results.length * 100).round })
+      end
+      @forward_results.length
+    end
+
+    def get_business(id)
+      result = @forward_results.find { |b| b[:external_id].end_with?(id) || b[:external_id] == "#{@source_name}:#{id}" }
+      result || { external_id: "#{@source_name}:#{id}", name: "Unknown", photos: [] }
+    end
+
+    def search_by_name(name:, location:, limit:) = []
+    def get_reviews(_id) = []
+  end
+
+  # Mock adapter for TripAdvisor-like behavior (few forward results, search_by_name for reverse)
+  class ReverseLookupTripadvisorAdapter
+    attr_reader :source_name
+
+    def initialize(name, forward_results, reverse_lookup_map)
+      @source_name = name
+      @forward_results = forward_results
+      @reverse_lookup_map = reverse_lookup_map
+    end
+
+    def configured? = true
+
+    def search_all_businesses(location:, categories:, limit:)
+      @forward_results.each_with_index do |biz, i|
+        yield(biz, { current: i + 1, total: @forward_results.length, percent: ((i + 1).to_f / @forward_results.length * 100).round })
+      end
+      @forward_results.length
+    end
+
+    def get_business(id)
+      all = @forward_results + @reverse_lookup_map.values.flatten
+      result = all.find { |b| b[:external_id].end_with?(id) || b[:external_id] == "#{@source_name}:#{id}" }
+      result || { external_id: "#{@source_name}:#{id}", name: "Unknown", photos: [] }
+    end
+
+    def search_by_name(name:, location:, limit:)
+      @reverse_lookup_map[name] || []
+    end
+
+    def get_reviews(_id) = []
   end
 
   # Helper class for testing adapter behavior

@@ -128,6 +128,21 @@ module Services
 
       @logger.clear_line
 
+      # Phase 2: Reverse-lookup pass (TripAdvisor only)
+      # TripAdvisor's forward search returns ~10 results vs Yelp's 240 and Google's 60.
+      # For restaurants missing TripAdvisor data, search by name to fill the gap.
+      reverse_adapters = configured_adapters.select { |a| a.source_name == "tripadvisor" }
+      reverse_stats = reverse_lookup(location, reverse_adapters, on_progress: on_progress)
+      stats[:merged] += reverse_stats[:merged]
+      stats[:total] += reverse_stats[:total]
+      reverse_stats[:per_adapter].each do |source_name, adapter_reverse|
+        if stats[:adapters][source_name]
+          stats[:adapters][source_name][:merged] += adapter_reverse[:merged]
+          stats[:adapters][source_name][:total] += adapter_reverse[:total]
+        end
+      end
+      stats[:restaurants_merged].concat(reverse_stats[:restaurants_merged])
+
       # Add limit info to response
       # limit_per_adapter: The limit given to each adapter (new, more accurate name)
       # limit: Same as limit_per_adapter (for backward compatibility)
@@ -495,6 +510,86 @@ module Services
 
       # Also mark limit_reached if we processed exactly the limit amount
       stats[:limit_reached] = true if limit && stats[:total] >= limit
+
+      stats
+    end
+
+    # Reverse-lookup pass: for each adapter, find restaurants missing that source
+    # and search the adapter by name to try to fill in the gap.
+    # Uses strict matching (same as reindex) to avoid false matches.
+    def reverse_lookup(location, adapters, on_progress: nil)
+      stats = { merged: 0, total: 0, restaurants_merged: [], per_adapter: {} }
+
+      adapters.each do |adapter|
+        source = adapter.source_name
+        adapter_stats = { merged: 0, total: 0 }
+
+        # Find restaurants in this location that don't have data from this adapter
+        missing = @restaurant_repo.find_missing_source(location, source)
+        next if missing.empty?
+
+        @logger.adapter_phase(adapter: source, phase: :starting)
+        on_progress&.call({
+          adapter: source,
+          phase: :reverse_lookup,
+          current: 0,
+          total: missing.length,
+          percent: 0,
+          restaurant_name: nil
+        })
+
+        missing.each_with_index do |restaurant, index|
+          begin
+            search_results = adapter.search_by_name(
+              name: restaurant.name,
+              location: location,
+              limit: 5
+            )
+
+            next if search_results.nil? || search_results.empty?
+
+            best_match = find_strict_match_for_restaurant(restaurant, search_results)
+            next unless best_match
+
+            # Fetch details to get full data (GPS, photos, phone)
+            best_match = fetch_business_details(adapter, best_match)
+
+            merge_restaurant(restaurant, best_match, source, location, adapter: adapter)
+            adapter_stats[:merged] += 1
+            stats[:restaurants_merged] << { name: restaurant.name, address: restaurant.address }
+          rescue StandardError => e
+            @logger.warn("Reverse lookup failed for '#{restaurant.name}' on #{source}: #{e.message}")
+          end
+
+          adapter_stats[:total] += 1
+
+          @logger.progress(
+            name: restaurant.name,
+            current: index + 1,
+            total: missing.length,
+            percent: (((index + 1).to_f / missing.length) * 100).round(1),
+            adapter: "#{source} reverse"
+          )
+
+          on_progress&.call({
+            adapter: source,
+            phase: :reverse_lookup,
+            current: index + 1,
+            total: missing.length,
+            percent: (((index + 1).to_f / missing.length) * 100).round(1),
+            restaurant_name: restaurant.name
+          })
+        end
+
+        @logger.clear_line
+        @logger.adapter_phase(adapter: "#{source} reverse-lookup", phase: :completed, stats: {
+          total: adapter_stats[:total], created: 0, merged: adapter_stats[:merged], updated: 0
+        })
+
+        stats[:merged] += adapter_stats[:merged]
+        stats[:total] += adapter_stats[:total]
+        stats[:per_adapter][source] = adapter_stats
+      end
 
       stats
     end
