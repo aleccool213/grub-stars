@@ -187,7 +187,7 @@ class IndexRestaurantsServiceTest < Minitest::Test
     service.index(location: "Test City", categories: "bakery")
 
     assert_equal "bakery", captured_categories
-    assert_equal 100, captured_limit  # Default limit
+    assert_equal 50, captured_limit  # Default limit
     mock_adapter.verify
   end
 
