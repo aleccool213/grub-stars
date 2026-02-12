@@ -139,6 +139,67 @@ class SearchRestaurantsServiceTest < Minitest::Test
     assert_includes locations, "toronto, ontario"
   end
 
+  # Sort parameter tests
+
+  def test_search_by_name_accepts_sort_parameter
+    # Add ratings so sort has something to rank on
+    @db[:ratings].insert(restaurant_id: @restaurant1_id, source: "yelp", score: 4.5, review_count: 100, fetched_at: Time.now)
+
+    results = @service.search_by_name("Starbucks", sort: :overall_rank)
+
+    assert_equal 1, results.length
+    assert_equal "Starbucks Coffee", results.first.name
+  end
+
+  def test_search_by_category_accepts_sort_parameter
+    # Add ratings
+    @db[:ratings].insert(restaurant_id: @restaurant1_id, source: "yelp", score: 4.5, review_count: 100, fetched_at: Time.now)
+    @db[:ratings].insert(restaurant_id: @restaurant2_id, source: "yelp", score: 3.0, review_count: 10, fetched_at: Time.now)
+
+    # Both are cafes - with overall_rank, higher-rated one should come first
+    results = @service.search_by_category("Cafe", sort: :overall_rank)
+
+    assert_equal 2, results.length
+    assert_equal "Starbucks Coffee", results.first.name
+  end
+
+  def test_search_by_name_accepts_string_sort_parameter
+    results = @service.search_by_name("Starbucks", sort: "overall_rank")
+
+    assert_equal 1, results.length
+    assert_equal "Starbucks Coffee", results.first.name
+  end
+
+  def test_search_by_name_invalid_sort_falls_back_to_relevance
+    results = @service.search_by_name("Starbucks", sort: :bogus_sort)
+
+    assert_equal 1, results.length
+    assert_equal "Starbucks Coffee", results.first.name
+  end
+
+  def test_search_by_name_defaults_to_relevance_sort
+    # Without sort parameter, should use relevance (no error)
+    results = @service.search_by_name("Starbucks")
+
+    assert_equal 1, results.length
+    assert_equal "Starbucks Coffee", results.first.name
+  end
+
+  def test_normalize_sort_with_valid_symbols
+    assert_equal :relevance, @service.send(:normalize_sort, :relevance)
+    assert_equal :overall_rank, @service.send(:normalize_sort, :overall_rank)
+  end
+
+  def test_normalize_sort_with_strings
+    assert_equal :relevance, @service.send(:normalize_sort, "relevance")
+    assert_equal :overall_rank, @service.send(:normalize_sort, "overall_rank")
+  end
+
+  def test_normalize_sort_with_invalid_value
+    assert_equal :relevance, @service.send(:normalize_sort, :invalid)
+    assert_equal :relevance, @service.send(:normalize_sort, "garbage")
+  end
+
   private
 
   def create_test_db

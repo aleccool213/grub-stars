@@ -89,7 +89,9 @@ module GrubStars
       get "/restaurants/search" do
         service = Services::SearchRestaurantsService.new
         location = params[:location]
-        sort = (params[:sort] || "overall_rank").to_sym
+        sort_param = (params[:sort] || "overall_rank").to_sym
+        valid_sorts = Services::SearchRestaurantsService::VALID_SORT_OPTIONS
+        sort = valid_sorts.include?(sort_param) ? sort_param : :relevance
 
         results = if params[:name]
                     service.search_by_name(params[:name], location: location, sort: sort)
