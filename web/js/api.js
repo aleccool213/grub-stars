@@ -61,6 +61,7 @@ export async function searchRestaurants(params) {
   if (params.name) queryParams.append('name', params.name);
   if (params.category) queryParams.append('category', params.category);
   if (params.location) queryParams.append('location', params.location);
+  if (params.sort) queryParams.append('sort', params.sort);
 
   return apiRequest(`/restaurants/search?${queryParams}`);
 }

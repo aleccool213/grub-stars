@@ -148,6 +148,85 @@ class APITest < GrubStars::IntegrationTest
     assert_equal "LOCATION_NOT_INDEXED", body["error"]["code"]
   end
 
+  # Search sort parameter tests
+
+  def test_search_returns_sort_in_meta
+    seed_restaurant
+
+    get "/restaurants/search", name: "bakery"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert body["meta"]["sort"], "Response meta should include sort"
+  end
+
+  def test_search_defaults_to_overall_rank_sort
+    seed_restaurant
+
+    get "/restaurants/search", name: "bakery"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal "overall_rank", body["meta"]["sort"]
+  end
+
+  def test_search_accepts_overall_rank_sort_parameter
+    seed_restaurant
+
+    get "/restaurants/search", name: "bakery", sort: "overall_rank"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["data"].length
+    assert_equal "overall_rank", body["meta"]["sort"]
+  end
+
+  def test_search_accepts_relevance_sort_parameter
+    seed_restaurant
+
+    get "/restaurants/search", name: "bakery", sort: "relevance"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["data"].length
+    assert_equal "relevance", body["meta"]["sort"]
+  end
+
+  def test_search_by_category_with_sort_parameter
+    seed_restaurant
+
+    get "/restaurants/search", category: "bakeries", sort: "overall_rank"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["data"].length
+    assert_equal "overall_rank", body["meta"]["sort"]
+  end
+
+  def test_search_invalid_sort_falls_back_to_relevance
+    seed_restaurant
+
+    get "/restaurants/search", name: "bakery", sort: "invalid_sort"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    # Invalid sort should fall back to relevance
+    assert_equal "relevance", body["meta"]["sort"]
+  end
+
+  def test_search_overall_rank_orders_by_rating
+    seed_restaurants_with_different_ratings
+
+    get "/restaurants/search", category: "bakeries", sort: "overall_rank"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 2, body["data"].length
+    # Higher-rated restaurant should come first
+    assert_equal "Top Bakery", body["data"][0]["name"]
+    assert_equal "Low Bakery", body["data"][1]["name"]
+  end
+
   # Autocomplete endpoint tests
   def test_autocomplete_requires_query_parameter
     get "/restaurants/autocomplete"
@@ -1452,6 +1531,37 @@ class APITest < GrubStars::IntegrationTest
       updated_at: Time.now
     )
     db[:external_ids].insert(restaurant_id: r3_id, source: "yelp", external_id: "yelp-r3")
+  end
+
+  def seed_restaurants_with_different_ratings
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    category_id = db[:categories].insert(name: "bakeries")
+
+    # Top-rated bakery
+    r1_id = db[:restaurants].insert(
+      name: "Top Bakery",
+      address: "100 First St",
+      latitude: 44.389,
+      longitude: -79.690,
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    db[:restaurant_categories].insert(restaurant_id: r1_id, category_id: category_id)
+    db[:ratings].insert(restaurant_id: r1_id, source: "yelp", score: 4.9, review_count: 500, fetched_at: Time.now)
+
+    # Low-rated bakery
+    r2_id = db[:restaurants].insert(
+      name: "Low Bakery",
+      address: "200 Second St",
+      latitude: 44.390,
+      longitude: -79.691,
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    db[:restaurant_categories].insert(restaurant_id: r2_id, category_id: category_id)
+    db[:ratings].insert(restaurant_id: r2_id, source: "yelp", score: 2.0, review_count: 5, fetched_at: Time.now)
   end
 
   def seed_restaurant

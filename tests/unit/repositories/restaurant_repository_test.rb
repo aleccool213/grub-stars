@@ -208,6 +208,182 @@ class RestaurantRepositoryTest < Minitest::Test
     assert_equal "barrie, ontario", results.first.location
   end
 
+  # Sort by overall rank tests
+
+  def test_search_by_name_with_overall_rank_sort
+    # Restaurant with high rating and many reviews
+    r1_id = @db[:restaurants].insert(
+      name: "Great Starbucks",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r1_id, source: "yelp", score: 4.8, review_count: 500, fetched_at: Time.now)
+
+    # Restaurant with lower rating and fewer reviews
+    r2_id = @db[:restaurants].insert(
+      name: "Okay Starbucks",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r2_id, source: "yelp", score: 3.0, review_count: 10, fetched_at: Time.now)
+
+    results = @repo.search_by_name("Starbucks", sort: :overall_rank)
+
+    assert_equal 2, results.length
+    assert_equal "Great Starbucks", results.first.name
+    assert_equal "Okay Starbucks", results.last.name
+  end
+
+  def test_search_by_name_with_relevance_sort_ignores_ratings
+    # Restaurant with lower rating but better name match
+    r1_id = @db[:restaurants].insert(
+      name: "Starbucks",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r1_id, source: "yelp", score: 3.0, review_count: 10, fetched_at: Time.now)
+
+    # Restaurant with higher rating but weaker name match
+    r2_id = @db[:restaurants].insert(
+      name: "Starboks Place",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r2_id, source: "yelp", score: 5.0, review_count: 1000, fetched_at: Time.now)
+
+    results = @repo.search_by_name("Starbucks", sort: :relevance)
+
+    assert_equal 2, results.length
+    # "Starbucks" is a better name match than "Starboks Place"
+    assert_equal "Starbucks", results.first.name
+  end
+
+  def test_search_by_name_overall_rank_with_no_ratings
+    # Restaurant with no ratings
+    @db[:restaurants].insert(
+      name: "Starbucks New",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    # Restaurant with ratings
+    r2_id = @db[:restaurants].insert(
+      name: "Starbucks Classic",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r2_id, source: "yelp", score: 4.0, review_count: 50, fetched_at: Time.now)
+
+    results = @repo.search_by_name("Starbucks", sort: :overall_rank)
+
+    assert_equal 2, results.length
+    # Restaurant with ratings should come first
+    assert_equal "Starbucks Classic", results.first.name
+    assert_equal "Starbucks New", results.last.name
+  end
+
+  def test_search_by_name_overall_rank_with_multiple_rating_sources
+    # Restaurant with ratings from multiple sources
+    r1_id = @db[:restaurants].insert(
+      name: "Starbucks Multi",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r1_id, source: "yelp", score: 4.5, review_count: 200, fetched_at: Time.now)
+    @db[:ratings].insert(restaurant_id: r1_id, source: "google", score: 4.3, review_count: 300, fetched_at: Time.now)
+
+    # Restaurant with single lower rating
+    r2_id = @db[:restaurants].insert(
+      name: "Starbucks Single",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r2_id, source: "yelp", score: 3.5, review_count: 20, fetched_at: Time.now)
+
+    results = @repo.search_by_name("Starbucks", sort: :overall_rank)
+
+    assert_equal 2, results.length
+    # Multi-source restaurant with higher avg and more reviews should rank first
+    assert_equal "Starbucks Multi", results.first.name
+  end
+
+  def test_search_by_category_with_overall_rank_sort
+    bakery_id = @db[:categories].insert(name: "Bakery")
+
+    # High-ranked bakery
+    r1_id = @db[:restaurants].insert(
+      name: "Best Bakery",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:restaurant_categories].insert(restaurant_id: r1_id, category_id: bakery_id)
+    @db[:ratings].insert(restaurant_id: r1_id, source: "yelp", score: 4.9, review_count: 800, fetched_at: Time.now)
+
+    # Low-ranked bakery
+    r2_id = @db[:restaurants].insert(
+      name: "Meh Bakery",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:restaurant_categories].insert(restaurant_id: r2_id, category_id: bakery_id)
+    @db[:ratings].insert(restaurant_id: r2_id, source: "yelp", score: 2.5, review_count: 5, fetched_at: Time.now)
+
+    results = @repo.search_by_category("Bakery", sort: :overall_rank)
+
+    assert_equal 2, results.length
+    assert_equal "Best Bakery", results.first.name
+    assert_equal "Meh Bakery", results.last.name
+  end
+
+  def test_search_by_category_with_relevance_sort_default
+    bakery_id = @db[:categories].insert(name: "Bakery")
+
+    r1_id = @db[:restaurants].insert(
+      name: "Alpha Bakery",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:restaurant_categories].insert(restaurant_id: r1_id, category_id: bakery_id)
+
+    r2_id = @db[:restaurants].insert(
+      name: "Beta Bakery",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:restaurant_categories].insert(restaurant_id: r2_id, category_id: bakery_id)
+
+    # Default sort (relevance) - both match "Bakery" equally, so alphabetical
+    results = @repo.search_by_category("Bakery")
+
+    assert_equal 2, results.length
+    assert_equal "Alpha Bakery", results.first.name
+    assert_equal "Beta Bakery", results.last.name
+  end
+
+  def test_search_by_name_overall_rank_reviews_boost_equal_ratings
+    # Two restaurants with same average rating but different review counts
+    r1_id = @db[:restaurants].insert(
+      name: "Starbucks Popular",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r1_id, source: "yelp", score: 4.0, review_count: 500, fetched_at: Time.now)
+
+    r2_id = @db[:restaurants].insert(
+      name: "Starbucks Quiet",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+    @db[:ratings].insert(restaurant_id: r2_id, source: "yelp", score: 4.0, review_count: 5, fetched_at: Time.now)
+
+    results = @repo.search_by_name("Starbucks", sort: :overall_rank)
+
+    assert_equal 2, results.length
+    # More reviews should boost ranking when ratings are equal
+    assert_equal "Starbucks Popular", results.first.name
+    assert_equal "Starbucks Quiet", results.last.name
+  end
+
   def test_all_indexed_locations
     @db[:restaurants].insert(
       name: "Restaurant 1",
