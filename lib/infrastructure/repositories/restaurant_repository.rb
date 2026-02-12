@@ -173,6 +173,24 @@ module Infrastructure
           .compact
       end
 
+      # Find restaurants in a location that are missing an external ID for a given source
+      # Used by reverse-lookup pass to find restaurants that need data from an adapter
+      # @param location [String] Location to filter by (case-insensitive)
+      # @param source [String] Source name to check for (e.g., "tripadvisor")
+      # @return [Array<Restaurant>] Restaurants missing data from the given source
+      def find_missing_source(location, source)
+        # Get IDs of restaurants that DO have this source
+        has_source_ids = @db[:external_ids]
+          .where(source: source)
+          .select(:restaurant_id)
+
+        @db[:restaurants]
+          .where(Sequel.ilike(:location, location))
+          .exclude(id: has_source_ids)
+          .all
+          .map { |row| to_domain_model(row) }
+      end
+
       # Find candidate restaurants for matching (within geographic bounds)
       def find_candidates_for_matching(latitude, longitude, delta)
         return [] unless latitude && longitude
