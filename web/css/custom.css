@@ -551,14 +551,7 @@ html.dark .text-blue-600 {
   color: #A855F7 !important;
 }
 
-/* Sort badge in dark mode */
-html.dark .bg-purple-100 {
-  background-color: rgba(168, 85, 247, 0.2) !important;
-}
-
-html.dark .text-purple-700 {
-  color: #c084fc !important;
-}
+/* Sort badge dark mode is handled via Twind dark: variants in search.js */
 
 /* Amber tints in dark mode */
 html.dark .bg-amber-50 {
