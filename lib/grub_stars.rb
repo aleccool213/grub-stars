@@ -10,9 +10,11 @@ require_relative "app_logger"
 # Infrastructure Layer
 require_relative "infrastructure/database"
 require_relative "infrastructure/adapters/base"
+require_relative "infrastructure/adapters/photo_source_base"
 require_relative "infrastructure/adapters/yelp"
 require_relative "infrastructure/adapters/google"
 require_relative "infrastructure/adapters/tripadvisor"
+require_relative "infrastructure/adapters/instagram"
 
 # Domain Layer
 require_relative "domain/models/restaurant"
