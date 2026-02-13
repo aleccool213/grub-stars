@@ -28,7 +28,7 @@ echo "Creating Sentry release: $VERSION"
 sentry-cli releases new "$VERSION"
 
 # Associate commits
-sentry-cli releases set-commits "$VERSION" --auto
+sentry-cli releases set-commits "$VERSION" --auto --ignore-missing
 
 # Deploy release
 sentry-cli releases deploys "$VERSION" new -e "$ENVIRONMENT"
