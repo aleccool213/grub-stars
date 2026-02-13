@@ -136,12 +136,23 @@ Potential data sources to add for more comprehensive restaurant information:
   - Delivery availability and fees
   - Good for "what can I order right now" searches
 
+### In Progress
+
+- **Instagram Photo Enrichment** — [Full architecture doc](adapters/instagram.md)
+  - Supplemental photo source (not a business directory — does not provide address, rating, reviews)
+  - New `PhotoSourceBase` adapter contract for media-only sources
+  - New `EnrichPhotosService` for post-index photo enrichment
+  - Phase 1: Instagram Graph API (hashtag search + business discovery)
+  - Phase 2: Enrichment service + CLI `grst enrich-photos` + API `POST /enrich`
+  - Phase 3: SaaS scraper provider for location-based search
+  - Phase 4: UGC vs official photo display in web UI
+
 ### Low Priority (Data-only)
 
-- **Instagram/TikTok Food Hashtags**
-  - Already planned - photos and videos only
-  - Extract food photos and restaurant ambiance videos
+- **TikTok Food Videos**
+  - Extract food videos and restaurant ambiance clips
   - Hashtag-based restaurant discovery
+  - Would reuse the same `PhotoSourceBase` contract as Instagram
 
 - **Michelin Guide**
   - Starred restaurant data (premium, limited coverage)
