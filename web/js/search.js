@@ -244,13 +244,19 @@ function sortLabel(sort) {
 
 /**
  * Build the sort info badge HTML
+ * Uses inline styles because Twind hashes class names at runtime,
+ * making dynamically inserted utility classes unreliable.
  * @param {string} sort - Sort key from API meta
  * @returns {string} - HTML string for the badge
  */
 function sortBadge(sort) {
   const label = sortLabel(sort);
-  return `<span class="inline-flex items-center gap-1 text-xs font-medium bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-200 px-2.5 py-1 rounded-full">
-      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  const isDark = document.documentElement.classList.contains('dark');
+  const bg = isDark ? 'rgba(168, 85, 247, 0.2)' : '#e9d5ff';
+  const color = isDark ? '#c084fc' : '#6b21a8';
+
+  return `<span style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; font-weight: 500; background-color: ${bg}; color: ${color}; padding: 0.25rem 0.625rem; border-radius: 9999px;">
+      <svg style="width: 0.75rem; height: 0.75rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
       </svg>
       Sorted by: ${escapeHtml(label)}
@@ -267,9 +273,12 @@ function showResults(restaurants, meta) {
   const countText = count === 1 ? '1 restaurant found' : `${count} restaurants found`;
   const sort = meta.sort || 'overall_rank';
 
+  const isDark = document.documentElement.classList.contains('dark');
+  const countColor = isDark ? '#94a3b8' : '#4b5563';
+
   resultsContainer.innerHTML = `
-    <div class="mb-4 flex flex-wrap items-center gap-3">
-      <p class="text-gray-600 dark:text-slate-400">${countText}</p>
+    <div style="margin-bottom: 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;">
+      <p style="color: ${countColor}; margin: 0;">${countText}</p>
       ${sortBadge(sort)}
     </div>
     ${restaurantList(restaurants)}
