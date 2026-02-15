@@ -409,12 +409,116 @@ get "/api/v1/location/:id/photos" do
 end
 
 # ============================================
+# Instagram Graph API Endpoints (Mock)
+# ============================================
+
+# Load Instagram fixtures
+INSTAGRAM_HASHTAG_SEARCH = load_fixture("instagram/hashtag_search")
+INSTAGRAM_HASHTAG_MEDIA = load_fixture("instagram/hashtag_recent_media")
+INSTAGRAM_BUSINESS_DISCOVERY = load_fixture("instagram/business_discovery")
+
+# Build a mapping of restaurant names (lowercased, stripped) to mock hashtag IDs
+# so that any restaurant indexed from Yelp/Google/TripAdvisor gets Instagram photos
+INSTAGRAM_MOCK_HASHTAG_COUNTER = { value: 17_841_563_456_789_012 }
+
+def mock_instagram_photos_for_restaurant(name)
+  # Generate 2-4 mock Instagram photos for any restaurant
+  clean_name = name.downcase.gsub(/[^a-z0-9 ]/, "").strip
+  hashtag = clean_name.gsub(/\s+/, "")
+  photo_count = 2 + (name.hash.abs % 3)  # 2-4 photos
+
+  (1..photo_count).map do |i|
+    colors = %w[ff6b6b 4ecdc4 45b7d1 96ceb4 ffeaa7 dfe6e9 fd79a8 a29bfe]
+    color = colors[(name.hash.abs + i) % colors.length]
+    {
+      "id" => "#{18_000_000_000_000_000 + name.hash.abs + i}",
+      "caption" => ["Amazing food at #{name}! ##{hashtag}", "Date night at #{name} #foodie", "Best dish in town ##{hashtag} #food", "Highly recommend #{name}!"][i % 4],
+      "media_type" => "IMAGE",
+      "media_url" => "https://placehold.co/400x400/#{color}/ffffff?text=IG+#{i}",
+      "permalink" => "https://www.instagram.com/p/MOCK#{name.hash.abs.to_s(36)[0, 6]}#{i}/",
+      "timestamp" => "2026-01-#{format('%02d', [i * 5, 28].min)}T18:30:00+0000",
+      "username" => ["foodie_local", "eats_and_treats", "hungry_explorer", "tasty_adventures"][i % 4]
+    }
+  end
+end
+
+# GET /ig_hashtag_search - Search for hashtag ID (Instagram Graph API)
+get "/ig_hashtag_search" do
+  content_type :json
+
+  hashtag = params["q"]
+  user_id = params["user_id"]
+  access_token = params["access_token"]
+
+  unless access_token
+    halt 400, { error: { message: "An access token is required", type: "OAuthException", code: 190 } }.to_json
+  end
+
+  unless hashtag && !hashtag.empty?
+    halt 400, { error: { message: "A hashtag query is required", type: "OAuthException", code: 100 } }.to_json
+  end
+
+  # Return a deterministic hashtag ID based on the hashtag string
+  hashtag_id = (17_841_563_456_789_012 + hashtag.hash.abs % 1_000_000).to_s
+
+  { data: [{ id: hashtag_id }] }.to_json
+end
+
+# GET /:hashtag_id/recent_media - Get recent media for a hashtag (Instagram Graph API)
+# Match numeric IDs that look like Instagram hashtag IDs (17+ digits)
+get %r{/(\d{17,})/recent_media} do |hashtag_id|
+  content_type :json
+
+  user_id = params["user_id"]
+  access_token = params["access_token"]
+  limit = (params["limit"] || 20).to_i
+
+  unless access_token
+    halt 400, { error: { message: "An access token is required", type: "OAuthException", code: 190 } }.to_json
+  end
+
+  # Look up which restaurant name this hashtag corresponds to
+  # We use the fixture data as a fallback, but for any indexed restaurant
+  # we generate mock photos dynamically
+  # For the mock, just return the fixture data (which has varied media types)
+  fixture_data = INSTAGRAM_HASHTAG_MEDIA["data"] || []
+  { data: fixture_data.take(limit) }.to_json
+end
+
+# GET /:user_id?fields=business_discovery... - Business Discovery (Instagram Graph API)
+# This endpoint is called with the app's own user_id and a target username.
+# Must be defined AFTER the /recent_media route so that route matches first.
+get %r{/(\d{17,})} do |user_id|
+  content_type :json
+
+  access_token = params["access_token"]
+  username = params["username"]
+  fields = params["fields"]
+
+  unless access_token
+    halt 400, { error: { message: "An access token is required", type: "OAuthException", code: 190 } }.to_json
+  end
+
+  # Only handle business_discovery requests
+  if fields&.include?("business_discovery")
+    unless username
+      halt 400, { error: { message: "A username is required for business discovery", type: "OAuthException", code: 100 } }.to_json
+    end
+
+    # Return fixture data
+    INSTAGRAM_BUSINESS_DISCOVERY.to_json
+  else
+    halt 400, { error: { message: "Unsupported fields parameter", type: "OAuthException", code: 100 } }.to_json
+  end
+end
+
+# ============================================
 # Startup Message
 # ============================================
 
 puts ""
 puts "=" * 70
-puts "  Mock API Server (Yelp + Google Places + TripAdvisor)"
+puts "  Mock API Server (Yelp + Google Places + TripAdvisor + Instagram)"
 puts "=" * 70
 puts ""
 if MOCK_DELAY_MS > 0 || MOCK_DELAY_PER_ITEM_MS > 0
@@ -452,6 +556,15 @@ puts "    GET /api/v1/location/:id?key=..."
 puts "    GET /api/v1/location/:id/reviews?key=..."
 puts "    GET /api/v1/location/:id/photos?key=..."
 puts ""
+puts "  Instagram Data:"
+puts "    - Mock hashtag search + recent media"
+puts "    - Mock business discovery"
+puts ""
+puts "  Instagram Endpoints:"
+puts "    GET /ig_hashtag_search?q=...&user_id=...&access_token=..."
+puts "    GET /:hashtag_id/recent_media?user_id=...&access_token=..."
+puts "    GET /:user_id?fields=business_discovery...&username=...&access_token=..."
+puts ""
 puts "  Configure your .env:"
 puts "    YELP_API_KEY=mock_api_key"
 puts "    YELP_API_BASE_URL=http://localhost:4567"
@@ -459,6 +572,9 @@ puts "    GOOGLE_API_KEY=mock_api_key"
 puts "    GOOGLE_API_BASE_URL=http://localhost:4567"
 puts "    TRIPADVISOR_API_KEY=mock_api_key"
 puts "    TRIPADVISOR_API_BASE_URL=http://localhost:4567/api/v1"
+puts "    INSTAGRAM_ACCESS_TOKEN=mock_access_token"
+puts "    INSTAGRAM_USER_ID=17841400987654321"
+puts "    INSTAGRAM_API_BASE_URL=http://localhost:4567"
 puts ""
 puts "  Delays (enabled by default for testing progress UI):"
 puts "    MOCK_DELAY_MS=0 ruby dev/mock_server.rb         # disable search delay"

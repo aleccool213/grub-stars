@@ -143,6 +143,15 @@ module Services
       end
       stats[:restaurants_merged].concat(reverse_stats[:restaurants_merged])
 
+      # Phase 3: Instagram photo enrichment (optional)
+      # If Instagram adapter is configured, enrich indexed restaurants with Instagram photos.
+      # This is a supplemental pass — it doesn't discover new restaurants, just adds photos.
+      instagram_adapter = default_photo_source_adapters.find { |a| a.source_name == "instagram" && a.configured? }
+      if instagram_adapter
+        enrich_stats = enrich_with_photos(location, instagram_adapter, on_progress: on_progress)
+        stats[:instagram_photos_added] = enrich_stats[:photos_added]
+      end
+
       # Add limit info to response
       # limit_per_adapter: The limit given to each adapter (new, more accurate name)
       # limit: Same as limit_per_adapter (for backward compatibility)
@@ -420,6 +429,88 @@ module Services
         GrubStars::Adapters::Google.new,
         GrubStars::Adapters::TripAdvisor.new
       ]
+    end
+
+    def default_photo_source_adapters
+      @photo_source_adapters ||= [
+        GrubStars::Adapters::Instagram.new
+      ]
+    end
+
+    # Phase 3: Enrich restaurants in a location with photos from a photo source adapter.
+    # For each restaurant, derives a hashtag from its name and searches for photos.
+    def enrich_with_photos(location, adapter, on_progress: nil)
+      stats = { photos_added: 0 }
+      source = adapter.source_name
+
+      @logger.adapter_phase(adapter: source, phase: :starting)
+      on_progress&.call({
+        adapter: source,
+        phase: :starting,
+        current: 0,
+        total: 0,
+        percent: 0,
+        restaurant_name: nil
+      })
+
+      # Find all restaurants in this location
+      restaurants = @restaurant_repo.find_by_location(location)
+      total = restaurants.length
+
+      restaurants.each_with_index do |restaurant, index|
+        @logger.progress(
+          name: restaurant.name,
+          current: index + 1,
+          total: total,
+          percent: (((index + 1).to_f / total) * 100).round(1),
+          adapter: source
+        )
+
+        on_progress&.call({
+          adapter: source,
+          phase: :indexing,
+          current: index + 1,
+          total: total,
+          percent: (((index + 1).to_f / total) * 100).round(1),
+          restaurant_name: restaurant.name
+        })
+
+        begin
+          photos = adapter.search_photos(
+            restaurant_name: restaurant.name,
+            location: location,
+            latitude: restaurant.latitude,
+            longitude: restaurant.longitude
+          )
+
+          if photos && !photos.empty?
+            urls = photos.map { |p| p[:url] }.compact.reject(&:empty?)
+            unless urls.empty?
+              @media_repo.replace_media(restaurant.id, source, "photo", urls)
+              stats[:photos_added] += urls.length
+            end
+          end
+        rescue GrubStars::Adapters::Base::RateLimitError => e
+          @logger.warn("Instagram rate limit reached: #{e.message}")
+          break
+        rescue StandardError => e
+          @logger.warn("Failed to enrich #{restaurant.name} with Instagram photos: #{e.message}")
+        end
+      end
+
+      @logger.clear_line
+      @logger.adapter_phase(adapter: source, phase: :completed, stats: { photos_added: stats[:photos_added] })
+
+      on_progress&.call({
+        adapter: source,
+        phase: :completed,
+        current: total,
+        total: total,
+        percent: 100,
+        restaurant_name: nil
+      })
+
+      stats
     end
 
     # Fetch detailed business info to get photos (search endpoints often don't return photos)
