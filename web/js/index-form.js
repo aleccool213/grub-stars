@@ -244,6 +244,38 @@ function updateProgressUI(progress) {
         </div>
       </div>
     `;
+  } else if (phase === 'reverse_lookup') {
+    // Show reverse lookup progress (filling in missing data from adapters)
+    const progressPercent = percent || 0;
+    const displayName = restaurant_name
+      ? (restaurant_name.length > 40 ? restaurant_name.substring(0, 37) + '...' : restaurant_name)
+      : 'Searching...';
+
+    progressInfo.innerHTML = `
+      <div class="space-y-3">
+        <p class="text-blue-700 dark:text-blue-300 font-medium">
+          🔍 Enriching data from ${escapeHtml(adapter)}
+        </p>
+
+        <!-- Progress bar container -->
+        <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-4 border border-gray-300 dark:border-slate-600">
+          <div
+            id="progress-fill"
+            class="bg-gradient-to-r from-purple-500 to-purple-600 dark:from-purple-400 dark:to-purple-500 h-4 rounded-full transition-all duration-300 ease-out"
+            style="width: ${progressPercent}%"
+          ></div>
+        </div>
+
+        <div class="flex justify-between text-sm font-medium text-gray-700 dark:text-slate-300">
+          <span id="progress-count">${current || 0} / ${total || '?'} restaurants</span>
+          <span id="progress-percent">${progressPercent.toFixed(1)}%</span>
+        </div>
+
+        <div id="current-restaurant" class="text-sm text-gray-500 dark:text-slate-400 truncate italic">
+          ${escapeHtml(displayName)}
+        </div>
+      </div>
+    `;
   } else if (phase === 'completed') {
     // Show adapter completed
     progressInfo.innerHTML = `
