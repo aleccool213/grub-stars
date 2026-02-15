@@ -118,6 +118,10 @@ module GrubStars
         Text :description  # Short description of the restaurant
         DateTime :created_at
         DateTime :updated_at
+
+        index :name
+        index :location
+        index [:latitude, :longitude]
       end
 
       # Track external IDs from each source (allows multiple sources per restaurant)
@@ -148,6 +152,8 @@ module GrubStars
         Float :score
         Integer :review_count
         DateTime :fetched_at
+
+        index :restaurant_id
       end
 
       db.create_table? :reviews do
@@ -157,6 +163,8 @@ module GrubStars
         String :snippet
         String :url
         DateTime :fetched_at
+
+        index :restaurant_id
       end
 
       db.create_table? :media do
@@ -166,6 +174,8 @@ module GrubStars
         String :media_type, null: false  # photo, video
         String :url, null: false
         DateTime :fetched_at
+
+        index :restaurant_id
       end
 
       # Track API request counts for rate limiting
@@ -190,7 +200,26 @@ module GrubStars
         end
       end
 
+      # Add performance indexes if they don't exist
+      add_index_if_missing(db, :restaurants, :name)
+      add_index_if_missing(db, :restaurants, :location)
+      add_index_if_missing(db, :restaurants, [:latitude, :longitude])
+      add_index_if_missing(db, :ratings, :restaurant_id)
+      add_index_if_missing(db, :reviews, :restaurant_id)
+      add_index_if_missing(db, :media, :restaurant_id)
+
       db
+    end
+
+    # Helper to add index only if it doesn't already exist
+    def self.add_index_if_missing(db, table, columns)
+      index_name = Array(columns).join("_")
+      existing_indexes = db.indexes(table).keys
+
+      # Check if index already exists
+      unless existing_indexes.any? { |idx| idx.to_s.include?(index_name) }
+        db.add_index(table, columns)
+      end
     end
   end
 end

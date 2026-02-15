@@ -74,9 +74,9 @@ module Infrastructure
           dataset = dataset.order(Sequel.desc(:match_score), :name)
         end
 
-        dataset
-          .all
-          .map { |row| to_domain_model_with_basic_associations(row) }
+        # Convert to domain models and batch-load associations (avoids N+1 queries)
+        restaurants = dataset.all.map { |row| to_domain_model(row) }
+        batch_load_basic_associations(restaurants)
       end
 
       # Search restaurants by category
@@ -108,9 +108,9 @@ module Infrastructure
           dataset = dataset.distinct.order(Sequel.desc(:match_score), Sequel[:restaurants][:name])
         end
 
-        dataset
-          .all
-          .map { |row| to_domain_model_with_basic_associations(row) }
+        # Convert to domain models and batch-load associations (avoids N+1 queries)
+        restaurants = dataset.all.map { |row| to_domain_model(row) }
+        batch_load_basic_associations(restaurants)
       end
 
       # Autocomplete search for restaurant names
@@ -371,6 +371,48 @@ module Infrastructure
           review_count: row[:review_count],
           fetched_at: row[:fetched_at]
         )
+      end
+
+      # Convert external_id row to domain model (for batch loading)
+      def row_to_external_id(row)
+        Domain::Models::ExternalId.new(
+          id: row[:id],
+          restaurant_id: row[:restaurant_id],
+          source: row[:source],
+          external_id: row[:external_id]
+        )
+      end
+
+      # Batch-load ratings and external_ids for multiple restaurants
+      # This avoids N+1 queries by loading all associations in 2 queries
+      # instead of 2*N queries (one per restaurant)
+      def batch_load_basic_associations(restaurants)
+        return [] if restaurants.empty?
+
+        restaurant_ids = restaurants.map(&:id)
+
+        # Query 1: Batch-load all ratings for these restaurants
+        ratings_by_restaurant = @db[:ratings]
+          .where(restaurant_id: restaurant_ids)
+          .all
+          .group_by { |r| r[:restaurant_id] }
+
+        # Query 2: Batch-load all external_ids for these restaurants
+        external_ids_by_restaurant = @db[:external_ids]
+          .where(restaurant_id: restaurant_ids)
+          .all
+          .group_by { |e| e[:restaurant_id] }
+
+        # Associate with restaurants in memory
+        restaurants.each do |restaurant|
+          rating_rows = ratings_by_restaurant[restaurant.id] || []
+          restaurant.ratings = rating_rows.map { |r| row_to_rating(r) }
+
+          external_id_rows = external_ids_by_restaurant[restaurant.id] || []
+          restaurant.external_ids = external_id_rows.map { |e| row_to_external_id(e) }
+        end
+
+        restaurants
       end
     end
   end
