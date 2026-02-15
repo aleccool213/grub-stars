@@ -486,8 +486,8 @@ module Services
           if photos && !photos.empty?
             urls = photos.map { |p| p[:url] }.compact.reject(&:empty?)
             unless urls.empty?
-              @media_repo.replace_media(restaurant.id, source, "photo", urls)
-              stats[:photos_added] += urls.length
+              added = @media_repo.add_media(restaurant.id, source, "photo", urls)
+              stats[:photos_added] += added
             end
           end
         rescue GrubStars::Adapters::Base::RateLimitError => e
