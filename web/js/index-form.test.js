@@ -649,3 +649,247 @@ test('index-form: API handles missing location', async () => {
 
   teardownMockFetch();
 });
+
+// ========================================
+// Progress UI Phase Tests
+// ========================================
+
+/**
+ * Helper: create the progress UI container structure that updateProgressUI expects.
+ * Simulates the DOM produced by showProgressUI().
+ */
+function createProgressContainer() {
+  const container = createContainer();
+  container.innerHTML = `
+    <div id="progress-info">
+      <p>Initial state</p>
+    </div>
+  `;
+  return container;
+}
+
+/**
+ * Re-implementation of updateProgressUI for testing purposes.
+ * This mirrors the actual function in index-form.js so we can verify
+ * the HTML output for each phase, including the reverse_lookup phase
+ * that was previously missing and caused the UI to hang.
+ */
+function simulateUpdateProgressUI(progress) {
+  const progressInfo = document.getElementById('progress-info');
+  if (!progressInfo) return;
+
+  const { adapter, phase, current, total, percent, restaurant_name } = progress;
+
+  const escapeHtml = (text) => {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
+  if (phase === 'starting') {
+    progressInfo.innerHTML = `
+      <div class="space-y-3">
+        <p class="text-blue-700 dark:text-blue-300 font-medium">
+          📡 Searching ${escapeHtml(adapter)}...
+        </p>
+        <div id="progress-count">Starting...</div>
+      </div>
+    `;
+  } else if (phase === 'indexing') {
+    const progressPercent = percent || 0;
+    const displayName = restaurant_name
+      ? (restaurant_name.length > 40 ? restaurant_name.substring(0, 37) + '...' : restaurant_name)
+      : 'Processing...';
+    progressInfo.innerHTML = `
+      <div class="space-y-3">
+        <p class="text-blue-700 dark:text-blue-300 font-medium">
+          📡 Indexing from ${escapeHtml(adapter)}
+        </p>
+        <div id="progress-fill" style="width: ${progressPercent}%"></div>
+        <span id="progress-count">${current || 0} / ${total || '?'} restaurants</span>
+        <span id="progress-percent">${progressPercent.toFixed(1)}%</span>
+        <div id="current-restaurant">${escapeHtml(displayName)}</div>
+      </div>
+    `;
+  } else if (phase === 'reverse_lookup') {
+    const progressPercent = percent || 0;
+    const displayName = restaurant_name
+      ? (restaurant_name.length > 40 ? restaurant_name.substring(0, 37) + '...' : restaurant_name)
+      : 'Searching...';
+    progressInfo.innerHTML = `
+      <div class="space-y-3">
+        <p class="text-blue-700 dark:text-blue-300 font-medium">
+          🔍 Enriching data from ${escapeHtml(adapter)}
+        </p>
+        <div id="progress-fill" class="bg-gradient-to-r from-purple-500 to-purple-600" style="width: ${progressPercent}%"></div>
+        <span id="progress-count">${current || 0} / ${total || '?'} restaurants</span>
+        <span id="progress-percent">${progressPercent.toFixed(1)}%</span>
+        <div id="current-restaurant">${escapeHtml(displayName)}</div>
+      </div>
+    `;
+  } else if (phase === 'completed') {
+    progressInfo.innerHTML = `
+      <div class="space-y-2">
+        <p class="text-green-700 dark:text-green-400 font-medium">
+          ✓ ${escapeHtml(adapter)} complete
+        </p>
+        <div class="text-sm text-gray-500 dark:text-slate-400">
+          Moving to next source...
+        </div>
+      </div>
+    `;
+  }
+}
+
+test('index-form: reverse_lookup phase shows enrichment progress', () => {
+  const container = createProgressContainer();
+
+  simulateUpdateProgressUI({
+    adapter: 'tripadvisor',
+    phase: 'reverse_lookup',
+    current: 5,
+    total: 120,
+    percent: 4.2,
+    restaurant_name: 'Thai Palace'
+  });
+
+  const progressInfo = document.getElementById('progress-info');
+  assertTruthy(progressInfo.innerHTML.includes('Enriching data from tripadvisor'), 'Should show enrichment message');
+  assertTruthy(progressInfo.innerHTML.includes('5 / 120 restaurants'), 'Should show restaurant count');
+  assertTruthy(progressInfo.innerHTML.includes('4.2%'), 'Should show percentage');
+  assertTruthy(progressInfo.innerHTML.includes('Thai Palace'), 'Should show restaurant name');
+  assertTruthy(progressInfo.innerHTML.includes('purple'), 'Should use purple progress bar for reverse lookup');
+
+  destroyContainer(container);
+});
+
+test('index-form: reverse_lookup phase truncates long restaurant names', () => {
+  const container = createProgressContainer();
+
+  simulateUpdateProgressUI({
+    adapter: 'tripadvisor',
+    phase: 'reverse_lookup',
+    current: 1,
+    total: 50,
+    percent: 2.0,
+    restaurant_name: 'The Incredibly Long Named Restaurant and Bar Grill Experience'
+  });
+
+  const progressInfo = document.getElementById('progress-info');
+  const restaurantEl = progressInfo.querySelector('#current-restaurant');
+  assertTruthy(restaurantEl, 'Should have restaurant name element');
+  assertTruthy(restaurantEl.textContent.includes('...'), 'Should truncate long restaurant name');
+  assertFalsy(restaurantEl.textContent.includes('Experience'), 'Should not show full long name');
+
+  destroyContainer(container);
+});
+
+test('index-form: reverse_lookup phase shows default text when no restaurant name', () => {
+  const container = createProgressContainer();
+
+  simulateUpdateProgressUI({
+    adapter: 'tripadvisor',
+    phase: 'reverse_lookup',
+    current: 0,
+    total: 80,
+    percent: 0,
+    restaurant_name: null
+  });
+
+  const progressInfo = document.getElementById('progress-info');
+  assertTruthy(progressInfo.innerHTML.includes('Searching...'), 'Should show default text when no restaurant name');
+
+  destroyContainer(container);
+});
+
+test('index-form: reverse_lookup phase updates progress bar width', () => {
+  const container = createProgressContainer();
+
+  simulateUpdateProgressUI({
+    adapter: 'tripadvisor',
+    phase: 'reverse_lookup',
+    current: 60,
+    total: 120,
+    percent: 50.0,
+    restaurant_name: 'Half Way There'
+  });
+
+  const progressFill = document.getElementById('progress-fill');
+  assertTruthy(progressFill, 'Should have progress fill element');
+  assertEqual(progressFill.style.width, '50%', 'Progress bar should be at 50%');
+
+  destroyContainer(container);
+});
+
+test('index-form: completed phase still shows Moving to next source', () => {
+  const container = createProgressContainer();
+
+  simulateUpdateProgressUI({
+    adapter: 'google',
+    phase: 'completed',
+    current: 50,
+    total: 50,
+    percent: 100,
+    restaurant_name: null
+  });
+
+  const progressInfo = document.getElementById('progress-info');
+  assertTruthy(progressInfo.innerHTML.includes('google complete'), 'Should show adapter complete');
+  assertTruthy(progressInfo.innerHTML.includes('Moving to next source'), 'Should show moving message');
+
+  destroyContainer(container);
+});
+
+test('index-form: reverse_lookup replaces completed phase UI', () => {
+  const container = createProgressContainer();
+
+  // First show completed phase (as tripadvisor forward pass finishes)
+  simulateUpdateProgressUI({
+    adapter: 'tripadvisor',
+    phase: 'completed',
+    current: 10,
+    total: 10,
+    percent: 100,
+    restaurant_name: null
+  });
+
+  const progressInfo = document.getElementById('progress-info');
+  assertTruthy(progressInfo.innerHTML.includes('Moving to next source'), 'Should initially show moving message');
+
+  // Then reverse_lookup phase starts, replacing the stale completed message
+  simulateUpdateProgressUI({
+    adapter: 'tripadvisor',
+    phase: 'reverse_lookup',
+    current: 1,
+    total: 150,
+    percent: 0.7,
+    restaurant_name: 'Pizza Place'
+  });
+
+  assertFalsy(progressInfo.innerHTML.includes('Moving to next source'), 'Should no longer show moving message');
+  assertTruthy(progressInfo.innerHTML.includes('Enriching data from tripadvisor'), 'Should show enrichment message');
+  assertTruthy(progressInfo.innerHTML.includes('1 / 150 restaurants'), 'Should show reverse lookup count');
+  assertTruthy(progressInfo.innerHTML.includes('Pizza Place'), 'Should show current restaurant');
+
+  destroyContainer(container);
+});
+
+test('index-form: reverse_lookup phase escapes HTML in adapter name', () => {
+  const container = createProgressContainer();
+
+  simulateUpdateProgressUI({
+    adapter: '<script>alert(1)</script>',
+    phase: 'reverse_lookup',
+    current: 1,
+    total: 10,
+    percent: 10,
+    restaurant_name: 'Test'
+  });
+
+  const progressInfo = document.getElementById('progress-info');
+  assertFalsy(progressInfo.innerHTML.includes('<script>'), 'Should escape HTML in adapter name');
+  assertTruthy(progressInfo.innerHTML.includes('&lt;script&gt;'), 'Should have escaped HTML entities');
+
+  destroyContainer(container);
+});

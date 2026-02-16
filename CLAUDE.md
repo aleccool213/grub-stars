@@ -30,10 +30,45 @@ bundle _2.5.23_ install
 ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake test
 ruby -I lib $(bundle _2.5.23_ show rake)/exe/rake TEST=tests/integration/cli_test.rb  # specific file
 
-# JavaScript tests
+# JavaScript tests (run via Playwright headless Chromium)
 npm test
-npm run test:install  # first time only - install Playwright browsers
 ```
+
+### Playwright Setup for JS Tests
+
+JS tests run in a real browser via Playwright. Setup requires two steps that **must use the pinned version** in `package.json`:
+
+```bash
+npm install                              # install playwright npm package
+npm run test:install                     # download Chromium binary (requires network)
+```
+
+**Common failure:** `npm test` fails with "Executable doesn't exist at .../chromium_headless_shell-XXXX". This means the Playwright npm package version doesn't match the installed Chromium binary. Fix:
+
+```bash
+# Check which Chromium revisions are already downloaded
+ls ~/.cache/ms-playwright/
+
+# If chromium-XXXX exists but playwright expects a different revision,
+# the npm package version is wrong. Re-install to match:
+npm install                    # re-install from package.json pin
+npm run test:install           # re-download matching Chromium
+```
+
+**If `npm run test:install` fails** (no network / air-gapped environment), you must match the npm package to the pre-installed browser. Find the installed revision (`ls ~/.cache/ms-playwright/`) and install the corresponding playwright version. The mapping is roughly:
+
+| Chromium revision | Playwright version |
+|-------------------|--------------------|
+| 1194              | ~1.54.0            |
+| 1169              | ~1.52.0            |
+| 1148              | ~1.50.0            |
+
+```bash
+npm install playwright@1.54.0   # example: match chromium-1194
+npm test                         # should work without re-downloading
+```
+
+**Do not** commit `package.json` / `package-lock.json` changes from local playwright version adjustments unless intentional.
 
 ### Running the App
 
@@ -48,6 +83,8 @@ bundle _2.5.23_ exec rackup                    # API server (port 9292)
 - `bundle exec rake test` - fails with "command not found: rake"
 - `bundle _2.5.23_ exec rake test` - may fail if bundler not properly installed
 - `bundle install` without version specifier - uses Bundler 4.0.3+ which has CGI bugs
+- `npm test` without `npm install` first - fails with "Cannot find module 'playwright'"
+- `npm test` after `npm install` but without browser binary - fails with "Executable doesn't exist" (see Playwright Setup above)
 
 ## Configuration
 
@@ -143,6 +180,10 @@ The custom test framework (`web/js/test-framework.js`) provides:
 - **Async:** `waitFor`, `waitForElement`, `waitForText`
 - **Isolation:** `createContainer`, `destroyContainer`
 - **Mocking:** `createMockFn`
+
+**Adding new test files:** New `.test.js` files must be imported in `web/test.html` to be included in the test suite. Add an import line like `import './js/your-file.test.js';` in the `<script type="module">` block.
+
+**Test pattern:** Module-scoped functions (not exported) are tested by recreating the rendering logic in the test file and asserting on DOM output. See `index-form.test.js` `simulateUpdateProgressUI` for an example.
 
 ## Further Documentation
 
