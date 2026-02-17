@@ -75,10 +75,26 @@ When a local search returns no results, the CLI offers a fallback to search exte
 **Category Filtering:**
 All adapters support optional category filtering during indexing (e.g., only bakeries).
 
-**Implemented Adapters:**
+**Implemented Adapters (Business Sources):**
 - **Yelp** (`YELP_API_KEY`) - ratings, reviews (enhanced plan), photos
 - **Google Maps** (`GOOGLE_API_KEY`) - ratings, reviews (up to 5), photos
 - **TripAdvisor** (`TRIPADVISOR_API_KEY`) - ratings, reviews, photos
+
+**Photo Source Adapters (`PhotoSourceBase`):**
+
+Not all data sources are business directories. Some (Instagram, TikTok, Flickr) provide **media only** — photos and videos associated with locations or hashtags, but no structured business data (address, rating, reviews, categories).
+
+These sources inherit from `PhotoSourceBase` instead of `Base` and implement a different contract:
+- `search_photos(restaurant_name:, location:, latitude:, longitude:, limit:)` — find photos for a restaurant
+- `search_by_hashtag(hashtag:, limit:)` — find photos by hashtag
+- `get_business_media(username:, limit:)` — get media from a business account
+- `source_name` / `configured?` — same as Base
+
+Photo source adapters are **not** registered in the default adapter list and are **not** called during the primary indexing loop. Instead, they are used by `EnrichPhotosService` as an optional post-index enrichment phase, or invoked on-demand via CLI/API.
+
+See [Instagram Adapter](adapters/instagram.md) for the first implementation of this pattern.
+
+- **Instagram** (`INSTAGRAM_ACCESS_TOKEN`) - photos via hashtag search and business discovery (planned)
 
 ## 3. Service Layer (`lib/services/`)
 
@@ -90,6 +106,11 @@ Services use dependency injection for testability and accept repositories/domain
   - `index(location:, categories:)` - Queries adapters for restaurants in specified geographic area
   - `index_restaurant(business_data:, source:)` - Indexes a single restaurant from adapter data
   - Uses Matcher for deduplication across sources
+
+- `EnrichPhotosService` - Supplemental photo enrichment from photo source adapters (planned)
+  - `enrich(location:)` - Enrich all restaurants in a location with photos from Instagram etc.
+  - `enrich(restaurant_id:)` - Enrich a specific restaurant
+  - Called as optional Phase 3 after indexing, or on-demand via CLI/API
 
 - `SearchRestaurantsService` - Search by name or category (delegates to RestaurantRepository)
 

@@ -32,6 +32,31 @@ module Infrastructure
         end
       end
 
+      # Add media without deleting existing entries. Skips URLs already stored
+      # for this restaurant+source+type combination (deduplication by URL).
+      def add_media(restaurant_id, source, media_type, urls)
+        return if urls.nil? || urls.empty?
+
+        existing_urls = @db[:media].where(
+          restaurant_id: restaurant_id,
+          source: source,
+          media_type: media_type
+        ).select_map(:url)
+
+        new_urls = urls - existing_urls
+        new_urls.each do |url|
+          @db[:media].insert(
+            restaurant_id: restaurant_id,
+            source: source,
+            media_type: media_type,
+            url: url,
+            fetched_at: Time.now
+          )
+        end
+
+        new_urls.length
+      end
+
       def replace_media(restaurant_id, source, media_type, urls)
         # Delete existing media from this source and type
         @db[:media].where(

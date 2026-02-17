@@ -173,6 +173,16 @@ module Infrastructure
           .compact
       end
 
+      # Find all restaurants in a given location
+      # @param location [String] Location to filter by (case-insensitive)
+      # @return [Array<Restaurant>] Restaurants in that location
+      def find_by_location(location)
+        @db[:restaurants]
+          .where(Sequel.ilike(:location, location))
+          .all
+          .map { |row| to_domain_model(row) }
+      end
+
       # Find restaurants in a location that are missing an external ID for a given source
       # Used by reverse-lookup pass to find restaurants that need data from an adapter
       # @param location [String] Location to filter by (case-insensitive)

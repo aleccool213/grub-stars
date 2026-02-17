@@ -1,0 +1,55 @@
+{
+  "data": [
+    {
+      "id": "17895637284950123",
+      "caption": "Best tacos in Barrie! #casacantina #barriefood",
+      "media_type": "IMAGE",
+      "media_url": "https://scontent.cdninstagram.com/v/t51.2885-15/photo1.jpg",
+      "permalink": "https://www.instagram.com/p/ABC123/",
+      "timestamp": "2026-01-15T18:30:00+0000",
+      "username": "foodie_barrie"
+    },
+    {
+      "id": "17895637284950124",
+      "caption": "Date night at Casa Cantina",
+      "media_type": "IMAGE",
+      "media_url": "https://scontent.cdninstagram.com/v/t51.2885-15/photo2.jpg",
+      "permalink": "https://www.instagram.com/p/DEF456/",
+      "timestamp": "2026-01-12T20:15:00+0000",
+      "username": "barrie_eats"
+    },
+    {
+      "id": "17895637284950125",
+      "caption": "The burrito bowl is incredible",
+      "media_type": "CAROUSEL_ALBUM",
+      "media_url": "https://scontent.cdninstagram.com/v/t51.2885-15/photo3.jpg",
+      "permalink": "https://www.instagram.com/p/GHI789/",
+      "timestamp": "2026-01-10T12:45:00+0000",
+      "username": "eat_local_on"
+    },
+    {
+      "id": "17895637284950126",
+      "caption": "Live music night at Casa Cantina!",
+      "media_type": "VIDEO",
+      "media_url": "https://scontent.cdninstagram.com/v/t50.2886-16/video1.mp4",
+      "permalink": "https://www.instagram.com/p/JKL012/",
+      "timestamp": "2026-01-08T21:00:00+0000",
+      "username": "barrie_nightlife"
+    },
+    {
+      "id": "17895637284950127",
+      "caption": "Chips and guac to start #casacantina",
+      "media_type": "IMAGE",
+      "media_url": "https://scontent.cdninstagram.com/v/t51.2885-15/photo4.jpg",
+      "permalink": "https://www.instagram.com/p/MNO345/",
+      "timestamp": "2026-01-05T19:20:00+0000",
+      "username": "simcoe_foodie"
+    }
+  ],
+  "paging": {
+    "cursors": {
+      "after": "QVFIcmRfaXBfX1BKZ0FFMGJD"
+    },
+    "next": "https://graph.facebook.com/v21.0/17841563456789012/recent_media?after=QVFIcmRfaXBfX1BKZ0FFMGJD"
+  }
+}
