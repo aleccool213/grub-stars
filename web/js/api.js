@@ -217,6 +217,42 @@ export async function getStats() {
 }
 
 /**
+ * Get potential merge candidates (auto-detected duplicates)
+ * @param {Object} params - Filter parameters
+ * @param {string} params.location - Optional location filter
+ * @returns {Promise<Object>} - Merge candidates with duplicate and potential targets
+ */
+export async function getMergeCandidates(params = {}) {
+  const queryParams = new URLSearchParams();
+  if (params.location) queryParams.append('location', params.location);
+  const qs = queryParams.toString();
+  return apiRequest(`/admin/merge-candidates${qs ? '?' + qs : ''}`);
+}
+
+/**
+ * Preview a merge between two restaurants
+ * @param {number} duplicateId - ID of the restaurant to merge away
+ * @param {number} targetId - ID of the restaurant to merge into
+ * @returns {Promise<Object>} - Preview data showing combined result
+ */
+export async function getMergePreview(duplicateId, targetId) {
+  return apiRequest(`/admin/merge-preview?duplicate_id=${duplicateId}&target_id=${targetId}`);
+}
+
+/**
+ * Merge two restaurants (duplicate into target)
+ * @param {number} duplicateId - ID of the restaurant to merge away (will be deleted)
+ * @param {number} targetId - ID of the restaurant to keep (will receive merged data)
+ * @returns {Promise<Object>} - Merge result with updated restaurant
+ */
+export async function mergeRestaurants(duplicateId, targetId) {
+  return apiRequest('/admin/merge', {
+    method: 'POST',
+    body: JSON.stringify({ duplicate_id: duplicateId, target_id: targetId }),
+  });
+}
+
+/**
  * Index a location with real-time progress updates via Server-Sent Events
  * @param {string} location - Location to index (e.g., "barrie, ontario")
  * @param {string|null} category - Optional category filter

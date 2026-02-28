@@ -23,6 +23,13 @@ gem install bundler -v 2.5.23
 bundle _2.5.23_ install
 ```
 
+**Common Bundler/Dependency Issues:**
+
+- **`can't find gem bundler (= 2.5.23)`** — Bundler 2.5.23 isn't installed. Run `gem install bundler -v 2.5.23` first. The system may have a newer Bundler (4.0.3+) which has CGI bugs with this project.
+- **`bundle _2.5.23_ show rake` returns empty path** — Dependencies aren't installed yet. Run `bundle _2.5.23_ install` before running tests.
+- **`bundle install` (without version) fails** — Always use `bundle _2.5.23_ install`. The default Bundler may be 4.0.3+ which has known CGI compatibility bugs.
+- **Ruby version mismatch** — The project requires Ruby 4.0+. Check with `ruby -v`. If running an older Ruby, the Gemfile.lock may not resolve correctly.
+
 ### Running Tests
 
 ```bash
