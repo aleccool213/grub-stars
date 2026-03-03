@@ -20,7 +20,8 @@ export function navBar(options = {}) {
     { href: '/bookmarks.html', label: 'Bookmarks', icon: '💖', id: 'bookmarks' },
     { href: '/index-location.html', label: 'Add Area', icon: '📍', id: 'index' },
     { href: '/add-restaurant.html', label: 'Add Restaurant', icon: '🍽️', id: 'add-restaurant' },
-    { href: '/stats.html', label: 'Stats', icon: '📊', id: 'stats' }
+    { href: '/stats.html', label: 'Stats', icon: '📊', id: 'stats' },
+    { href: '/admin-merge.html', label: 'Merge', icon: '🔀', id: 'merge' }
   ];
 
   const linkHtml = navLinks.map(link => {

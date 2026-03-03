@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merge Restaurants - grub stars</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#FF6B35" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="grub stars">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+
+  <!-- Early dark mode detection to prevent FOUC -->
+  <script>
+    (function() {
+      const stored = localStorage.getItem('grub_stars_theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.style.colorScheme = 'dark';
+      }
+    })();
+  </script>
+  <script src="/js/vendor/twind.min.js"></script>
+  <script src="/js/twind-config.js"></script>
+  <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="bg-cream min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <main>
+      <div class="max-w-5xl mx-auto">
+        <div class="card p-6 mb-6">
+          <h2 class="text-2xl font-bold text-cocoa mb-2 flex items-center gap-2">
+            <span>🔀</span> Merge Restaurants
+          </h2>
+          <p class="text-cocoa/60 text-sm">
+            Manually merge duplicate restaurants that the indexer missed. Pick two restaurants and combine them into one.
+            Future: LLM-proposed merges from nightly DB export will appear here.
+          </p>
+        </div>
+
+        <!-- Manual Merge Section -->
+        <div class="card p-6 mb-6" id="manual-merge-section">
+          <h3 class="text-lg font-semibold text-cocoa mb-4 flex items-center gap-2">
+            <span>🔍</span> Manual Merge
+          </h3>
+          <p class="text-sm text-cocoa/60 mb-4">Search for two restaurants to merge. The "merge into" restaurant will be kept.</p>
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <!-- Duplicate (will be removed) -->
+            <div>
+              <label class="block text-sm font-medium text-cocoa mb-1" for="duplicate-search">Restaurant to remove</label>
+              <input
+                type="text"
+                id="duplicate-search"
+                class="input-whimsical"
+                placeholder="Search for duplicate..."
+                autocomplete="off"
+              >
+              <div id="duplicate-selected" class="mt-2"></div>
+            </div>
+
+            <!-- Target (will be kept) -->
+            <div>
+              <label class="block text-sm font-medium text-cocoa mb-1" for="target-search">Merge into (keep this one)</label>
+              <input
+                type="text"
+                id="target-search"
+                class="input-whimsical"
+                placeholder="Search for target..."
+                autocomplete="off"
+              >
+              <div id="target-selected" class="mt-2"></div>
+            </div>
+          </div>
+
+          <!-- Merge Preview -->
+          <div id="merge-preview" class="mt-6"></div>
+        </div>
+
+        <!-- Auto-detected Candidates Section -->
+        <div class="card p-6" id="candidates-section">
+          <h3 class="text-lg font-semibold text-cocoa mb-4 flex items-center gap-2">
+            <span>🤖</span> Auto-detected Duplicates
+          </h3>
+          <p class="text-sm text-cocoa/60 mb-4">
+            Restaurants detected as potential duplicates based on name similarity and proximity.
+            Eventually, LLM-proposed merges from nightly DB analysis will appear here too.
+          </p>
+          <div id="candidates-container"></div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="text-center mt-12 py-8">
+      <p class="text-cocoa/60">Vibe coded by Alec Brunelle using Claude Code</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/js/admin-merge.js"></script>
+  <script src="/js/sw-register.js"></script>
+</body>
+</html>

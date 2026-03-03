@@ -337,6 +337,132 @@ module GrubStars
         json_response(stats)
       end
 
+      # Find potential merge candidates (restaurants that may be duplicates)
+      # Returns groups of restaurants that look similar based on name and location
+      get "/admin/merge-candidates" do
+        location = params[:location]
+        service = Services::MergeDuplicatesService.new(logger: GrubStars.logger)
+
+        # Find TripAdvisor-only restaurants and their potential matches
+        duplicates = service.find_tripadvisor_only_restaurants
+        candidates = []
+
+        duplicates.each do |duplicate|
+          matches = service.find_potential_matches(duplicate)
+          next if matches.empty?
+
+          # Filter by location if provided
+          if location
+            next unless duplicate[:location]&.downcase&.include?(location.downcase)
+          end
+
+          # Load full details for display
+          detail_service = Services::RestaurantDetailsService.new
+          dup_restaurant = detail_service.get_by_id(duplicate[:id])
+          next unless dup_restaurant
+
+          match_restaurants = matches.first(3).filter_map do |match|
+            target = detail_service.get_by_id(match[:id])
+            next unless target
+            { restaurant: target.to_h, similarity: match[:similarity].round(3) }
+          end
+
+          next if match_restaurants.empty?
+
+          candidates << {
+            duplicate: dup_restaurant.to_h,
+            potential_targets: match_restaurants,
+            source: "auto_detected"
+          }
+        end
+
+        json_response(candidates, count: candidates.length)
+      end
+
+      # Preview a merge between two restaurants (shows what data will be combined)
+      get "/admin/merge-preview" do
+        duplicate_id = params[:duplicate_id]&.to_i
+        target_id = params[:target_id]&.to_i
+
+        unless duplicate_id && target_id
+          halt 400, json_error("INVALID_REQUEST", "Both duplicate_id and target_id are required")
+        end
+
+        if duplicate_id == target_id
+          halt 400, json_error("INVALID_REQUEST", "Cannot merge a restaurant with itself")
+        end
+
+        detail_service = Services::RestaurantDetailsService.new
+        duplicate = detail_service.get_by_id(duplicate_id)
+        target = detail_service.get_by_id(target_id)
+
+        halt 404, json_error("NOT_FOUND", "Restaurant #{duplicate_id} not found") unless duplicate
+        halt 404, json_error("NOT_FOUND", "Restaurant #{target_id} not found") unless target
+
+        # Calculate similarity
+        merge_service = Services::MergeDuplicatesService.new
+        similarity = merge_service.calculate_name_similarity(duplicate.name, target.name)
+
+        json_response({
+          duplicate: duplicate.to_h,
+          target: target.to_h,
+          similarity: similarity.round(3),
+          preview: {
+            name: target.name,
+            address: target.address || duplicate.address,
+            latitude: target.latitude || duplicate.latitude,
+            longitude: target.longitude || duplicate.longitude,
+            phone: target.phone || duplicate.phone,
+            combined_sources: (duplicate.sources + target.sources).uniq,
+            combined_ratings: (duplicate.ratings.map { |r| { source: r.source, score: r.score, review_count: r.review_count } } +
+                              target.ratings.map { |r| { source: r.source, score: r.score, review_count: r.review_count } }).uniq { |r| r[:source] },
+            combined_categories: (duplicate.category_names + target.category_names).uniq,
+            media_count: duplicate.media.length + target.media.length,
+            review_count: duplicate.reviews.length + target.reviews.length
+          }
+        })
+      end
+
+      # Merge two restaurants (duplicate into target)
+      post "/admin/merge" do
+        body = parse_json_body
+        duplicate_id = body["duplicate_id"]&.to_i
+        target_id = body["target_id"]&.to_i
+
+        unless duplicate_id && target_id
+          halt 400, json_error("INVALID_REQUEST", "Both duplicate_id and target_id are required")
+        end
+
+        if duplicate_id == target_id
+          halt 400, json_error("INVALID_REQUEST", "Cannot merge a restaurant with itself")
+        end
+
+        # Verify both restaurants exist
+        db = GrubStars.db
+        duplicate = db[:restaurants].where(id: duplicate_id).first
+        target = db[:restaurants].where(id: target_id).first
+
+        halt 404, json_error("NOT_FOUND", "Restaurant #{duplicate_id} not found") unless duplicate
+        halt 404, json_error("NOT_FOUND", "Restaurant #{target_id} not found") unless target
+
+        service = Services::MergeDuplicatesService.new(logger: GrubStars.logger)
+        success = service.merge_restaurants(duplicate, target)
+
+        if success
+          # Return the updated target restaurant
+          detail_service = Services::RestaurantDetailsService.new
+          merged_restaurant = detail_service.get_by_id(target_id)
+
+          json_response({
+            merged: true,
+            deleted_id: duplicate_id,
+            restaurant: merged_restaurant&.to_h
+          })
+        else
+          halt 500, json_error("MERGE_FAILED", "Failed to merge restaurant #{duplicate_id} into #{target_id}")
+        end
+      end
+
       # Index a single restaurant from external search results
       # This will search ALL configured adapters for the restaurant and merge data
       post "/restaurants/index-single" do

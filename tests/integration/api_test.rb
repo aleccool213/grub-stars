@@ -1460,6 +1460,257 @@ class APITest < GrubStars::IntegrationTest
     assert_equal 1, data_coverage["with_single_source"]
   end
 
+  # ======================================================
+  # Admin Merge Candidates endpoint tests
+  # ======================================================
+
+  def test_merge_candidates_empty_database
+    get "/admin/merge-candidates"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal [], body["data"]
+    assert_equal 0, body["meta"]["count"]
+  end
+
+  def test_merge_candidates_no_duplicates_when_all_multi_source
+    seed_restaurant_with_all_sources
+
+    get "/admin/merge-candidates"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 0, body["meta"]["count"]
+  end
+
+  def test_merge_candidates_returns_tripadvisor_only_with_match
+    seed_merge_candidate_pair
+
+    get "/admin/merge-candidates"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["meta"]["count"]
+
+    candidate = body["data"][0]
+    assert_equal "auto_detected", candidate["source"]
+
+    # The duplicate should be the TripAdvisor-only restaurant
+    assert_equal "Test Bakery", candidate["duplicate"]["name"]
+
+    # Should have at least one potential target
+    assert candidate["potential_targets"].length >= 1
+    target = candidate["potential_targets"][0]
+    assert_equal "Test Bakery", target["restaurant"]["name"]
+    assert target["similarity"] > 0.8
+  end
+
+  def test_merge_candidates_filters_by_location
+    seed_merge_candidate_pair
+
+    get "/admin/merge-candidates", location: "nonexistent city"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 0, body["meta"]["count"]
+  end
+
+  def test_merge_candidates_location_filter_matches
+    seed_merge_candidate_pair
+
+    get "/admin/merge-candidates", location: "barrie"
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body["meta"]["count"]
+  end
+
+  # ======================================================
+  # Admin Merge Preview endpoint tests
+  # ======================================================
+
+  def test_merge_preview_requires_both_ids
+    get "/admin/merge-preview"
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+  end
+
+  def test_merge_preview_rejects_same_id
+    seed_restaurant
+
+    get "/admin/merge-preview", duplicate_id: 1, target_id: 1
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+    assert_match(/itself/, body["error"]["message"])
+  end
+
+  def test_merge_preview_returns_404_for_missing_restaurant
+    get "/admin/merge-preview", duplicate_id: 9999, target_id: 9998
+
+    assert_equal 404, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "NOT_FOUND", body["error"]["code"]
+  end
+
+  def test_merge_preview_returns_comparison_data
+    ids = seed_merge_candidate_pair
+
+    get "/admin/merge-preview", duplicate_id: ids[:ta_id], target_id: ids[:yelp_id]
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    data = body["data"]
+
+    # Should have both restaurants
+    assert_equal ids[:ta_id], data["duplicate"]["id"]
+    assert_equal ids[:yelp_id], data["target"]["id"]
+
+    # Should have similarity score
+    assert data["similarity"] > 0
+
+    # Should have preview with combined data
+    preview = data["preview"]
+    assert preview["name"]
+    assert preview["combined_sources"].is_a?(Array)
+    assert preview["combined_ratings"].is_a?(Array)
+    assert preview["combined_categories"].is_a?(Array)
+    assert preview.key?("media_count")
+    assert preview.key?("review_count")
+  end
+
+  def test_merge_preview_combines_sources
+    ids = seed_merge_candidate_pair
+
+    get "/admin/merge-preview", duplicate_id: ids[:ta_id], target_id: ids[:yelp_id]
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    sources = body["data"]["preview"]["combined_sources"]
+    assert_includes sources, "tripadvisor"
+    assert_includes sources, "yelp"
+  end
+
+  # ======================================================
+  # Admin Merge execution endpoint tests
+  # ======================================================
+
+  def test_merge_requires_both_ids
+    post "/admin/merge", {}.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "INVALID_REQUEST", body["error"]["code"]
+  end
+
+  def test_merge_rejects_same_id
+    seed_restaurant
+
+    post "/admin/merge", { duplicate_id: 1, target_id: 1 }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert_equal 400, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_match(/itself/, body["error"]["message"])
+  end
+
+  def test_merge_returns_404_for_missing_restaurant
+    post "/admin/merge", { duplicate_id: 9999, target_id: 9998 }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert_equal 404, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal "NOT_FOUND", body["error"]["code"]
+  end
+
+  def test_merge_executes_successfully
+    ids = seed_merge_candidate_pair
+
+    post "/admin/merge", { duplicate_id: ids[:ta_id], target_id: ids[:yelp_id] }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    data = body["data"]
+
+    assert_equal true, data["merged"]
+    assert_equal ids[:ta_id], data["deleted_id"]
+    assert_equal ids[:yelp_id], data["restaurant"]["id"]
+  end
+
+  def test_merge_deletes_duplicate_restaurant
+    ids = seed_merge_candidate_pair
+
+    db = GrubStars.db
+    assert_equal 2, db[:restaurants].count
+
+    post "/admin/merge", { duplicate_id: ids[:ta_id], target_id: ids[:yelp_id] }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+
+    # Duplicate should be deleted
+    assert_equal 1, db[:restaurants].count
+    assert_nil db[:restaurants].where(id: ids[:ta_id]).first
+    assert db[:restaurants].where(id: ids[:yelp_id]).first
+  end
+
+  def test_merge_moves_external_ids_to_target
+    ids = seed_merge_candidate_pair
+
+    post "/admin/merge", { duplicate_id: ids[:ta_id], target_id: ids[:yelp_id] }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+
+    db = GrubStars.db
+    external_ids = db[:external_ids].where(restaurant_id: ids[:yelp_id]).all
+    sources = external_ids.map { |e| e[:source] }
+    assert_includes sources, "yelp"
+    assert_includes sources, "tripadvisor"
+  end
+
+  def test_merge_moves_ratings_to_target
+    ids = seed_merge_candidate_pair
+
+    post "/admin/merge", { duplicate_id: ids[:ta_id], target_id: ids[:yelp_id] }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+
+    db = GrubStars.db
+    ratings = db[:ratings].where(restaurant_id: ids[:yelp_id]).all
+    sources = ratings.map { |r| r[:source] }
+    assert_includes sources, "yelp"
+    assert_includes sources, "tripadvisor"
+  end
+
+  def test_merge_returns_updated_restaurant_with_associations
+    ids = seed_merge_candidate_pair
+
+    post "/admin/merge", { duplicate_id: ids[:ta_id], target_id: ids[:yelp_id] }.to_json, { "CONTENT_TYPE" => "application/json" }
+
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    restaurant = body["data"]["restaurant"]
+
+    assert restaurant["name"]
+    assert restaurant["ratings"].is_a?(Array)
+    assert restaurant["external_ids"].is_a?(Array)
+    assert restaurant["categories"].is_a?(Array)
+  end
+
+  def test_merge_no_candidates_after_merge
+    ids = seed_merge_candidate_pair
+
+    # Execute the merge
+    post "/admin/merge", { duplicate_id: ids[:ta_id], target_id: ids[:yelp_id] }.to_json, { "CONTENT_TYPE" => "application/json" }
+    assert last_response.ok?
+
+    # Now candidates should be empty
+    get "/admin/merge-candidates"
+    assert last_response.ok?
+    body = JSON.parse(last_response.body)
+    assert_equal 0, body["meta"]["count"]
+  end
+
   private
 
   def seed_restaurant_with_all_sources
@@ -1747,6 +1998,76 @@ class APITest < GrubStars::IntegrationTest
         ENV[key] = value
       end
     end
+  end
+
+  def seed_merge_candidate_pair
+    GrubStars.reset_db!
+    db = GrubStars.db
+
+    # Create a yelp restaurant (the target)
+    yelp_id = db[:restaurants].insert(
+      name: "Test Bakery",
+      address: "123 Main St",
+      latitude: 44.389,
+      longitude: -79.690,
+      phone: "+15551234567",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    db[:external_ids].insert(
+      restaurant_id: yelp_id,
+      source: "yelp",
+      external_id: "test-bakery-123"
+    )
+
+    category_id = db[:categories].insert(name: "bakeries")
+    db[:restaurant_categories].insert(
+      restaurant_id: yelp_id,
+      category_id: category_id
+    )
+
+    db[:ratings].insert(
+      restaurant_id: yelp_id,
+      source: "yelp",
+      score: 4.5,
+      review_count: 100,
+      fetched_at: Time.now
+    )
+
+    # Create a TripAdvisor-only restaurant (the duplicate) with similar name and nearby GPS
+    ta_id = db[:restaurants].insert(
+      name: "Test Bakery",
+      address: "123 Main Street",
+      latitude: 44.3892,
+      longitude: -79.6902,
+      phone: "+15551234568",
+      location: "barrie, ontario",
+      created_at: Time.now,
+      updated_at: Time.now
+    )
+
+    db[:external_ids].insert(
+      restaurant_id: ta_id,
+      source: "tripadvisor",
+      external_id: "ta-test-bakery-456"
+    )
+
+    db[:restaurant_categories].insert(
+      restaurant_id: ta_id,
+      category_id: category_id
+    )
+
+    db[:ratings].insert(
+      restaurant_id: ta_id,
+      source: "tripadvisor",
+      score: 4.2,
+      review_count: 50,
+      fetched_at: Time.now
+    )
+
+    { yelp_id: yelp_id, ta_id: ta_id }
   end
 
   def stub_yelp_search
